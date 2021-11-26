@@ -523,77 +523,24 @@ server <- function(input, output, session){
     ############################################################################ 
     lineThickness <- 1.5
     
+    source("#makePlots.R")
+    
     observeEvent(input$go, {
-      output$cumulativePlot <- renderImage({
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 600, height = 400)
-        df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
-        # plot(df[, "D"], 
-        #      main = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), 
-        #      xlab = paste0("Day (from ", input$date, ")"), ylab = "Cumulative Deaths", type = "l")
-        plotData = data.frame(Date = ymd(df[,"Date"]), D = df[,"D"])
-        p = ggplot(plotData, mapping = aes(Date, D, group = 1)) +
-          geom_line(aes(Date, D), size=lineThickness, color="black") +
-          labs(title = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry),
-               x = paste0("Day (from ", input$date, ")"), y = "Cumulative Deaths") +
-          scale_x_date(date_labels = "%d %b %Y")
-        plot(p)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
-      }, deleteFile = TRUE)
+      output$cumulativePlot <- makePlot(compartments = c("D"), input = input, plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Cumulative Deaths", lineThickness = lineThickness)
       
-      output$fullPlot <- renderImage({
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 600, height = 400)
-        df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
-        plotData = data.frame(Date = ymd(df[,"Date"]), S = df[,"S"], V = df[,"V"], E = df[,"E"], I = df[,"I"], R = df[,"R"], D = df[,"D"])
-        p = ggplot(plotData, mapping = aes(Date, S, group = 1)) +
-          geom_line(aes(Date, S), size=lineThickness, color="black") +
-          geom_line(aes(Date, E), size=lineThickness, color="blue") +
-          geom_line(aes(Date, I), size=lineThickness, color="red") +
-          geom_line(aes(Date, R), size=lineThickness, color="green") +
-          geom_line(aes(Date, D), size=lineThickness, color="orange") +
-          labs(title = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry),
-               x = paste0("Day (from ", input$date, ")"), y = "Compartment Value") +
-          scale_x_date(date_labels = "%d %b %Y")
-        if (input$modelSelect == "SVEIRD") {
-          p <- p + geom_line(aes(Date, V), size=lineThickness, color="violet")
-        }
-        plot(p)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
-      }, deleteFile = TRUE)
+      if (input$modelSelect == "SVEIRD"){
+        output$fullPlot <- makePlot(compartments = c("S", "V", "E", "I", "R", "D"), input = input, plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Compartment Value", lineThickness = lineThickness)
+      } else {
+        output$fullPlot <- makePlot(compartments = c("S", "E", "I", "R", "D"), input = input, plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Compartment Value", lineThickness = lineThickness)
+      }
       
-      output$infectedExposedPlot <- renderImage({
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 600, height = 400)
-        df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
-        plotData = data.frame(Date = ymd(df[,"Date"]), E = df[,"E"], I = df[,"I"])
-        p = ggplot(plotData, mapping = aes(Date, S, group = 1)) +
-          geom_line(aes(Date, E), size=lineThickness, color="blue") +
-          geom_line(aes(Date, I), size=lineThickness, color="red") +
-          labs(title = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry),
-               x = paste0("Day (from ", input$date, ")"), y = "Compartment Value") +
-          scale_x_date(date_labels = "%d %b %Y")
-        plot(p)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
-      }, deleteFile = TRUE)
+      output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
         
       output$fracSusPlot <- renderImage({
         outfile <- tempfile(fileext = '.png')
         
         png(outfile, width = 600, height = 400)
         df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
-        # plot(df[, "S"]/df[,"N"], df[, "I"]/df[,"N"], 
-        #      main = paste0(input$selectedCountry, " SI Phase Plane (", input$date, ", ", input$timestep, " timesteps)"), 
-        #      xlab = "Fraction susceptible", ylab = "Fraction Infected", type = "l")
         plotData = data.frame(X = df[,"S"]/df[,"N"], Y = df[,"I"]/df[,"N"])
         p = ggplot(plotData, mapping = aes(X, Y, group = 1)) +
           geom_line(aes(X, Y), size=lineThickness, color="black") +
