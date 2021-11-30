@@ -23,7 +23,7 @@ shhh(library(av))
 shhh(library(dplyr))
 shhh(library(maps))
 
-population <- read.xlsx("population.xlsx", 1)
+population <- read.xlsx("misc/population.xlsx", 1)
 
 #fieldsMandatory <- c("selectedCountry", "modelSelect")
 
@@ -61,7 +61,6 @@ ui <- fluidPage(
                                         labelMandatory ("Country"), 
                                         choices = population$Country,
                                         multiple = FALSE,
-                                        selected = "Czech Republic", #character(0),# 
                                         options = pickerOptions(
                                             actionsBox = TRUE,
                                             title = "Please select a country")
@@ -85,9 +84,7 @@ ui <- fluidPage(
                                     #     title = "Please select a year")
                                     # ),
                                     
-                                    sliderInput(inputId = "agg", 
-                                                label = "Aggregation Factor", 
-                                                min = 0, max = 50, step = 1, value = 10), 
+                                    uiOutput("aggSlider"),
 
                                     radioButtons(inputId = "modelSelect",
                                                  labelMandatory ("Epidemic Model"),
@@ -451,6 +448,22 @@ server <- function(input, output, session){
                      options = list(placeholder = "Select state(s)/province(s)"))
     })
     
+    
+    ############################################################################    
+    # Change the recommended aggregation factor for slider dynamically         #
+    ############################################################################  
+    output$aggSlider <- renderUI({
+      if (input$selectedCountry == ""){
+        sliderInput(inputId = "agg", 
+                    label = "Aggregation Factor", 
+                    min = 0, max = 100, step = 1, value = 10)
+      } else {
+        sliderInput(inputId = "agg", 
+                    label = "Aggregation Factor", 
+                    min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+      }
+    })
+    
     ############################################################################    
     # Output the .mp4 video from www/ to the app UI                            #
     ############################################################################  
@@ -687,6 +700,7 @@ server <- function(input, output, session){
         # createBasePlot(input$selectedCountry, input$agg, FALSE)
     })
     
+    
     observeEvent(input$filterLMIC,{
       if(input$filterLMIC) value <- 'YES' else value <- 'NO'
       population <- population[population$LMIC == value,]
@@ -761,39 +775,6 @@ server <- function(input, output, session){
     #   
     # )
 }
-
-
-    
-    # observeEvent(input$go, {
-    #     if()
-    # })
-    
-    # observeEvent(input$a, {
-    #     showModal(modalDialog(
-    #         title = "Somewhat important message",
-    #         "This is a somewhat important message.",
-    #         easyClose = TRUE,
-    #         footer = NULL
-    #     ))
-    # })
-    # 
-    # observeEvent(input$b, {
-    #     showModal(modalDialog(
-    #         title = "Somewhat important message",
-    #         "This is a somewhat important message.",
-    #         easyClose = TRUE,
-    #         footer = NULL
-    #     ))
-    # })
-    # 
-    # observeEvent(input$c, {
-    #     showModal(modalDialog(
-    #         title = "Somewhat important message",
-    #         "This is a somewhat important message.",
-    #         easyClose = TRUE,
-    #         footer = NULL
-    #     ))
-    # })
 
 
 shinyApp(ui,server)
