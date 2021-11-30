@@ -56,21 +56,14 @@ ui <- fluidPage(
                                 shinyjs::inlineCSS(appCSS),
                                 div(
                                     id = "dashboard",
-                                    pickerInput(
-                                        inputId = "selectedCountry",
-                                        labelMandatory ("Country"), 
-                                        choices = population$Country,
-                                        multiple = FALSE,
-                                        options = pickerOptions(
-                                            actionsBox = TRUE,
-                                            title = "Please select a country")
-                                    ),
+                                    
+                                    uiOutput("countryDropdown"),
                                     
                                     checkboxInput(inputId = "filterLMIC", label = strong("Filter LMIC"), value = FALSE),
                                     
-                                    checkboxInput(inputId = "clipLocation", label = strong("Clip State(s)/Province(s)"), value = FALSE),
+                                    uiOutput("clipStateCheckbox"),
                                      
-                                    conditionalPanel(condition = "input.clipLocation == '1'",
+                                    conditionalPanel(condition = "input.clipLev1 == '1'",
                                                     uiOutput("Level1Ui")),
                                     
                                     # pickerInput(
@@ -430,7 +423,32 @@ server <- function(input, output, session){
       # enable/disable the submit button
       shinyjs::toggleState(id = "go", condition = mandatoryFilled)
     })
-
+    
+    ############################################################################    
+    # This static ui field is in server since other dynamic ui elements need it#
+    ############################################################################
+    output$countryDropdown <- renderUI({
+      pickerInput(
+        inputId = "selectedCountry",
+        labelMandatory ("Country"), 
+        choices = population$Country,
+        multiple = FALSE,
+        select = NULL,
+        options = pickerOptions(
+          actionsBox = TRUE,
+          title = "Please select a country")
+      )
+    })
+    
+    ############################################################################    
+    # Dynamically display the checkbox option to select for states/provinces   #
+    ############################################################################
+    output$clipStateCheckbox <- renderUI({
+      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+        checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
+      }
+    })
+    
     ############################################################################    
     # Create select box for choosing input country                             #
     ############################################################################      
@@ -444,10 +462,9 @@ server <- function(input, output, session){
       }
       selectizeInput(inputId = "level1List", "",
                      choices = level1Options,
-                     selected = NULL, multiple = TRUE,
+                     selected = "", multiple = TRUE,
                      options = list(placeholder = "Select state(s)/province(s)"))
     })
-    
     
     ############################################################################    
     # Change the recommended aggregation factor for slider dynamically         #
@@ -463,17 +480,17 @@ server <- function(input, output, session){
                     min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
       }
     })
-    
+
     ############################################################################    
     # Output the .mp4 video from www/ to the app UI                            #
     ############################################################################  
     output$outputVideo <- renderUI({
-       tags$video(
-           id = "video", 
-           type = "video/mp4",
-           src = "MP4/Infected_MP4.mp4",  # TODO: dynamically change which mp4 is printed
-           controls = "controls"
-       )
+      tags$video(
+          id = "video", 
+          type = "video/mp4",
+          src = "MP4/Infected_MP4.mp4",  # TODO: dynamically change which mp4 is printed
+          controls = "controls"
+      )
     })
     
     ############################################################################    
@@ -497,7 +514,7 @@ server <- function(input, output, session){
     # Create a country plot cropped by level1Identifier and output to UI       #
     ############################################################################ 
     observeEvent(input$go, {
-      if(input$clipLocation == TRUE){
+      if(input$clipLev1 == TRUE){
         output$croppedOutputImage <- renderImage({
           source("#clippingBaseRaster.R")
           outfile <- tempfile(fileext = '.png')
