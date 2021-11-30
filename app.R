@@ -444,6 +444,9 @@ server <- function(input, output, session){
     # Dynamically display the checkbox option to select for states/provinces   #
     ############################################################################
     output$clipStateCheckbox <- renderUI({
+      validate(
+        need(!is.null(input$selectedCountry), "Loading App...") # catches UI warning
+      )
       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
         checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
       }
@@ -453,6 +456,9 @@ server <- function(input, output, session){
     # Create select box for choosing input country                             #
     ############################################################################      
     output$Level1Ui <- renderUI({
+      validate(
+        need(input$clipLev1 == TRUE, "Loading App...") # catches UI warning
+      )
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
       
       if (file.exists(paste0("gadm/", "gadm36_", isoCode, "_1_sp.rds"))){
@@ -470,6 +476,9 @@ server <- function(input, output, session){
     # Change the recommended aggregation factor for slider dynamically         #
     ############################################################################  
     output$aggSlider <- renderUI({
+      validate(
+        need(!is.null(input$selectedCountry), "Loading App...") # catches UI warning
+      )
       if (input$selectedCountry == ""){
         sliderInput(inputId = "agg", 
                     label = "Aggregation Factor", 
