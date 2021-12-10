@@ -127,7 +127,7 @@ ui <- fluidPage(
                                         
                                         sliderInput(inputId = "beta", 
                                                     label = "Daily Exposure Rate (\\( \\beta\\))", 
-                                                    min = 0, max = 1, step = 0.001, value = 0.025
+                                                    min = 0, max = 1, step = 0.00001, value = 0.025
                                         ),
                                         
                                         # checkboxInput(inputId = "varyingBeta", label = "Time-varying \\( \\beta\\)", value = FALSE),
