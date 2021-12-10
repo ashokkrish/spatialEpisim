@@ -199,7 +199,7 @@ ui <- fluidPage(
                                         
                                         sliderInput(inputId = "lambda",
                                                     "Distance parameter (\\( \\lambda\\), in km):",
-                                                    min = 5, max = 30, step = 5, value = 15),
+                                                    min = 1, max = 50, step = 1, value = 15),
                                         
                                         # helpText("Note: while the data view will show only",
                                         #          "the specified number of observations, the",
