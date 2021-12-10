@@ -7,6 +7,7 @@
 # install.packages("maps", dependencies = T)
 # install.packages("countrycode", dependencies = T)
 # install.packages("raster", dependencies = T)
+# install.packages("ggforce", dependencies = T)
 
 library(ggplot2)
 library(dplyr)
@@ -15,6 +16,7 @@ library(ggspatial)
 library(maps)
 library(countrycode)
 library(raster)
+#library(ggforce)
 
 createSeedPlot <- function(countryName, seedData, startDate, source) {
 
@@ -54,8 +56,8 @@ createSeedPlot <- function(countryName, seedData, startDate, source) {
           scale_color_continuous(name = "Active Cases", low = "blue", high = "red", na.value = "grey50") +
           scale_size_continuous(name = "Active Cases") +
           theme(legend.position = "bottom", legend.text.align = 1, legend.title.align = 0.5) + 
-          theme(panel.border = element_blank(), panel.grid.major = element_blank(), axis.line = element_line(colour = "black"))  # Removes background grid lines
-          
+          theme(panel.border = element_blank(), panel.grid.major = element_blank(), axis.line = element_line(colour = "black"))   # Removes background grid lines
+          #geom_circle() + coord_equal() + theme_classic()
   base_map
 }
 
