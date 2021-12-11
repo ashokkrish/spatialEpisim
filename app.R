@@ -728,8 +728,11 @@ server <- function(input, output, session){
     
     
     observeEvent(input$filterLMIC,{
-      if(input$filterLMIC) value <- 'YES' else value <- 'NO'
-      population <- population[population$LMIC == value,]
+      if(input$filterLMIC){
+        population <- population[population$LMIC == 'FALSE',]
+      } else {
+        population <- population[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
+      }
       updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country)
     })
     
