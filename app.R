@@ -729,7 +729,7 @@ server <- function(input, output, session){
     
     observeEvent(input$filterLMIC,{
       if(input$filterLMIC){
-        population <- population[population$LMIC == 'FALSE',]
+        population <- population[population$LMIC == 'TRUE',]
       } else {
         population <- population[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
       }
