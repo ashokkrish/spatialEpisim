@@ -230,7 +230,7 @@ ui <- fluidPage(
                                         
                                         numericInput(inputId = "timestep", 
                                                      label = "Number of Iterations (days)",
-                                                     min = 1, max = 3650, value = 5, step = 1)
+                                                     min = 1, max = 3650, value = 120, step = 1)
 
                                         # div(
                                         #     class = "input-group", #pull the csv file, comment out 
