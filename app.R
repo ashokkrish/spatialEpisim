@@ -529,9 +529,6 @@ server <- function(input, output, session){
     #   }, deleteFile = TRUE)
     # })
     
-    ############################################################################    
-    # Output cumulative deaths as well as the fraction susceptible plot to UI  #
-    ############################################################################ 
     lineThickness <- 1.5
     
     source("#makePlots.R")
@@ -661,8 +658,6 @@ server <- function(input, output, session){
         sigma <- input$sigma # DO NOT DELETE
         delta <- input$delta # ifelse(input$modelSelect == "SEIR", 0, input$delta) # DO NOT DELETE
 
-        #print(paste(input$modelSelect, c(alpha, beta, gamma, sigma, delta)))
-
         source("#rasterSimulation.R")
 
         eps <- 0.0000000000000001
@@ -775,6 +770,5 @@ server <- function(input, output, session){
     #   
     # )
 }
-
 
 shinyApp(ui,server)
