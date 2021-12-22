@@ -695,6 +695,11 @@ server <- function(input, output, session){
     
     observeEvent(input$filterLMIC,{
       if(input$filterLMIC){
+        # TODO: double check that line below actually updates the clipLev1 checkbox
+        #print(input$clipLev1)
+        updateCheckboxInput(session, inputId = "clipLev1", value = FALSE)
+        #print(input$clipLev1)
+        
         population <- population[population$LMIC == 'TRUE',]
       } else {
         population <- population[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
