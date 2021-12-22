@@ -1,4 +1,4 @@
-Location,Lat,Lon,InitialVaccinated,InitialExposed,InitialInfections,InitialRecovered,InitialDead
+Location,lat,lon,InitialVaccinated,InitialExposed,InitialInfections,InitialRecovered,InitialDead
 Abia ,5.533333,7.483333,54000,35,7,1764,24
 Adamawa,9.23,12.46,54000,30,6,1098,32
 Akwa Ibom,5.033333,7.916667,54000,3710,742,3200,42
