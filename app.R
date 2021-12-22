@@ -59,7 +59,7 @@ ui <- fluidPage(
                                     
                                     uiOutput("countryDropdown"),
                                     
-                                    checkboxInput(inputId = "filterLMIC", label = strong("Filter LMIC"), value = FALSE),
+                                    checkboxInput(inputId = "filterLMIC", label = strong("Show LMIC only"), value = FALSE),
                                     
                                     uiOutput("clipStateCheckbox"),
                                      
@@ -174,24 +174,10 @@ ui <- fluidPage(
                                         )
                                     ),
                                     
-                                    # conditionalPanel(
-                                    #     id = "SEIRD_SVEIRD",
-                                    #     withMathJax(),
-                                    #     condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                                    # 
-                                    #     sliderInput(inputId = "delta",
-                                    #                 "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
-                                    #                 min = 0, max = 1,step = 0.001, value = 0.002
-                                    #                 )
-                                    # ),
-
                                     conditionalPanel(
                                         #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
                                         condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
                                         
-                                        # sliderInput(inputId = "radius",
-                                        #             "Radius:", 
-                                        #             min = 1, max = 4, step = 1, value = 2),
                                         #helpText('NOTE: Radius of 1 is called the Moore neighbourhood.'),
                                         #HTML("<p>NOTE: Radius of 1 is called the <a href='https://en.wikipedia.org/wiki/Moore_neighborhood'>Moore neighbourhood</a></p>", target = "_blank"),
                                         
@@ -204,20 +190,6 @@ ui <- fluidPage(
                                         # helpText("Note: while the data view will show only",
                                         #          "the specified number of observations, the",
                                         #          "summary will be based on the full dataset."),
-                                        # div(  
-                                        #     class = "input-group",
-                                        #     tags$span(
-                                        #         style = "display: inline-block",
-                                        #         sliderInput("radius",
-                                        #                     " Radius:", 
-                                        #                     min = 1, max = 4,step = 1, value = 1),
-                                        #     ),
-                                        #     tags$span(
-                                        #         style = "vertical-align: bottom;",
-                                        #         actionButton("b", "", icon = icon("question"))
-                                        #     )
-                                        # ),
-                                        
                                         # div(#comment out, pull slider out 
                                         #     class = "input-group",
                                         #     tags$span(
@@ -258,7 +230,7 @@ ui <- fluidPage(
                                         
                                         numericInput(inputId = "timestep", 
                                                      label = "Number of Iterations (days)",
-                                                     min = 5, max = 3650, value = 5, step = 1)
+                                                     min = 1, max = 3650, value = 5, step = 1)
 
                                         # div(
                                         #     class = "input-group", #pull the csv file, comment out 
@@ -368,7 +340,7 @@ ui <- fluidPage(
                         
                         br(),
                         
-                        p(span("Crystal Wai, Gursimran Dhaliwal and Timothy Pulfer", style= "font-weight:bold" )),    
+                        p(span("Gursimran Dhaliwal, Crystal Wai, and Timothy Pulfer", style= "font-weight:bold" )),    
                         p("Undergraduate Student, Mount Royal University"),
                         
                         br(), 
@@ -575,21 +547,21 @@ server <- function(input, output, session){
       
       output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
         
-      output$fracSusPlot <- renderImage({
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 600, height = 400)
-        df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
-        plotData = data.frame(X = df[,"S"]/df[,"N"], Y = df[,"I"]/df[,"N"])
-        p = ggplot(plotData, mapping = aes(X, Y, group = 1)) +
-          geom_line(aes(X, Y), size=lineThickness, color="black") +
-          labs(title = paste0(input$selectedCountry, " SI Phase Plane (", input$date, ", ", input$timestep, " timesteps)"),
-               x = "Fraction susceptible", y = "Fraction Infected")
-        plot(p)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
-      }, deleteFile = TRUE)
+      # output$fracSusPlot <- renderImage({
+      #   outfile <- tempfile(fileext = '.png')
+      #   
+      #   png(outfile, width = 600, height = 400)
+      #   df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
+      #   plotData = data.frame(X = df[,"S"]/df[,"N"], Y = df[,"I"]/df[,"N"])
+      #   p = ggplot(plotData, mapping = aes(X, Y, group = 1)) +
+      #     geom_line(aes(X, Y), size=lineThickness, color="black") +
+      #     labs(title = paste0(input$selectedCountry, " SI Phase Plane (", input$date, ", ", input$timestep, " timesteps)"),
+      #          x = "Fraction susceptible", y = "Fraction Infected")
+      #   plot(p)
+      #   dev.off()
+      #   
+      #   list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
+      # }, deleteFile = TRUE)
     })
     
     ##########################################################################    
@@ -691,7 +663,7 @@ server <- function(input, output, session){
 
         #print(paste(input$modelSelect, c(alpha, beta, gamma, sigma, delta)))
 
-        source("#rasterSimulation.R")  # This code runs the spatial compartmental model
+        source("#rasterSimulation.R")
 
         eps <- 0.0000000000000001
         
@@ -713,7 +685,7 @@ server <- function(input, output, session){
         row1 <- data.frame(Variable = "Country", Value = input$selectedCountry)
         row2 <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
         row3 <- data.frame(Variable = "Aggregated Raster Dimension", Value = paste0(nrow(rs$rasterStack) , " rows x ", ncol(rs$rasterStack), " columns = ", ncell(rs$rasterStack), " grid cells" ))
-        row4 <- data.frame(Variable = "Compartment Model", Value = input$modelSelect)
+        row4 <- data.frame(Variable = "Compartmental Model", Value = input$modelSelect)
         row5 <- data.frame(Variable = "Model Parameters", Value = paste("Alpha:", alpha,"Beta:", beta,"Gamma:", gamma, "Sigma:", sigma,"Delta:", delta))
         row6 <- data.frame(Variable = "Average Distance Travelled/Day (in km)", Value = input$lambda)
         row7 <- data.frame(Variable = "Radius (1 = Moore neighbourhood)", Value = radius)
@@ -725,7 +697,6 @@ server <- function(input, output, session){
         # source("#rasterBasePlot.R")
         # createBasePlot(input$selectedCountry, input$agg, FALSE)
     })
-    
     
     observeEvent(input$filterLMIC,{
       if(input$filterLMIC){
