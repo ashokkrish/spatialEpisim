@@ -343,7 +343,7 @@ server <- function(input, output, session){
         alphaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"alpha"]
       }
     }
-    
+     
     sliderInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 min = 0, max = 1, step = 0.0001, value = alphaValue)
