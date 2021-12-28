@@ -50,14 +50,14 @@ createSeedPlot <- function(countryName, seedData, startDate, source) {
           st_as_sf(coords = c("lon", "lat"), crs = 4326)
   #print(class(my_df))
   base_map <- base_map +
-          geom_sf(data = my_df, aes(color = InitialInfections, size = InitialInfections)) +
-          #geom_point(data = my_df, aes(x = long, y = lat), size = 1) +
-          guides(colour = guide_legend(override.aes = list(size = 8))) +
-          scale_color_continuous(name = "Active Cases", low = "blue", high = "red", na.value = "grey50") +
-          scale_size_continuous(name = "Active Cases") +
-          theme(legend.position = "bottom", legend.text.align = 1, legend.title.align = 0.5) + 
-          theme(panel.border = element_blank(), panel.grid.major = element_blank(), axis.line = element_line(colour = "black"))   # Removes background grid lines
-          #geom_circle() + coord_equal() + theme_classic()
+       geom_sf(data = my_df, aes(color = InitialInfections, size = InitialInfections), alpha = 0.5) +
+       #geom_point(data = my_df, aes(x = long, y = lat), size = 1) +
+       guides(colour = guide_legend(override.aes = list(size = 8))) +
+       scale_color_continuous(name = "Active Cases", low = "blue", high = "red", na.value = "grey50") +
+       scale_size_continuous(name = "Active Cases", range = c(0, 20)) +
+       theme(legend.position = "bottom", legend.text.align = 1, legend.title.align = 0.5) + 
+       theme(panel.border = element_blank(), panel.grid.major = element_blank(), axis.line = element_line(colour = "black"))  # Removes background grid lines
+       #geom_circle() + coord_equal() + theme_classic()
   base_map
 }
 
