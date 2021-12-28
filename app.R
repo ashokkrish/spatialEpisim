@@ -530,11 +530,11 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
       
       createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 600, height = 400)
+      png(outfile, width = 1024, height = 768)
       createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
     }, deleteFile = TRUE)
   })
   
@@ -547,11 +547,11 @@ server <- function(input, output, session){
         source("#clippingBaseRaster.R")
         outfile <- tempfile(fileext = '.png')
         
-        png(outfile, width = 600, height = 400)
+        png(outfile, width = 1024, height = 768)
         createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg)
         dev.off()
         
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+        list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
       }, deleteFile = TRUE)
     }
   })
@@ -565,14 +565,14 @@ server <- function(input, output, session){
   #     outfile <- tempfile(fileext = '.png')
   #     
   #     # print the seed plot direct to UI
-  #     png(outfile, width = 600, height = 400)
+  #     png(outfile, width = 1024, height = 768)
   #     plot(c(1,3,6,9,12), c(1.5,2,7,8,15), main = "Bubble Plot Placeholder") # TODO: example plot, below lines don't work due to "Regions defined for each Polygons" warning
   #     # print(input$selectedCountry)
   #     # print(input$date)
   #     # createSeedPlot(countryName = "Czech Republic", seedData = "seeddata/CZE_InitialSeedData.csv", startDate = "2021-07-01", source = "testSource") 
   #     dev.off()
   #     
-  #     list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Seed image not found")
+  #     list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed image not found")
   #   }, deleteFile = TRUE)
   # })
   
@@ -594,7 +594,7 @@ server <- function(input, output, session){
     # output$fracSusPlot <- renderImage({
     #   outfile <- tempfile(fileext = '.png')
     #   
-    #   png(outfile, width = 600, height = 400)
+    #   png(outfile, width = 1024, height = 768)
     #   df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
     #   plotData = data.frame(X = df[,"S"]/df[,"N"], Y = df[,"I"]/df[,"N"])
     #   p = ggplot(plotData, mapping = aes(X, Y, group = 1)) +
@@ -604,7 +604,7 @@ server <- function(input, output, session){
     #   plot(p)
     #   dev.off()
     #   
-    #   list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
+    #   list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Image not found")
     # }, deleteFile = TRUE)
   })
   
