@@ -15,7 +15,7 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 ## Credits
 
-This interactive [R Shiny](https://shiny.rstudio.com/) app would not be possible without the help from my team of research assistants [Gursimran Dhaliwal](https://github.com/dhaliwalgurs), [Crystal Wai](https://github.com/cwai097), [Jake Doody](https://github.com/jdoody1), and [Timothy Pulfer](https://github.com/TimPulfer). I thank them for their time and hardwork. We acknowledge valueble inputs from Dr. Bedrich Sousedik and Dr. Loren Cobb. 
+This interactive [R Shiny](https://shiny.rstudio.com/) app would not be possible without the help from our team of research assistants [Gursimran Dhaliwal](https://github.com/dhaliwalgurs), [Crystal Wai](https://github.com/cwai097), [Jake Doody](https://github.com/jdoody1), and [Timothy Pulfer](https://github.com/TimPulfer). I thank them for their time and hardwork. We acknowledge valuable inputs from [Dr. Bedrich Sousedik](https://github.com/sousedik/) and [Dr. Loren Cobb](http://www.aetheling.com/). 
 
 ## References
 
