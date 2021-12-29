@@ -8,15 +8,15 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 ## Credits
 
-This R [Shiny](https://shiny.rstudio.com/) app would not have been possible without the help from [Gursimran Dhaliwal](https://github.com/dhaliwalgurs), [Crystal Wai](https://github.com/cwai097), [Jake Doody](https://github.com/jdoody1), and [Timothy Pulfer](https://github.com/TimPulfer). I thank them for their time and hardwork.
+This interactive R [Shiny](https://shiny.rstudio.com/) app would not have been possible without the help from my team of research assistants [Gursimran Dhaliwal](https://github.com/dhaliwalgurs), [Crystal Wai](https://github.com/cwai097), [Jake Doody](https://github.com/jdoody1), and [Timothy Pulfer](https://github.com/TimPulfer). I thank them for their time and hardwork. We acknowledge valueble inputs from Dr. Bedrich Sousedik and Dr. Loren Cobb. 
 
 ## References
 
 ## Feedback
 
+The app is maintained by Dr. Ashok Krishnamurthy. We welcome questions, insights, and feedback.
+
 Contact: [Ashok Krishnamurthy, Ph.D.](mailto:akrishnamurthy@mtroyal.ca)  
 Website: <https://bit.ly/2YKrXjX>  
 
 -----
-
-This interactive R Shiny app is maintained by Dr. Ashok Krishnamurthy and his team of research assistants. We welcome questions, insights, and feedback.
