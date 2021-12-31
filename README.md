@@ -13,11 +13,15 @@ Run the app by loading `app.R` and clicking `Run App`.
 - Generate Spatiotemporal disease prevalence maps: either for an entire country or a smaller area (state(s)/province(s)) within a country.
 - Context: Data and examples focus on mathematical modelling of infectious disease epidemics
 
-## Epidemic Models
+## Epidemic Models: Schematic Diagram
 
 <!-- ![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png) -->
 
+**The SEIRD Model**
+
 <img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="400"/>
+
+**The SVEIRD Model**
 
 <img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SVEIRD.png" width="400"/>
 
