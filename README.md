@@ -19,6 +19,7 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 <img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="400"/>
 
+<img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SVEIRD.png" width="400"/>
 
 ## Credits
 
