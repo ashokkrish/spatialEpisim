@@ -15,7 +15,7 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 ## Epidemic Models
 
-#![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png)
+<!-- ![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png) -->
 
 <img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="400"/>
 
