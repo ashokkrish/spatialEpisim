@@ -17,7 +17,7 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 ![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png)
 
-<img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="128"/>
+<img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="600"/>
 
 
 ## Credits
