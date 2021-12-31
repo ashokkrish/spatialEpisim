@@ -1,6 +1,6 @@
 # spatialEpisim: Spatial Tracking of Infectious Disease Epidemics using Mathematical Models
  
- ## Overview
+## Overview
 
 **spatialEpisim** is an open-source platform-independent browser-based interface for tracking the spatial spread of an infectious disease (ex: COVID-19, Ebola, Measles etc.). 
 
@@ -15,9 +15,9 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 ## Epidemic Models
 
-![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png)
+%![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png)
 
-<img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="600"/>
+<img src="https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png" width="400"/>
 
 
 ## Credits
