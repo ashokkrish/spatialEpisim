@@ -8,7 +8,7 @@ Run the app by loading `app.R` and clicking `Run App`.
 
 ## Key features
 
-- Run deterministic/stochastic compartmental models of epidemiology
+- Run deterministic/stochastic compartmental models of epidemiology (ex: SEIR, SEIRD or SVEIRD)
 - Cross-platform: It runs in a browser on Windows, Mac, and Linux
 - Generate Spatiotemporal disease prevalence maps: either for an entire country or a smaller area (state(s)/province(s)) within a country.
 - Context: Data and examples focus on mathematical modelling of infectious disease epidemics
