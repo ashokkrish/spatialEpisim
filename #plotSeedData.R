@@ -18,7 +18,7 @@ library(countrycode)
 library(raster)
 #library(ggforce)
 
-createSeedPlot <- function(countryName, seedData, startDate, source) {
+createSeedPlot <- function(countryName, displayCountryName, seedData, startDate, source) {
 
   worldmap <- map_data("world")
   level1Identifier <- readRDS(paste0("gadm/", "gadm36_", countrycode(countryName, "country.name", "iso3c"), "_1_sp.rds"))
@@ -33,9 +33,9 @@ createSeedPlot <- function(countryName, seedData, startDate, source) {
           annotation_north_arrow() +
           annotation_scale(location = "tl") +
           labs(
-                  title = paste0("COVID-19 in the ", countryName), subtitle = paste0("As of ", startDate), x = expression(bold("Longitude")), y = expression(bold("Latitude")),
+                  title = paste0("COVID-19 in ", displayCountryName), x = expression(bold("Longitude")), y = expression(bold("Latitude")),
                    caption = source
-          )
+          ) + theme(plot.title = element_text(hjust = 0.5))
   
   #print(base_map)
   
@@ -65,6 +65,6 @@ createSeedPlot <- function(countryName, seedData, startDate, source) {
 # Example Function Calls #
 #------------------------#
 
-createSeedPlot(countryName = "Czech Republic", seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Ministerstvo zdravotnictví Ceské republiky)")
+createSeedPlot(countryName = "Czech Republic", displayCountryName = "the Czech Republic", seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Ministerstvo zdravotnictví Ceské republiky)")
 
-createSeedPlot(countryName = "Nigeria", seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centers for Disease Control)")
+createSeedPlot(countryName = "Nigeria", displayCountryName = "Nigeria", seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")
