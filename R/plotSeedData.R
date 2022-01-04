@@ -1,14 +1,3 @@
-# rm(list = ls())
-
-# install.packages("ggplot2", dependencies = T)
-# install.packages("dplyr", dependencies = T)
-# install.packages("sf", dependencies = T)
-# install.packages("ggspatial", dependencies = T)
-# install.packages("maps", dependencies = T)
-# install.packages("countrycode", dependencies = T)
-# install.packages("raster", dependencies = T)
-# install.packages("ggforce", dependencies = T)
-
 library(ggplot2)
 library(dplyr)
 library(sf)
@@ -41,8 +30,7 @@ createSeedPlot <- function(countryName, displayCountryName, seedData, startDate,
   
   my_df <- read.csv(paste0("seeddata/", countrycode(countryName, "country.name", "iso3c"), "_InitialSeedDataSep 1, 2020.csv"), header = T)
   
-  #print(class(my_df))
-  print(my_df) # This should print the CSV file rows and columns
+  #print(my_df) # This should print the CSV file rows and columns
   #names(my_df)
   #dim(my_df)
   
@@ -65,6 +53,6 @@ createSeedPlot <- function(countryName, displayCountryName, seedData, startDate,
 # Example Function Calls #
 #------------------------#
 
-createSeedPlot(countryName = "Czech Republic", displayCountryName = "the Czech Republic", seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Ministerstvo zdravotnictví Ceské republiky)")
+#createSeedPlot(countryName = "Czech Republic", displayCountryName = "the Czech Republic", seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Ministerstvo zdravotnictví Ceské republiky)")
 
-createSeedPlot(countryName = "Nigeria", displayCountryName = "Nigeria", seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")
+#createSeedPlot(countryName = "Nigeria", displayCountryName = "Nigeria", seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")

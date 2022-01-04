@@ -3,7 +3,7 @@ makePlot <- function (compartments, input, plotTitle, xTitle, yTitle, lineThickn
   return(renderImage({
     outfile <- tempfile(fileext = '.png')
     
-    png(outfile, width = 600, height = 400)
+    png(outfile, width = 1024, height = 768)
     df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
     plotData = data.frame(Date = ymd(df[,"Date"]))
     for (comp in compartments){
@@ -18,6 +18,6 @@ makePlot <- function (compartments, input, plotTitle, xTitle, yTitle, lineThickn
     plot(p)
     dev.off()
     
-    list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Image not found")
+    list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Image not found")
   }, deleteFile = TRUE))
 }

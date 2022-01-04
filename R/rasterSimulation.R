@@ -11,8 +11,8 @@ library(av)
 library(xlsx)
 library(lubridate)
 
-source("#rasterStack.R") # This code generates the base RasterStack
-source("#rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
+source("R/rasterStack.R") # This code generates the base RasterStack
+source("R/rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
 
 avg_euclidean_distance <- function(p, q, lambda)
 {
@@ -226,11 +226,11 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     summary[t, 1]  <- toString(as.Date(startDate) + days(t - 1)) # Print the date at each time step
     summary[t, 2]  <- round(sumS + sumV + sumE + sumI + sumR + sumD)
     summary[t, 3]  <- round(sumS)
-    summary[t, 4]  <- round(sumV)   # Absorbing state
-    summary[t, 5]  <- round(sumE)   # This is the prevalence (active exposed cases) at time t, NOT the cumulative sum
-    summary[t, 6]  <- round(sumI)   # This is the prevalence (active infectious cases) at time t, NOT the cumulative sum
-    summary[t, 7]  <- round(cumRecovered)  # round(sumR)   # Absorbing state
-    summary[t, 8]  <- round(cumDead)       # round(sumD)   # Absorbing state
+    summary[t, 4]  <- round(sumV)            # Absorbing state
+    summary[t, 5]  <- round(sumE)            # This is the prevalence (active exposed cases) at time t, NOT the cumulative sum
+    summary[t, 6]  <- round(sumI)            # This is the prevalence (active infectious cases) at time t, NOT the cumulative sum
+    summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
+    summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
     
     summary[t, 14]  <- cumExposed
     summary[t, 15]  <- cumInfected
@@ -255,11 +255,11 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     I_tilda <- wtd_nbrs_sum(input_matrix = raster::as.matrix(Infected), radius = radius, lambda = lambda)
     
     for(i in 1:nrows)
-    { 								# nrows
+    { 							# nrows
       for(j in 1:ncols)
       {							# ncols
         if (Inhabitable[i,j] == 1)
-        {						# Inhabitable
+        {						     # Inhabitable
           nLiving <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- 0
           
           nLiving <- Susceptible[i,j] + Vaccinated[i,j] + Exposed[i,j] + Infected[i,j] + Recovered[i,j] 
@@ -322,8 +322,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
               newDead <- delta*Infected[i,j]
               
               dailyDead <- dailyDead + newDead
-              cumDead <- cumDead + newDead # new cumulative dead column 
-              #print(paste("newDead is", newDead, "at time ", t))
+              cumDead <- cumDead + newDead 
             }
             
             #-----------------------------------#
@@ -411,7 +410,6 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
 # 
 # SpatialCompartmentalModel(model = "SVEIRD", startDate = "2020-01-01", selectedCountry = "Nigeria", directOutput = FALSE, rasterAgg = 25, alpha = 0.00015, beta = 0.030, gamma = 0.010, sigma = 0.065, delta = 0.002, radius = 1, lambda = 30, timestep = 25, deterministic = T)
 
- 
  #-------------#
  # END OF CODE #
  #-------------#
@@ -423,7 +421,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
  # setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
  # getwd() # Path to your working directory
  
- # timestep <- 180 #50 #3650
+ # timestep <- 50 #3650
  # lambda <- 15
  # rasterAgg <- 10
  # radius <- 1 # apply formula as discussed
@@ -438,7 +436,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
  # # Parameters #
  # #------------#
  # 
- # alpha <- 0.00015 # 0  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+ # alpha <- 0.00015  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
  # beta  <- 0.030    # Daily fraction that move out of the susceptible compartment to the exposed compartment
  # gamma <- 0.010    # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
  # sigma <- 0.065    # Daily fraction that move out of the infectious compartment to the recovered compartment

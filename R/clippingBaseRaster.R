@@ -1,9 +1,3 @@
-# Author:             Timothy Pulfer
-# PI:                 Ashok Krishnamurthy 
-# University:         Mount Royal University
-#
-# Purpose:            To create a .tif raster file for a user selected level 1 
-#                     region.
 library(sf)
 library(fasterize)
 library(sp)
@@ -12,9 +6,6 @@ library(ncdf4)
 library(rstudioapi)
 library(raster)
 library(countrycode)
-
-# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-# getwd() 
 
 createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
 {
@@ -41,7 +32,6 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
     WorldPop <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
   }
   
-  
   print(WorldPop)
   
   gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")        # name of the .rds file
@@ -63,6 +53,10 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   writeRaster(lvl1Raster,paste(level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif",sep='_'),format="GTiff", overwrite=TRUE)
 }
 
+#------------------------#
+# Example Function Calls #
+#------------------------#
+
 #createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
 
 #createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0)
@@ -74,5 +68,3 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
 #createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0)
 
 #createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 10)
-
-

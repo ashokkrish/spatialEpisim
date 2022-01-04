@@ -9,7 +9,7 @@ getPal <- function(f) {
   colorRampPalette(hex)
 }
 
-palettePng <- "misc/seminf_haxby.png"             # default colour palette found in misc folder
+palettePng <- "misc/seminf_haxby.png"  # default colour palette found in misc folder
 
 createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
@@ -81,9 +81,10 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 # See details here: https://github.com/rspatial/terra/issues/30
 # In fact, in the second call of the above function the error disappears.
 
-# setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
-# getwd() # Path to your working directory
-# 
+#------------------------#
+# Example Function Calls #
+#------------------------#
+
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = F)
 # 

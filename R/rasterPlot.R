@@ -4,7 +4,6 @@ library(cptcity)
 library(rasterVis)
 library(sp)
 library(sf)
-library(raster)
 library(rgdal)
 library(countrycode)
 library(av)
@@ -163,7 +162,7 @@ importGeoTiff <- function() {
   tifFileName <- basename(url)  # name of the .tif file
   foldName <- "tif/"         # .tif files should be stored in local tif/ folder
   if (!file.exists(paste0(foldName, tifFileName))){
-    download.file(url, paste0(foldName, tifFileName), mode="wb")
+    download.file(url, paste0(foldName, tifFileName), mode = "wb")
   } 
    WorldPop <<- raster(paste0(foldName, tifFileName))
 }
@@ -184,7 +183,6 @@ setPopulationBreaks <- function() {
   levels(toPlot) <- levs
 }
 
-
 # #---------------------------------------------------------------#
 # # Aggregate the WorldPop raster by specified aggregation factor #
 # #---------------------------------------------------------------#
@@ -192,7 +190,6 @@ setPopulationBreaks <- function() {
 #   WorldPop_aggr_count <<- terra :: aggregate(WorldPop, fact = c(aggrFactor, aggrFactor), fun = sum, na.rm = TRUE)
 #   is.na(WorldPop_aggr_count) <<- !WorldPop_aggr_count # sets cells which are 0 as NA, allows for 0 lower bound in plot
 # }
-
 
 # END OF CODE #
 

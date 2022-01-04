@@ -113,9 +113,13 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   return(returnList)
 }
 
-#  rs <- createRasterStack("Czech Republic", 10)
-#  rs
-#  names(rs)
+#------------------------#
+# Example Function Calls #
+#------------------------#
+
+# rs <- createRasterStack("Czech Republic", 10)
+# rs
+# names(rs)
 #
 # rs$rasterStack$Susceptible
 #
@@ -123,7 +127,6 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
 # 
 # createRasterStack("Belgium", 5)
 # 
-#  createRasterStack("Czech Republic", 10)
+# createRasterStack("Czech Republic", 10)
 # 
-#  createRasterStack("Latvia", 10)
-# 
+# createRasterStack("Latvia", 10)

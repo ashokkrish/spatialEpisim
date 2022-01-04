@@ -527,11 +527,11 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$go, {
     output$outputImage <- renderImage({
-      source("#rasterBasePlot.R")
+      source("R/rasterBasePlot.R")
       outfile <- tempfile(fileext = '.png')
       
       createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 1024, height = 768)
+      png(outfile, width = 800, height = 600)
       createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
       dev.off()
       
@@ -545,7 +545,7 @@ server <- function(input, output, session){
   observeEvent(input$go, {
     if(input$clipLev1 == TRUE){
       output$croppedOutputImage <- renderImage({
-        source("#clippingBaseRaster.R")
+        source("R/clippingBaseRaster.R")
         outfile <- tempfile(fileext = '.png')
         
         png(outfile, width = 1024, height = 768)
@@ -562,7 +562,7 @@ server <- function(input, output, session){
   ############################################################################ 
   # observeEvent(input$go, {
   #   output$seededOutputImage <- renderImage({
-  #     source("#plotSeedData_RevisedV2_Ashok.R")
+  #     source("R/plotSeedData.R")
   #     outfile <- tempfile(fileext = '.png')
   #     
   #     # print the seed plot direct to UI
@@ -579,7 +579,7 @@ server <- function(input, output, session){
   
   lineThickness <- 1.5
   
-  source("#makePlots.R")
+  source("R/makePlots.R")
   
   observeEvent(input$go, {
     output$cumulativePlot <- makePlot(compartments = c("D"), input = input, plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Cumulative Deaths", lineThickness = lineThickness)
@@ -620,7 +620,7 @@ server <- function(input, output, session){
   # Multiple functionality when 'Run Simulation' is pressed                  #
   ############################################################################ 
   observeEvent(input$go, {
-    source("#rasterStack.R")
+    source("R/rasterStack.R")
     rs <- createRasterStack(input$selectedCountry, input$agg)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
@@ -706,7 +706,7 @@ server <- function(input, output, session){
     sigma <- input$sigma # DO NOT DELETE
     delta <- input$delta # ifelse(input$modelSelect == "SEIR", 0, input$delta) # DO NOT DELETE
     
-    source("#rasterSimulation.R")
+    source("R/rasterSimulation.R")
     
     eps <- 0.0000000000000001
     
@@ -737,7 +737,7 @@ server <- function(input, output, session){
     
     values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9)
     
-    # source("#rasterBasePlot.R")
+    # source("R/rasterBasePlot.R")
     # createBasePlot(input$selectedCountry, input$agg, FALSE)
   })
   
