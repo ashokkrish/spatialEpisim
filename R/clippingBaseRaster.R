@@ -1,11 +1,9 @@
-library(sf)
-library(fasterize)
 library(sp)
+library(sf)
 library(rgdal)
-library(ncdf4)
-library(rstudioapi)
 library(raster)
 library(countrycode)
+library(fasterize)
 
 createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
 {
@@ -16,7 +14,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "tif/"             # .tif files should be stored in local /tif folder
+  tifFolder <- "../tif/"             # .tif files should be stored in local ../tif/ folder
   
   if (!file.exists(paste0(tifFolder, tifFileName)))
   {
@@ -35,7 +33,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   print(WorldPop)
   
   gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")        # name of the .rds file
-  gadmFolder <- "gadm/"                                           # .rds files should be stored in local gadm/ folder
+  gadmFolder <- "../gadm/"                                        # .rds files should be stored in local ../gadm/ folder
   GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
   GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Region), ]
   
@@ -50,7 +48,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   plot(log(lvl1Raster))
   
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Raster, paste(level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif",sep='_'),format="GTiff", overwrite=TRUE)
+  writeRaster(lvl1Raster, paste(level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE)
 }
 
 #------------------------#

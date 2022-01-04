@@ -1,5 +1,3 @@
-#rm(list = ls())
-
 library(sp)
 library(sf)
 library(raster)
@@ -11,8 +9,8 @@ library(av)
 library(xlsx)
 library(lubridate)
 
-source("R/rasterStack.R") # This code generates the base RasterStack
-source("R/rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
+source("rasterStack.R") # This code generates the base RasterStack
+source("rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
 
 avg_euclidean_distance <- function(p, q, lambda)
 {
@@ -67,9 +65,9 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
 
  SpatialCompartmentalModel <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic)
  {
-  unlink("www/MP4", recursive = TRUE) # Delete the MP4
-  dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
-  dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
+  unlink("../www/MP4", recursive = TRUE) # Delete the MP4
+  dir.create("../www/MP4")               # Create empty MP4 folder before running new simulation
+  dir.create("../www/MP4/paper")         # Create paper folder before for plots without labels
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   rs <- createRasterStack(selectedCountry, rasterAgg)
@@ -143,7 +141,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   #------------------------#
   
   if (missing(seedFile)){
-    seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
+    seedFolder <- "../seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
     seedData <<- read.csv(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
     seedData <<- read.xlsx(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
   } else {
@@ -384,22 +382,22 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   }
   
   for (t in 1:timestep){
-    fname = paste0("MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
+    fname = paste0("../MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
     printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = T)
     
-    fname = paste0("MP4/", "paper/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), "_paper", ".png")
+    fname = paste0("../MP4/", "paper/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), "_paper", ".png")
     printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = F)
   }
     
   # MERGE THE PNGs TO A GET AN MP4 VIDEO  
-  setwd("www/MP4")
+  setwd("../www/MP4")
   videoDuration <- 8 # in seconds
   av::av_encode_video(list.files(pattern = "*.png"), framerate = timestep/videoDuration, output = paste0(rasterLayer, "_MP4.mp4"))
   setwd("./../..")
   
   summary[is.na(summary)] <- 0
   
-  write.xlsx(summary, file = paste0("www/MP4/", inputISO, "_summary.xlsx"), col.names = T, row.names = F, append = F)
+  write.xlsx(summary, file = paste0("../www/MP4/", inputISO, "_summary.xlsx"), col.names = T, row.names = F, append = F)
   #print(tail(summary))
   
   return(summary)

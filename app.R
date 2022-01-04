@@ -4,7 +4,7 @@ shhh(library(lattice))
 shhh(library(latticeExtra))
 options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(sp))
-#shhh(library(sf))     # classes and functions for vector data
+shhh(library(sf))     # classes and functions for vector data
 shhh(library(rgdal))
 shhh(library(shiny))
 shhh(library(shinyjs))
