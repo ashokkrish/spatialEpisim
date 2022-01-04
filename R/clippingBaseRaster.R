@@ -16,7 +16,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
+  tifFolder <- "tif/"             # .tif files should be stored in local /tif folder
   
   if (!file.exists(paste0(tifFolder, tifFileName)))
   {
@@ -46,25 +46,25 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   countryProj <- spTransform(GADMdata, newProj)
   
   print(lvl1Raster)
-  plot(lvl1Raster)
+  #plot(lvl1Raster)
   plot(log(lvl1Raster))
   
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Raster,paste(level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif",sep='_'),format="GTiff", overwrite=TRUE)
+  writeRaster(lvl1Raster, paste(level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif",sep='_'),format="GTiff", overwrite=TRUE)
 }
 
 #------------------------#
 # Example Function Calls #
 #------------------------#
 
-#createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
-
-#createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0)
-
-#createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0)
-
-#createClippedRaster(selectedCountry = "Canada", level1Region = "Alberta", rasterAgg = 0)
-
-#createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0)
-
-#createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 10)
+# createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
+# 
+# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0)
+# 
+# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0)
+# 
+# createClippedRaster(selectedCountry = "Canada", level1Region = "Alberta", rasterAgg = 0)
+# 
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0)
+# 
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 10)
