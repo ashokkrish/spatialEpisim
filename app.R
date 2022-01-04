@@ -562,7 +562,7 @@ server <- function(input, output, session){
   ############################################################################ 
   # observeEvent(input$go, {
   #   output$seededOutputImage <- renderImage({
-  #     source("R/plotSeedData.R")
+  #     source("R/plotSeedData.R", encoding="UTF-8")
   #     outfile <- tempfile(fileext = '.png')
   #     
   #     # print the seed plot direct to UI

@@ -53,7 +53,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
                          selectedCountry, 
                          " (1 sq. km resolution)")
   
-  plot(x, col=pal(8)[-1], axes=TRUE, main = aggrPlotTitle)
+  plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle)
   
   title( xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
 

@@ -18,7 +18,7 @@ isoCode <- "CZE"                                  # user should pass ISO code as
 year <- 2020                                      # default year (2020)
 resKm <- 1                                        # default resolution (1Km)
 #aggrFactor <- 10                                 # default aggregation factor (10x10)
-#rasterAgg <- 0
+rasterAgg <- 10                                   # If I comment this line I am getting an error when running app.R
 PNGFileName <- "susceptible.png"                  # default output file name
 MP4FileName <- "susceptible_MP4.mp4"              # default MP4 file name
 stackLayerFileName <- "susceptible.png"           # default name for arbitrary raster stack PNG TODO: change format to ISR_Susceptible_0001.png
