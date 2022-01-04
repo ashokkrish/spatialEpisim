@@ -580,9 +580,8 @@ server <- function(input, output, session){
   
   lineThickness <- 1.5
   
-  source("R/makePlots.R")
-  
   observeEvent(input$go, {
+    source("R/makePlots.R")
     output$cumulativePlot <- makePlot(compartments = c("D"), input = input, plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Cumulative Deaths", lineThickness = lineThickness)
     
     if (input$modelSelect == "SVEIRD"){
