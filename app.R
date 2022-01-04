@@ -244,6 +244,7 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$resetAll, {
     shinyjs::reset("dashboard")
+    #input$seedData <- NULL
   })
   
   ############################################################################    
