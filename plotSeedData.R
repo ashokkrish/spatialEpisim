@@ -53,6 +53,6 @@ createSeedPlot <- function(countryName, displayCountryName, seedData, startDate,
 # Example Function Calls #
 #------------------------#
 
-createSeedPlot(countryName = "Czech Republic", displayCountryName = "the Czech Republic", seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Ministerstvo zdravotnictví Ceské republiky)")
-
-createSeedPlot(countryName = "Nigeria", displayCountryName = "Nigeria", seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")
+# createSeedPlot(countryName = "Czech Republic", displayCountryName = "the Czech Republic", seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Ministerstvo zdravotnictví Ceské republiky)")
+# 
+# createSeedPlot(countryName = "Nigeria", displayCountryName = "Nigeria", seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")
