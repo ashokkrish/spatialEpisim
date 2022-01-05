@@ -13,7 +13,7 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "../tif/"             # .tif files should be stored in local tif/ folder
+  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
   
   if (!file.exists(paste0(tifFolder, tifFileName)))
   {
@@ -53,7 +53,7 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   
   #print(gadmFileName)
   
-  gadmFolder <- "../gadm/"         # .rds files should be stored in local gadm/ folder
+  gadmFolder <- "gadm/"         # .rds files should be stored in local gadm/ folder
   
   # if (file.exists(paste0(gadmFolder, gadmFileName)))
   # {

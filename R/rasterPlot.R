@@ -33,7 +33,7 @@ aggrPopBreaks <- c(0, 5000, 10000, 25000, 50000, 75000, 100000, 250000, 500000) 
 
 printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identifier, selectedCountry, rasterAgg, fname, maxVal, includeLabels) {
   # if(missing(fname)) {fname = stackLayerFileName} 
-  setUp (isoCode, year, resKm, rasterAgg, fname)               # called to set www/ folder, stack should already be aggregated
+  setUp(isoCode, year, resKm, rasterAgg, fname)               # called to set www/ folder, stack should already be aggregated
   isoCode <<- countrycode(selectedCountry, origin = "country.name", destination = "iso3c")
   rasterAgg <<- rasterAgg
   layerName <<- toString(rasterLayer)                          # alters the plot title
