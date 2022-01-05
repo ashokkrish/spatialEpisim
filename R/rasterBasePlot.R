@@ -30,7 +30,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
     download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
   }
 
-  fname <- paste(inputISO, "_PopulationCount.png")
+  fname <- paste0(inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
   if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
   
@@ -53,9 +53,10 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
                          selectedCountry, 
                          " (1 sq. km resolution)")
   
-  plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle)
+  plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(title ="Persons"))
+  #plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
   
-  title( xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
+  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
 
   if (rasterAgg == 0 || rasterAgg == 1) {
     Susceptible <- WorldPop
@@ -72,7 +73,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   
   Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
 
-  plot(Level1Identifier, add=TRUE)
+  plot(Level1Identifier, add = TRUE)
   if(!directOutput){dev.off()}     # closes the file opened with png(PNGFileName)
 }
 
@@ -85,11 +86,11 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 # Example Function Calls #
 #------------------------#
 
-# createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = F)
-# 
 # createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
+#
+# createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
+# createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = F)
 # 
 # createBasePlot(selectedCountry = "Israel", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Israel", rasterAgg = 0, directOutput = F)
@@ -105,6 +106,3 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 # 
 # createBasePlot(selectedCountry = "Korea", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Korea", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Austria", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Austria", rasterAgg = 0, directOutput = F)
