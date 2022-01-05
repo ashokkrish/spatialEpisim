@@ -32,7 +32,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   fname <- paste(inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
-  if(!directOutput){png(PNGFileName, width = 600, height = 400)} # output the plot to the www image folder
+  if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
   
   WorldPop <- terra::rast(paste0(tifFolder, tifFileName))
 

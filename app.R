@@ -536,7 +536,8 @@ server <- function(input, output, session){
       createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+      # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
   })
   
