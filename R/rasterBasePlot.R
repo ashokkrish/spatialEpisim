@@ -49,11 +49,34 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
   
-  aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
-                         selectedCountry, 
-                         " (1 sq. km resolution)")
+  if (selectedCountry == "Czech Republic"){
+       aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for the ", 
+                               selectedCountry, 
+                               " (1 sq. km resolution)")
+  }
+  else
+  {
+       aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
+                               selectedCountry, 
+                               " (1 sq. km resolution)")  
+  }
+  # aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
+  #                        selectedCountry, 
+  #                        " (1 sq. km resolution)")
   
-  plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(title ="Persons"))
+  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 2, main = aggrPlotTitle, plg = list(title ="Persons"))
+  terra::arrow(type = 2, xy = "bottomleft", cex = 2)
+  
+  # if (selectedCountry == "Czech Republic"){
+  #      ## CZE
+  #      sbar(100, c(12.5, 52), type="bar", below="km", cex=0.7)
+  # }
+  # else if (selectedCountry == "Nigeria")
+  # {
+  #      ## NGA
+  #      sbar(300, c(2, 13.5), type="bar", below="km", cex=0.7)
+  # }
+
   #plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
   
   title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
