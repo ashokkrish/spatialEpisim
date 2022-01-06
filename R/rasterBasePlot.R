@@ -64,7 +64,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   #                        selectedCountry, 
   #                        " (1 sq. km resolution)")
   
-  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 2, main = aggrPlotTitle, plg = list(title ="Persons"))
+  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons"))
   terra::arrow(type = 2, xy = "bottomleft", cex = 2)
   
   # if (selectedCountry == "Czech Republic"){
@@ -108,7 +108,8 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 #------------------------#
 # Example Function Calls #
 #------------------------#
-
+# # Set working directory to the root directory /spatialEpisim otherwise the below examples will not run
+#
 # createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
 #
