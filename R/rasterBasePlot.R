@@ -64,7 +64,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   #                        selectedCountry, 
   #                        " (1 sq. km resolution)")
   
-  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons"))
+  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons", horiz=TRUE, x.intersp=0.6), legend="bottom")
   terra::arrow(type = 2, xy = "bottomleft", cex = 2)
   
   # if (selectedCountry == "Czech Republic"){
