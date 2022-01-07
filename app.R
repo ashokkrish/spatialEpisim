@@ -23,6 +23,7 @@ shhh(library(countrycode))
 shhh(library(av))
 shhh(library(dplyr))
 shhh(library(maps))
+shhh(library(shinyalert))
 
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
@@ -236,6 +237,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session){
+  
+  observeEvent(input$go, {
+    shinyalert(title = "Simulation Running...please hang tight", type = "info")
+  })
+  
   values <- reactiveValues()
   values$df <- data.frame(Variable = character(), Value = character()) 
   output$table <- renderTable(values$df)
