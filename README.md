@@ -6,6 +6,8 @@
 
 Run the app by loading `app.R` and clicking `Run App`.
 
+Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io/spatialepisim>
+
 ## Key features
 
 - Run deterministic/stochastic compartmental models of epidemiology (ex: SEIR, SEIRD or SVEIRD)
