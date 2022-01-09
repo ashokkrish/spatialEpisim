@@ -33,6 +33,9 @@ Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io
 | --------- | ---------- |
 | alpha | vaccination rate |
 | beta | transmission rate |
+| gamma | infection rate |
+| sigma | recovery rate |
+| delta | mortality rate |
 
 ## Credits
 
