@@ -31,11 +31,11 @@ Alternatively you can send a pull request to download all the files in this repo
 
 | Parameter | Definition |
 | --------- | ---------- |
-| &alpha; | vaccination rate |
-| &beta; | transmission rate |
-| &gamma; | infection rate |
-| &sigma; | recovery rate |
-| &delta; | mortality rate |
+| &alpha; | is the daily fraction that move from the susceptible compartment into the vaccinated compartment. (Vaccinated individuals are regarded as permanently immune.) |
+| &beta; | is the daily fraction that move from the susceptible compartment into the exposed compartment. |
+| &gamma; | is the daily fraction that move from the exposed compartment into the infectious compartment. |
+| &sigma; | is the daily fraction that move from the infectious compartment into the recovered compartment. (Recovered individuals are regarded as permanently immune.) |
+| &delta; | is the daily fraction that move from the infectious into the dead compartment (the mortality rate). |
 
 ## Credits
 
