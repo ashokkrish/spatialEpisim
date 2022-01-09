@@ -32,7 +32,7 @@ Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io
 | Parameter | Definition |
 | --------- | ---------- |
 | α | vaccination rate |
-| beta | transmission rate |
+| &beta; | transmission rate |
 | gamma | infection rate |
 | sigma | recovery rate |
 | delta | mortality rate |
