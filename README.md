@@ -4,9 +4,9 @@
 
 **spatialEpisim** is an open-source platform-independent browser-based interface for tracking the spatial spread of an infectious disease (ex: COVID-19, Ebola, Measles etc.). 
 
-Run the app by loading `app.R` and clicking `Run App`.
-
 Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io/spatialepisim>
+
+Alternatively you can send a pull request to download all the files in this repo and run the app by loading `app.R` and clicking `Run App`. Note that the ``spatialEpisim`` project is not on CRAN, just on github.
 
 ## Key features
 
