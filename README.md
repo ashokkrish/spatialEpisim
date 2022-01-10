@@ -15,7 +15,37 @@ Alternatively you can send a pull request to download all the files in this repo
 - Generate Spatiotemporal disease prevalence maps: either for an entire country or a smaller area (state(s)/province(s)) within a country.
 - Context: Data and examples focus on mathematical modelling of infectious disease epidemics
 
-## Epidemic Model
+## Packages you'll need
+
+```R
+# The absolute minimum
+install.packages("lattice")
+install.packages("latticeExtra")
+install.packages("sp")
+install.packages("sf")
+install.packages("rgdal")
+install.packages("shiny")
+install.packages("shinyjs")
+install.packages("shinyhelper")
+install.packages("shinyWidgets")
+install.packages("shinyalert")
+install.packages("terra")
+install.packages("raster")
+install.packages("ggplot2")
+install.packages("markdown")
+install.packages("cptcity")
+install.packages("rasterVis")
+install.packages("purrr")
+install.packages("stringr")
+install.packages("xlsx")
+install.packages("countrycode")
+install.packages("av")
+install.packages("dplyr")
+install.packages("maps")
+
+```
+
+## Compartmental Models
 
 <!-- ![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png)
 
