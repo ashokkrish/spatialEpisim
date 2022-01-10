@@ -42,7 +42,9 @@ install.packages("countrycode")
 install.packages("av")
 install.packages("dplyr")
 install.packages("maps")
-
+install.packages("magick")
+install.packages("lubridate")
+install.packages("rstudioapi")
 ```
 
 ## Compartmental Models
