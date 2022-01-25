@@ -92,7 +92,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   # Source 2: From GADM: Level1Identifier #
   #---------------------------------------#
   
-  gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file 
+  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")  # name of the .rds file 
   gadmFolder <- "gadm/"                                     # .rds files should be stored in local gadm/ folder
   
   Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))

@@ -306,7 +306,7 @@ server <- function(input, output, session){
     #print(isoCode)
     #inputISOLower <- tolower(isoCode)
     
-    if (file.exists(paste0("gadm/", "gadm36_", isoCode, "_1_sp.rds"))){
+    if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
       level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
     } else {
       level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
