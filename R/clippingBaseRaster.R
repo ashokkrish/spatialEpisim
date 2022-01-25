@@ -32,20 +32,22 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   
   print(WorldPop)
   
-  gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")        # name of the .rds file
-  gadmFolder <- "gadm/"                                        # .rds files should be stored in local gadm/ folder
+  gadmFileName <- paste0("gadm36_", toupper(isoCode), "_1_sp.rds")    # name of the .rds file
+  gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
   GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
   GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Region), ]
   
   lvl1Raster <- crop(WorldPop, GADMdata)
   lvl1Raster <- mask(lvl1Raster, GADMdata)
   
-  newProj <- CRS("+proj=longlat +datum=WGS84 +no_defs")           # Warning message, look into later...
-  countryProj <- spTransform(GADMdata, newProj)
+  newProj <- CRS("+proj=longlat +datum=WGS84 +no_defs")     # Warning message, look into later...
+  countryProj <- spTransform(GADMdata, newProj)             # This is not used anywhere
   
   print(lvl1Raster)
   #plot(lvl1Raster)
   plot(log(lvl1Raster))
+  
+  # @Gurs Currently the clipped raster is written on to the root directory. Write this to /tif directory.
   
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
   writeRaster(lvl1Raster, paste(level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE)
