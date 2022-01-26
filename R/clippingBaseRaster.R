@@ -11,7 +11,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
   
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
+  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", toupper(inputISO), "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)    # name of the .tif file
   tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder

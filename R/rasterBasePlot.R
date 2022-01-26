@@ -20,7 +20,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
   
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
+  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", toupper(inputISO), "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)    # name of the .tif file
   tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
@@ -32,6 +32,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   fname <- paste0(inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
+  
   if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
   
   WorldPop <- terra::rast(paste0(tifFolder, tifFileName))
@@ -92,12 +93,13 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   # Source 2: From GADM: Level1Identifier #
   #---------------------------------------#
   
-  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")  # name of the .rds file 
-  gadmFolder <- "gadm/"                                     # .rds files should be stored in local gadm/ folder
+  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file 
+  gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
   
   Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
 
   plot(Level1Identifier, add = TRUE)
+  
   if(!directOutput){dev.off()}     # closes the file opened with png(PNGFileName)
 }
 
