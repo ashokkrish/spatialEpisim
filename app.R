@@ -197,6 +197,7 @@ ui <- fluidPage(
                       p(span("Ashok Krishnamurthy, PhD", style= "font-weight:bold")),
                       p("Project PI,"),
                       p("Associate Professor, Department of Mathematics and Computing,"),
+                      p("Faculty of Science and Technology,"),
                       p("Mount Royal University,"), 
                       p("Calgary, AB, CANADA"),
                       
@@ -204,11 +205,12 @@ ui <- fluidPage(
                       
                       p("Email:",a("akrishnamurthy@mtroyal.ca", href="mailto:akrishnamurthy@mtroyal.ca")), 
                       p("Website:", a(href="https://bit.ly/2YKrXjX","https://bit.ly/2YKrXjX", target="_blank")),
+                      p("GitHub:", a(href="https://github.com/ashokkrish/spatialEpisim","https://github.com/ashokkrish/spatialEpisim", target="_blank")),
                       
                       br(),
                       
                       p(span("Gursimran Dhaliwal, Crystal Wai, and Timothy Pulfer", style= "font-weight:bold" )),    
-                      p("Undergraduate Student, Mount Royal University"),
+                      p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
                       
@@ -218,7 +220,7 @@ ui <- fluidPage(
                       br(),
                       
                       p(span("Acknowledgement", style= "font-weight:bold" )),
-                      p("Dr. Loren Cobb and Dr. Bedrich Sousedik "),
+                      p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Dr. Agatha E. Ojimelukwe and Maya Mueller"),
                       
                       br(),
                       
@@ -302,17 +304,12 @@ server <- function(input, output, session){
     validate(need(input$clipLev1 == TRUE, "Loading App...")) # catches UI warning
 
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-     # print(getwd())
-     # print(isoCode)
 
     if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
       level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
     } else {
       level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
     }
-    
-     # print(level1Options)
-     # print(getwd())
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
