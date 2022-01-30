@@ -32,8 +32,11 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   
   print(WorldPop)
   
-  gadmFileName <- paste0("gadm36_", toupper(isoCode), "_1_sp.rds")    # name of the .rds file
+  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")    # name of the .rds file
   gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
+  
+  print(paste0(gadmFolder, gadmFileName))
+  
   GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
   GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Region), ]
   

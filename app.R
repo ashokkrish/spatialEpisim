@@ -302,8 +302,8 @@ server <- function(input, output, session){
     validate(need(input$clipLev1 == TRUE, "Loading App...")) # catches UI warning
 
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-    # print(getwd())
-    # print(isoCode)
+     # print(getwd())
+     # print(isoCode)
 
     if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
       level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
@@ -311,8 +311,8 @@ server <- function(input, output, session){
       level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
     }
     
-    # print(level1Options)
-    # print(getwd())
+     # print(level1Options)
+     # print(getwd())
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
@@ -543,7 +543,7 @@ server <- function(input, output, session){
       source("R/rasterBasePlot.R")
       outfile <- tempfile(fileext = '.png')
       
-      createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
+      #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
       png(outfile, width = 800, height = 600)
       createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
       dev.off()

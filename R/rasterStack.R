@@ -49,11 +49,13 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   # Source 2: From GADM: Level1Identifier #
   #---------------------------------------#
   
-  gadmFileName <- paste0("gadm36_", inputISOLower, "_1_sp.rds")  # name of the .rds file
+  gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file
   
   #print(gadmFileName)
   
   gadmFolder <- "gadm/"         # .rds files should be stored in local gadm/ folder
+  
+  #print(paste0(gadmFolder, gadmFileName))
   
   # if (file.exists(paste0(gadmFolder, gadmFileName)))
   # {

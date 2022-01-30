@@ -156,7 +156,7 @@ getPalette <- function(png) {
 importGeoTiff <- function() {
   # URL format: "https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/NGA/nga_ppp_2020_1km_Aggregated_UNadj.tif"
   url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_", resKm, "km_UNadj/", 
-               year, "/", isoCode, "/", tolower(isoCode), "_ppp_", year, "_", resKm,
+               year, "/", toupper(isoCode), "/", tolower(isoCode), "_ppp_", year, "_", resKm,
                "km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)  # name of the .tif file
