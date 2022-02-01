@@ -46,6 +46,7 @@ install.packages("magick")
 install.packages("lubridate")
 install.packages("rstudioapi")
 install.packages("fasterize")
+install.packages("Rcpp")
 ```
 
 ## Compartmental Models
