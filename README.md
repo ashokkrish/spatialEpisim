@@ -45,6 +45,7 @@ install.packages("maps")
 install.packages("magick")
 install.packages("lubridate")
 install.packages("rstudioapi")
+install.packages("fasterize")
 ```
 
 ## Compartmental Models
