@@ -87,11 +87,13 @@ We acknowledge valuable inputs from [Dr. Bedrich Sousedik](https://github.com/so
 
 ## Feedback
 
-The app is maintained by Dr. Ashok Krishnamurthy. We welcome questions, insights, and feedback.
+The app is maintained by Dr. Ashok Krishnamurthy.
 
 Contact: [Ashok Krishnamurthy, Ph.D.](mailto:akrishnamurthy@mtroyal.ca)  
 Website: <https://bit.ly/2YKrXjX>  
 
+We welcome questions, insights, and feedback. We accept contributions via pull request. You can also open an issue if you find a bug, or have a suggestion.
+ 
 ## Terms of use
 
 -----
