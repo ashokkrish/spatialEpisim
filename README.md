@@ -92,4 +92,6 @@ The app is maintained by Dr. Ashok Krishnamurthy. We welcome questions, insights
 Contact: [Ashok Krishnamurthy, Ph.D.](mailto:akrishnamurthy@mtroyal.ca)  
 Website: <https://bit.ly/2YKrXjX>  
 
+## Terms of use
+
 -----
