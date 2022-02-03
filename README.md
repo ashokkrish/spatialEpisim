@@ -1,4 +1,4 @@
-# spatialEpisim: Spatial Tracking of Infectious Disease Epidemics using Mathematical Models
+# _spatialEpisim_: Spatial Tracking of Infectious Disease Epidemics using Mathematical Models
  
 ## Overview
 
