@@ -71,7 +71,7 @@ install.packages("Rcpp")
 | &sigma; | is the daily fraction that move from the infectious compartment into the recovered compartment. (Recovered individuals are regarded as permanently immune.) |
 | &delta; | is the daily fraction that move from the infectious into the dead compartment (the mortality rate). |
 
-Note: Setting &alpha; = 0 and &delta; = 0 would default to a SEIR model while setting only &alpha; = 0 would default to a SEIRD model.
+<sub> Note: Setting &alpha; = 0 and &delta; = 0 would default to a SEIR model while setting only &alpha; = 0 would default to a SEIRD model.</sub>
 
 ## Mathematical Models
 
