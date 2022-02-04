@@ -253,7 +253,7 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$resetAll, {
     shinyjs::reset("dashboard")
-    #input$seedData <- NULL
+    #shinyjs::toggleState(id = "go")
   })
   
   ############################################################################    
@@ -577,7 +577,9 @@ server <- function(input, output, session){
   observeEvent(input$go, {
     if(input$clipLev1 == TRUE){
       output$croppedOutputImage <- renderImage({
-        source("R/clippingBaseRaster.R")
+        #source("R/clippingBaseRaster.R")
+        print(getwd())
+        source("R/clippingBaseRasterHaxby.R")
         outfile <- tempfile(fileext = '.png')
         
         png(outfile, width = 1024, height = 768)
