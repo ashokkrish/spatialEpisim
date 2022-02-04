@@ -61,6 +61,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   
   # @Gurs Currently the clipped raster is written on to the root directory. Write this to /tif directory.
   
+  dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
   writeRaster(lvl1Raster, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE)
   setwd('./R')
