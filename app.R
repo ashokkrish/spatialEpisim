@@ -574,15 +574,15 @@ server <- function(input, output, session){
     if(input$clipLev1 == TRUE){
       output$croppedOutputImage <- renderImage({
         #source("R/clippingBaseRaster.R")
-        print(getwd())
+        #print(getwd())
         source("R/clippingBaseRasterHaxby.R")
         outfile <- tempfile(fileext = '.png')
         
-        png(outfile, width = 1024, height = 768)
+        png(outfile, width = 800, height = 600)
         createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg)
         dev.off()
         
-        list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
       }, deleteFile = TRUE)
     }
   })
