@@ -357,7 +357,7 @@ server <- function(input, output, session){
      
     numericInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
-                value = alphaValue)
+                value = alphaValue, min = 0, max = 1, step = 0.00001)
     # sliderInput(inputId = "alpha",
     #             label = "Daily Vaccination Rate (\\( \\alpha\\)):",
     #             min = 0, max = 1, step = 0.0001, value = alphaValue)
@@ -386,7 +386,7 @@ server <- function(input, output, session){
     
     numericInput(inputId = "beta",
                 label = "Daily Exposure Rate (\\( \\beta\\))", 
-                value = betaValue)
+                value = betaValue, min = 0, max = 1, step = 0.00001)
     # sliderInput(inputId = "beta",
     #             label = "Daily Exposure Rate (\\( \\beta\\))", 
     #             min = 0, max = 1, step = 0.00001, value = betaValue)
@@ -415,8 +415,7 @@ server <- function(input, output, session){
 
     numericInput(inputId = "gamma",
                 label = "Daily fraction that move out of the exposed compartment to the Infected compartment  (\\( \\gamma\\))", 
-                value = gammaValue
-    )
+                value = gammaValue, min = 0, max = 1, step = 0.00001)
     # sliderInput(inputId = "gamma",
     #             label = "Daily fraction that move out of the exposed compartment to the Infected compartment  (\\( \\gamma\\))", 
     #             min = 0, max = 1, step = 0.001, value = gammaValue
@@ -446,8 +445,7 @@ server <- function(input, output, session){
     
     numericInput(inputId = "sigma",
                 label = "Daily fraction that move out of the Infected compartment to the recovered compartment (\\( \\sigma \\))", 
-                value = sigmaValue
-    )
+                value = sigmaValue, min = 0, max = 1, step = 0.00001)
     # sliderInput(inputId = "sigma",
     #             label = "Daily fraction that move out of the Infected compartment to the recovered compartment (\\( \\sigma \\))", 
     #             min = 0, max = 1, step = 0.001, value = sigmaValue
@@ -477,8 +475,7 @@ server <- function(input, output, session){
 
     numericInput(inputId = "delta",
                 "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
-                value = deltaValue
-    )
+                value = deltaValue, min = 0, max = 1, step = 0.00001)
     # sliderInput(inputId = "delta",
     #             "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
     #             min = 0, max = 1,step = 0.001, value = deltaValue
@@ -508,7 +505,7 @@ server <- function(input, output, session){
     
     numericInput(inputId = "lambda",
                 "Distance parameter (\\( \\lambda\\), in km):",
-                value = lambdaValue)
+                value = lambdaValue,min = 1, max = 50, step = 1)
     # sliderInput(inputId = "lambda",
     #             "Distance parameter (\\( \\lambda\\), in km):",
     #             min = 1, max = 50, step = 1, value = lambdaValue)
@@ -539,7 +536,6 @@ server <- function(input, output, session){
               format = "yyyy-mm-dd", startview = "month", weekstart = 0,
               language = "en", width = NULL)
   })
-  
   
   ############################################################################    
   # Output the .mp4 video from www/ to the app UI                            #
