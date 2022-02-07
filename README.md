@@ -75,7 +75,6 @@ install.packages("Rcpp")
 
 ## Directory structure
 
-/
 |---R/
 |---gadm/
 |---misc/
