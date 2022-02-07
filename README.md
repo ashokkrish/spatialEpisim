@@ -85,6 +85,36 @@ install.packages("Rcpp")
 |   |---MP4/
 |
 
+    /
+    |---config/
+    |---data/
+    |---dist/
+    |---docs/
+    |---functions/
+    |---images/
+    |---scripts/
+    |---node_modules/
+    |---src/
+    |   |---components/
+    |   |---elements/
+    |   |---mixins/
+    |   |---pages/
+    |
+
+- `config/` folder for core project setup.
+- `data/` folder with all data for the template including rest of config and resources for pages.
+- `dist/` is the directory to deploy to production.
+- `docs/` documentation.
+- `functions/` directory with Firebase [cloud functions](https://firebase.google.com/docs/functions/) used for notifications, optimizations, saving data, etc.
+- `images/` is for static images.
+- `scripts/` contains scripts that helps user to work with the project and it's data ([docs](./firebase-utils.md)).
+- `node_modules/` is the place of Node dependencies.
+- `src/` is where you store all of your source code and do all of your development.
+  - `components/` is where you keep your new LitElement custom elements.
+  - `elements/` is where you keep your old Polymer custom elements.
+  - `mixins/` is where you keep your shared component mixins.
+  - `pages/` is where you keep your pages' description.
+
 ## Credits
 
 This interactive [R Shiny](https://shiny.rstudio.com/) app would not be possible without the help from our team of research assistants [Gursimran Dhaliwal](https://github.com/dhaliwalgurs), [Crystal Wai](https://github.com/cwai097), [Jake Doody](https://github.com/jdoody1), and [Timothy Pulfer](https://github.com/TimPulfer). I thank them for their time and hardwork.
