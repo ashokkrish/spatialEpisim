@@ -73,9 +73,18 @@ install.packages("Rcpp")
 
 <sub> Note: Setting &alpha; = 0 and &delta; = 0 would default to a SEIR model while setting only &alpha; = 0 would default to a SEIRD model.</sub>
 
-## Mathematical Models
+## Directory structure
 
-
+/
+    |---R/
+    |---gadm/
+    |---misc/
+    |---seeddata/
+    |---tif/
+    |   |---cropped/
+    |---www/
+    |   |---MP4/
+    |
 
 ## Credits
 
