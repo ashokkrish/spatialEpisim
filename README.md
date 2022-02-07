@@ -76,15 +76,15 @@ install.packages("Rcpp")
 ## Directory structure
 
 /
-    |---R/
-    |---gadm/
-    |---misc/
-    |---seeddata/
-    |---tif/
-    |   |---cropped/
-    |---www/
-    |   |---MP4/
-    |
+|---R/
+|---gadm/
+|---misc/
+|---seeddata/
+|---tif/
+|   |---cropped/
+|---www/
+|   |---MP4/
+|
 
 ## Credits
 
