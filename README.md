@@ -88,10 +88,11 @@ install.packages("Rcpp")
 
 - `R/` folder with R scripts sourced in app.R.
 - `gadm/` folder with .RDS files with a database of Global Administrative Areas.
+- `misc/` folder with spreadsheets for default epidemic parameters and ISO3 Alpha codes.
 - `seeddata/` folder with seed data for selected countries.
-- `tif/` folder .
-- `www/` is for static model flowcharts.
-  - `MP4/` is where simulation output images and MP4 animation are saved.
+- `tif/` folder with the 2020 UN-Adjusted Population Count rasters downloaded from [WorldPop](https://www.worldpop.org/) .
+- `www/` is for static compartmental model flowcharts.
+  - `MP4/` is where simulation MP4 animation and output images and are saved.
 
 ## Credits
 
