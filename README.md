@@ -75,45 +75,23 @@ install.packages("Rcpp")
 
 ## Directory structure
 
-|---R/
-|---gadm/
-|---misc/
-|---seeddata/
-|---tif/
-|   |---cropped/
-|---www/
-|   |---MP4/
-|
-
     /
-    |---config/
-    |---data/
-    |---dist/
-    |---docs/
-    |---functions/
-    |---images/
-    |---scripts/
-    |---node_modules/
-    |---src/
-    |   |---components/
-    |   |---elements/
-    |   |---mixins/
-    |   |---pages/
+    |---R/
+    |---gadm/
+    |---misc/
+    |---seeddata/
+    |---tif/
+    |   |---cropped/
+    |---www/
+    |   |---MP4/
     |
 
-- `config/` folder for core project setup.
-- `data/` folder with all data for the template including rest of config and resources for pages.
-- `dist/` is the directory to deploy to production.
-- `docs/` documentation.
-- `functions/` directory with Firebase [cloud functions](https://firebase.google.com/docs/functions/) used for notifications, optimizations, saving data, etc.
-- `images/` is for static images.
-- `scripts/` contains scripts that helps user to work with the project and it's data ([docs](./firebase-utils.md)).
-- `node_modules/` is the place of Node dependencies.
-- `src/` is where you store all of your source code and do all of your development.
-  - `components/` is where you keep your new LitElement custom elements.
-  - `elements/` is where you keep your old Polymer custom elements.
-  - `mixins/` is where you keep your shared component mixins.
-  - `pages/` is where you keep your pages' description.
+- `R/` folder with R scripts sourced in app.R.
+- `gadm/` folder with .RDS files with a database of Global Administrative Areas.
+- `seeddata/` folder with seed data for selected countries.
+- `tif/` folder .
+- `www/` is for static model flowcharts.
+  - `MP4/` is where simulation output images and MP4 animation are saved.
 
 ## Credits
 
