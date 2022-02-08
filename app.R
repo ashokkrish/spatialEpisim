@@ -151,8 +151,10 @@ ui <- fluidPage(
                                            min = 1, max = 3650, value = 120, step = 1)
                             ),
                             
-                            actionButton("go","Run Simulation"),     # make button text bold
-                            actionButton("resetAll","Reset Values"), # make button text bold
+                            actionButton("go","Run Simulation", 
+                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),     # make button text bold
+                            actionButton("resetAll","Reset Values", 
+                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"), # make button text bold
                           ),
                         ), 
                         
