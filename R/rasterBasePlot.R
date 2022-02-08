@@ -68,6 +68,8 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   
   terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2)), legend="bottom", mar=c(8.5, 3.5, 2.5, 2.5))
   terra::arrow(type = 2, xy = "bottomleft", cex = 2)
+  # To avoid name clashes with tidyverse the function arrow() has been renamed to north().
+  # See https://github.com/rspatial/terra/issues/461
   
   if (selectedCountry == "Czech Republic"){
        ## CZE
