@@ -142,7 +142,7 @@ ui <- fluidPage(
                                           ".xlsx"),
                               ),
                               
-                              p("Click ",a("here", href="https://docs.google.com/spreadsheets/d/1WzCGqKiISuE_RvM5N4qK53W4Z_ivNA7b2Pq1Y4SZ4sY/edit#gid=0", target="_blank"), "for a template"),
+                              p("Click ",a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template"),
                               
                               uiOutput("startDateInput"),
 
@@ -152,9 +152,9 @@ ui <- fluidPage(
                             ),
                             
                             actionButton("go","Run Simulation", 
-                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),     # make button text bold
+                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             actionButton("resetAll","Reset Values", 
-                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"), # make button text bold
+                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                           ),
                         ), 
                         
