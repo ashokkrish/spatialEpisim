@@ -241,7 +241,7 @@ ui <- fluidPage(
 server <- function(input, output, session){
   
   observeEvent(input$go, {
-    shinyalert(title = "Simulation Running...please hang tight", type = "info")
+    shinyalert(title = "Simulation Running...", type = "info")
   })
   
   values <- reactiveValues()
