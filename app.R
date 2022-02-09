@@ -28,8 +28,6 @@ shhh(library(shinyalert))
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
 
-#fieldsMandatory <- c("selectedCountry", "modelSelect")
-
 fieldsMandatory <- c("selectedCountry", "modelSelect", "seedData")
 
 labelMandatory <- function(label) {
@@ -42,15 +40,14 @@ labelMandatory <- function(label) {
 appCSS <- ".mandatory_star {color: red;}"
 appCSS <- ".invisible {display:none;}"
 
-
 ui <- fluidPage(
   
   div(
     class = "invisible",
-    titlePanel("Spatial Tracking of Infectious Disease Epidemics using Mathematical Models")
+    titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
   ),
   
-  navbarPage(title = span("Spatial Tracking of Infectious Disease Epidemics using Mathematical Models", style = "color:#000000; font-weight:bold; font-size:15pt"),
+  navbarPage(title = span("Spatial Tracking of Infectious Diseases using Mathematical Models", style = "color:#000000; font-weight:bold; font-size:15pt"),
              
              tabPanel(title = "Model",
                       sidebarLayout(
@@ -83,7 +80,7 @@ ui <- fluidPage(
                                          labelMandatory ("Model Stochasticity"),
                                          choiceValues = list("Deterministic","Stochastic"),
                                          choiceNames = list("Deterministic","Stochastic"),
-                                         selected = "Deterministic",
+                                         selected = "Deterministic", # character(0)
                                          inline = TRUE,
                                          width = "1000px"),
                             
@@ -142,7 +139,7 @@ ui <- fluidPage(
                                           ".xlsx"),
                               ),
                               
-                              p("Click ",a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template"),
+                              p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template"),
                               
                               uiOutput("startDateInput"),
 
@@ -161,11 +158,11 @@ ui <- fluidPage(
                         mainPanel(
                           tabsetPanel(id = 'tabSet',
                                       tabPanel(title = "Input Summary", verbatimTextOutput("summary"), 
-                                               imageOutput("croppedOutputImage"),
-                                               imageOutput("outputImage"),
-                                               #imageOutput("seededOutputImage"),
                                                tableOutput("table"),
-                                               #  downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
+                                               imageOutput("outputImage"),
+                                               imageOutput("croppedOutputImage"),
+                                               #imageOutput("seededOutputImage"),
+                                               #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
                                       ),
                                       
                                       tabPanel(title = "Initial Seed Data", 
@@ -183,9 +180,9 @@ ui <- fluidPage(
                                       ),
                                       
                                       tabPanel(title = "Plot", id = "plotTab",
+                                               imageOutput("infectedExposedPlot"),
                                                imageOutput("cumulativePlot"),
                                                imageOutput("fullPlot"),
-                                               imageOutput("infectedExposedPlot"),
                                                imageOutput("fracSusPlot"),
                                                downloadButton(outputId = "downloadPlot", label = "Save Image"))
                           )
@@ -211,7 +208,7 @@ ui <- fluidPage(
                       
                       br(),
                       
-                      p(span("Gursimran Dhaliwal, Crystal Wai, and Timothy Pulfer", style= "font-weight:bold" )),    
+                      p(span("Gursimran Dhaliwal, Crystal Wai, Timothy Pulfer, and Ryan Darby", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
@@ -222,7 +219,7 @@ ui <- fluidPage(
                       br(),
                       
                       p(span("Acknowledgement", style= "font-weight:bold" )),
-                      p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Dr. Agatha E. Ojimelukwe and Maya Mueller"),
+                      p("Dr. Loren Cobb, Dr. Bedrich Sousedik"),
                       
                       br(),
                       
@@ -243,7 +240,7 @@ ui <- fluidPage(
 server <- function(input, output, session){
   
   observeEvent(input$go, {
-    shinyalert(title = "Simulation Running...", type = "info")
+    shinyalert(title = "Simulation Running...click OK to close", type = "info")
   })
   
   values <- reactiveValues()
@@ -337,7 +334,7 @@ server <- function(input, output, session){
   })
   
   ############################################################################    
-  #                                                                          #  # TODO: refactor sliders into single function
+  #                                                                          #  # TODO: refactor numericInouts into single function
   ############################################################################ 
   output$alphaSlider <- renderUI({
     alphaValue <- 0.00015
@@ -360,9 +357,6 @@ server <- function(input, output, session){
     numericInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
-    # sliderInput(inputId = "alpha",
-    #             label = "Daily Vaccination Rate (\\( \\alpha\\)):",
-    #             min = 0, max = 1, step = 0.0001, value = alphaValue)
   })
   
   ############################################################################    
@@ -389,9 +383,6 @@ server <- function(input, output, session){
     numericInput(inputId = "beta",
                 label = "Daily Exposure Rate (\\( \\beta\\))", 
                 value = betaValue, min = 0, max = 1, step = 0.00001)
-    # sliderInput(inputId = "beta",
-    #             label = "Daily Exposure Rate (\\( \\beta\\))", 
-    #             min = 0, max = 1, step = 0.00001, value = betaValue)
   })
   
   ############################################################################    
@@ -418,10 +409,6 @@ server <- function(input, output, session){
     numericInput(inputId = "gamma",
                 label = "Daily fraction that move out of the exposed compartment to the Infected compartment  (\\( \\gamma\\))", 
                 value = gammaValue, min = 0, max = 1, step = 0.00001)
-    # sliderInput(inputId = "gamma",
-    #             label = "Daily fraction that move out of the exposed compartment to the Infected compartment  (\\( \\gamma\\))", 
-    #             min = 0, max = 1, step = 0.001, value = gammaValue
-    # )
   })
   
   ############################################################################    
@@ -448,10 +435,6 @@ server <- function(input, output, session){
     numericInput(inputId = "sigma",
                 label = "Daily fraction that move out of the Infected compartment to the recovered compartment (\\( \\sigma \\))", 
                 value = sigmaValue, min = 0, max = 1, step = 0.00001)
-    # sliderInput(inputId = "sigma",
-    #             label = "Daily fraction that move out of the Infected compartment to the recovered compartment (\\( \\sigma \\))", 
-    #             min = 0, max = 1, step = 0.001, value = sigmaValue
-    # )
   })
   
   ############################################################################    
@@ -478,10 +461,6 @@ server <- function(input, output, session){
     numericInput(inputId = "delta",
                 "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
                 value = deltaValue, min = 0, max = 1, step = 0.00001)
-    # sliderInput(inputId = "delta",
-    #             "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
-    #             min = 0, max = 1,step = 0.001, value = deltaValue
-    # )
   })
   
   ############################################################################    
@@ -508,9 +487,6 @@ server <- function(input, output, session){
     numericInput(inputId = "lambda",
                 "Distance parameter (\\( \\lambda\\), in km):",
                 value = lambdaValue,min = 1, max = 50, step = 1)
-    # sliderInput(inputId = "lambda",
-    #             "Distance parameter (\\( \\lambda\\), in km):",
-    #             min = 1, max = 50, step = 1, value = lambdaValue)
   })
   
   ############################################################################    
@@ -613,6 +589,8 @@ server <- function(input, output, session){
   
   observeEvent(input$go, {
     source("R/makePlots.R")
+    output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
+       
     output$cumulativePlot <- makePlot(compartments = c("D"), input = input, plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Cumulative Deaths", lineThickness = lineThickness)
     
     if (input$modelSelect == "SVEIRD"){
@@ -620,8 +598,6 @@ server <- function(input, output, session){
     } else {
       output$fullPlot <- makePlot(compartments = c("S", "E", "I", "R", "D"), input = input, plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Compartment Value", lineThickness = lineThickness)
     }
-    
-    output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
     
     # output$fracSusPlot <- renderImage({
     #   outfile <- tempfile(fileext = '.png')
@@ -726,11 +702,7 @@ server <- function(input, output, session){
     #print(data())          # This prints the entire seed data
     
     #print(names(data()))   # This prints the column names of the seed data
-    
-    #------------#
-    # Parameters #
-    #------------#
-    
+
     alpha <- ifelse(input$modelSelect == "SVEIRD", input$alpha, 0) # DO NOT DELETE
     beta  <- input$beta  # DO NOT DELETE
     gamma <- input$gamma # DO NOT DELETE
