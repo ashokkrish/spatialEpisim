@@ -100,7 +100,7 @@ This interactive [R Shiny](https://shiny.rstudio.com/) app would not be possible
 
 We acknowledge valuable inputs from [Dr. Bedrich Sousedik](https://github.com/sousedik/) and [Dr. Loren Cobb](http://www.aetheling.com/).
 
-%, [Dr. Agatha E. Ojimelukwe](https://www.linkedin.com/in/agatha-ojimelukwe/) and [Maya Mueller](https://www.linkedin.com/in/maya-mueller-842925198/). 
+<!--- [Dr. Agatha E. Ojimelukwe](https://www.linkedin.com/in/agatha-ojimelukwe/) and [Maya Mueller](https://www.linkedin.com/in/maya-mueller-842925198/). --->
 
 ## References
 
