@@ -24,6 +24,7 @@ shhh(library(av))
 shhh(library(dplyr))
 shhh(library(maps))
 shhh(library(shinyalert))
+shhh(library(shinyvalidate))
 
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
