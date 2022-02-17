@@ -241,7 +241,6 @@ ui <- fluidPage(
 server <- function(input, output, session){
   values <- reactiveValues()
   values$allow_simulation_run <- TRUE
-  values$seed_data_file_name <- reactive(input$seedData$name)
   values$df <- data.frame(Variable = character(), Value = character()) 
   output$table <- renderTable(values$df)
   
