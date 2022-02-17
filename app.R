@@ -746,8 +746,8 @@ server <- function(input, output, session){
   })
   
   observeEvent(input$filterLMIC,{
+    updateCheckboxInput(session, inputId = "clipLev1", value = FALSE) # uncheck the clip box first
     if(input$filterLMIC){
-      updateCheckboxInput(session, inputId = "clipLev1", value = FALSE) # uncheck the clip box first
       population <- population[population$LMIC == 'TRUE',]
     } else {
       population <- population[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
