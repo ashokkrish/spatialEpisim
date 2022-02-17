@@ -106,7 +106,7 @@ We acknowledge valuable inputs from [Dr. Bedrich Sousedik](https://github.com/so
 
 ## References
 
-L. Cobb, A. Krishnamurthy, J. Mandel, and J. Beezley. Bayesian tracking of emerging epidemics using ensembleoptimal statistical interpolation (EnOSI).Spatial and Spatio-temporal Epidemiology, 10:39–48, July 2014. <https://doi.org/10.1016/j.sste.2014.06.004>
+L. Cobb, A. Krishnamurthy, J. Mandel, and J. Beezley. Bayesian tracking of emerging epidemics using ensemble optimal statistical interpolation (EnOSI).Spatial and Spatio-temporal Epidemiology, 10:39–48, July 2014. <https://doi.org/10.1016/j.sste.2014.06.004>
 
 ## Feedback
 
