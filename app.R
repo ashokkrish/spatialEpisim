@@ -131,7 +131,7 @@ ui <- fluidPage(
                               
                               uiOutput("lambdaSlider"),
 
-                              fileInput("seedData", labelMandatory ("Upload initial seed data (.csv or .xls or .xlsx)"),
+                              fileInput(inputId = "seedData", labelMandatory ("Upload initial seed data (.csv or .xls or .xlsx)"),
                                         accept = c(
                                           "text/csv",
                                           "text/comma-separated-values,text/plain",
@@ -240,6 +240,8 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   values <- reactiveValues()
+  values$allow_simulation_run <- TRUE
+  values$seed_data_file_name <- reactive(input$seedData$name)
   values$df <- data.frame(Variable = character(), Value = character()) 
   output$table <- renderTable(values$df)
   
@@ -248,22 +250,33 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$resetAll, {
     shinyjs::reset("dashboard")
-    #shinyjs::toggleState(id = "go")
+    
+    shinyjs::disable(id = "go")
+    values$allow_simulation_run <- FALSE
+  })
+  
+  ############################################################################    
+  # Checks to see that a new file has been uploaded (helper func)            #
+  ############################################################################ 
+  observeEvent(input$seedData, {
+    values$allow_simulation_run <- TRUE
   })
   
   ############################################################################    
   # Check if all mandatory fields have a value                               #
   ############################################################################   
   observe({
-    mandatoryFilled <-
-      vapply(fieldsMandatory,
-             function(x) {
-               !is.null(input[[x]]) && input[[x]] != ""
-             },
-             logical(1))
-    mandatoryFilled <- all(mandatoryFilled)
-    # enable/disable the submit button
-    shinyjs::toggleState(id = "go", condition = mandatoryFilled)
+        mandatoryFilled <-
+        vapply(fieldsMandatory,
+               function(x) {
+                 !is.null(input[[x]]) && input[[x]] != ""
+               },
+               logical(1))
+      mandatoryFilled <- all(mandatoryFilled)
+      # enable/disable the submit button
+      if (isolate(values$allow_simulation_run) == TRUE){
+        shinyjs::toggleState(id = "go", condition = mandatoryFilled)
+    }
   })
   
   ############################################################################    
@@ -311,7 +324,6 @@ server <- function(input, output, session){
                    selected = "", multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
   })
-  
   ############################################################################    
   # Change the recommended aggregation factor for slider dynamically         #
   ############################################################################  
@@ -631,10 +643,11 @@ server <- function(input, output, session){
       req(input$seedData)
       ext <- tools::file_ext(input$seedData$datapath)
       seedData <- input$seedData
-      if(ext == 'xlsx')
+      if(ext == 'xlsx'){
         readxl::read_excel(input$seedData$datapath)
-      else 
-        read.csv(input$seedData$datapath)
+      } else {
+          read.csv(input$seedData$datapath)
+      }
     })
     
     output$tableSeed <- renderDataTable({ # output initial seed data to UI
