@@ -69,24 +69,9 @@ ui <- fluidPage(
 
                             uiOutput("aggSlider"),
                             
-                            radioButtons(inputId = "modelSelect",
-                                         labelMandatory ("Epidemic Model"),
-                                         choiceValues = list("SEIRD","SVEIRD"),
-                                         choiceNames = list("SEIRD","SVEIRD"),
-                                         selected = "SVEIRD", #character(0), # 
-                                         inline = TRUE,
-                                         width = "1000px"),
-                            
+                            uiOutput("modelRadio"),
                             
                             uiOutput("stochasticRadio"),
-                            
-                            # radioButtons(inputId = "stochasticSelect",
-                            #              labelMandatory ("Model Stochasticity"),
-                            #              choiceValues = list("Deterministic","Stochastic"),
-                            #              choiceNames = list("Deterministic","Stochastic"),
-                            #              selected = "Deterministic", #character(0), #
-                            #              inline = TRUE,
-                            #              width = "1000px"),
                             
                             conditionalPanel(
                               #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
@@ -125,6 +110,7 @@ ui <- fluidPage(
                             ),
                             
                             conditionalPanel(
+                              withMathJax(),
                               #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
                               condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
                               
@@ -143,13 +129,15 @@ ui <- fluidPage(
                                           ".xlsx"),
                               ),
                               
-                              p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template"),
+                              p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data"),
                               
                               uiOutput("startDateInput"),
 
-                              numericInput(inputId = "timestep", 
-                                           label = "Number of Iterations (days)",
-                                           min = 1, max = 3650, value = 120, step = 1)
+                              uiOutput("timestepInput")
+                              
+                              # numericInput(inputId = "timestep", 
+                              #              label = "Number of Iterations (days)",
+                              #              min = 1, max = 3650, value = 3, step = 1)
                             ),
                             
                             actionButton("go","Run Simulation", 
@@ -326,6 +314,7 @@ server <- function(input, output, session){
                    selected = "", multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
   })
+  
   ############################################################################    
   # Change the recommended aggregation factor for slider dynamically         #
   ############################################################################  
@@ -339,9 +328,26 @@ server <- function(input, output, session){
                   }
   })
   
-  #####################################################################################    
-  # Make the radio button for Deterministic vs Stochastic after a country is selected #
-  #####################################################################################  
+  ############################################################################     
+  # Radio button for SEIRD vs SVEIRD Model                                   #
+  ############################################################################   
+  output$modelRadio <- renderUI({
+       validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+       
+       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+            radioButtons(inputId = "modelSelect",
+                         labelMandatory ("Epidemic Model"),
+                         choiceValues = list("SEIRD","SVEIRD"),
+                         choiceNames = list("SEIRD","SVEIRD"),
+                         selected = "SVEIRD", #character(0), # 
+                         inline = TRUE,
+                         width = "1000px")
+       }
+  })
+  
+  ############################################################################     
+  # Radio button for Deterministic vs Stochastic Model                       #
+  ############################################################################  
   output$stochasticRadio <- renderUI({
        validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
        
@@ -357,7 +363,7 @@ server <- function(input, output, session){
   })
   
   ############################################################################    
-  #                                                                          #  # TODO: refactor numericInouts into single function
+  # TODO: refactor numericInouts into single function #
   ############################################################################ 
   output$alphaSlider <- renderUI({
     alphaValue <- 0.00015
@@ -536,6 +542,20 @@ server <- function(input, output, session){
     dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
               format = "yyyy-mm-dd", startview = "month", weekstart = 0,
               language = "en", width = NULL)
+  })
+  
+  
+  ############################################################################     
+  # numeric input for number of iterations                       #
+  ############################################################################  
+  output$timestepInput <- renderUI({
+       validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+       
+       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+            numericInput(inputId = "timestep",
+                         label = "Number of Iterations (days)",
+                         min = 1, max = 3650, value = 3, step = 1)
+       }
   })
   
   ############################################################################    
