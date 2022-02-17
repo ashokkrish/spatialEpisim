@@ -29,7 +29,7 @@ shhh(library(shinyvalidate))
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
 
-fieldsMandatory <- c("selectedCountry", "modelSelect", "seedData")
+fieldsMandatory <- c("selectedCountry", "modelSelect", "stochasticSelect", "seedData")
 
 labelMandatory <- function(label) {
   tagList(
@@ -73,7 +73,7 @@ ui <- fluidPage(
                                          labelMandatory ("Epidemic Model"),
                                          choiceValues = list("SEIRD","SVEIRD"),
                                          choiceNames = list("SEIRD","SVEIRD"),
-                                         selected = "SVEIRD", # character(0) 
+                                         selected = "SVEIRD", #character(0), # 
                                          inline = TRUE,
                                          width = "1000px"),
                             
@@ -81,7 +81,7 @@ ui <- fluidPage(
                                          labelMandatory ("Model Stochasticity"),
                                          choiceValues = list("Deterministic","Stochastic"),
                                          choiceNames = list("Deterministic","Stochastic"),
-                                         selected = "Deterministic", # character(0)
+                                         selected = "Deterministic", #character(0), # 
                                          inline = TRUE,
                                          width = "1000px"),
                             
@@ -301,7 +301,7 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
-    }
+      }
   })
   
   ############################################################################    
@@ -328,16 +328,12 @@ server <- function(input, output, session){
   ############################################################################  
   output$aggSlider <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
-    
-    if (input$selectedCountry == ""){
-      sliderInput(inputId = "agg", 
-                  label = "Aggregation Factor", 
-                  min = 0, max = 100, step = 1, value = 10)
-    } else {
-      sliderInput(inputId = "agg", 
-                  label = "Aggregation Factor", 
+
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      sliderInput(inputId = "agg",
+                  label = "Aggregation Factor",
                   min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
-    }
+                  }
   })
   
   ############################################################################    
