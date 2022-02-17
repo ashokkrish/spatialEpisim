@@ -239,11 +239,6 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session){
-  
-  observeEvent(input$go, {
-    shinyalert(title = "Simulation Running...click OK to close", type = "info")
-  })
-  
   values <- reactiveValues()
   values$df <- data.frame(Variable = character(), Value = character()) 
   output$table <- renderTable(values$df)
