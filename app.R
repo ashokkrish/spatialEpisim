@@ -77,13 +77,16 @@ ui <- fluidPage(
                                          inline = TRUE,
                                          width = "1000px"),
                             
-                            radioButtons(inputId = "stochasticSelect",
-                                         labelMandatory ("Model Stochasticity"),
-                                         choiceValues = list("Deterministic","Stochastic"),
-                                         choiceNames = list("Deterministic","Stochastic"),
-                                         selected = "Deterministic", #character(0), # 
-                                         inline = TRUE,
-                                         width = "1000px"),
+                            
+                            uiOutput("stochasticRadio"),
+                            
+                            # radioButtons(inputId = "stochasticSelect",
+                            #              labelMandatory ("Model Stochasticity"),
+                            #              choiceValues = list("Deterministic","Stochastic"),
+                            #              choiceNames = list("Deterministic","Stochastic"),
+                            #              selected = "Deterministic", #character(0), #
+                            #              inline = TRUE,
+                            #              width = "1000px"),
                             
                             conditionalPanel(
                               #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
@@ -334,6 +337,23 @@ server <- function(input, output, session){
                   label = "Aggregation Factor",
                   min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
                   }
+  })
+  
+  #####################################################################################    
+  # Make the radio button for Deterministic vs Stochastic after a country is selected #
+  #####################################################################################  
+  output$stochasticRadio <- renderUI({
+       validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+       
+       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+            radioButtons(inputId = "stochasticSelect",
+                         labelMandatory ("Model Stochasticity"),
+                         choiceValues = list("Deterministic","Stochastic"),
+                         choiceNames = list("Deterministic","Stochastic"),
+                         selected = "Deterministic", #character(0), #
+                         inline = TRUE,
+                         width = "1000px")
+            }
   })
   
   ############################################################################    
