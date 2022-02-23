@@ -290,7 +290,6 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
                   rpois(1, beta*pSusceptible*nearbyInfected)
                 }
                
-                
                 dailyExposed <- dailyExposed + newExposed
                 cumExposed <- cumExposed + newExposed
               }
@@ -391,7 +390,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     
   # MERGE THE PNGs TO A GET AN MP4 VIDEO  
   setwd("www/MP4")
-  videoDuration <- 8 # in seconds
+  videoDuration <- 10 # in seconds
   av::av_encode_video(list.files(pattern = "*.png"), framerate = timestep/videoDuration, output = paste0(rasterLayer, "_MP4.mp4"))
   setwd("./../..")
   

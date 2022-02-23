@@ -5,7 +5,7 @@ account: spatialepisim
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5413751
-bundleId: 5588600
+bundleId: 5591892
 url: https://spatialepisim.shinyapps.io/spatialepisim/
-when: 1645080264.12434
-lastSyncTime: 1645080264.12434
+when: 1645139664.86527
+lastSyncTime: 1645139664.86527

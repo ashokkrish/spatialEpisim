@@ -24,9 +24,12 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   
   WorldPop <- raster(paste0(tifFolder, tifFileName))
   
-  #print(WorldPop)
+  WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # TODO: delete this line for clear plot @Gurs why???
   
-   WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # TODO: delete this line for clear plot @Gurs why???
+  # print(WorldPop)
+  # print(nrow(WorldPop))
+  # print(ncol(WorldPop))
+  # print(ncell(WorldPop))
   
   if (rasterAgg == 0 || rasterAgg == 1) {
     Susceptible <- WorldPop
@@ -108,9 +111,7 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   
   #print(rasterStack)
 
-  #return(rasterStack)
-  
-  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg)
+  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
   
   return(returnList)
 }

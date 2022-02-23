@@ -1,12 +1,13 @@
-library(terra)
-library(raster)
-library(cptcity)
-library(rasterVis)
 library(sp)
 library(sf)
+library(raster)
+library(terra)
 library(rgdal)
 library(countrycode)
+library(rstudioapi)
 library(av)
+library(cptcity)
+library(rasterVis)
 library(magick)
 
 #------------------------------------------------------------------------------#
