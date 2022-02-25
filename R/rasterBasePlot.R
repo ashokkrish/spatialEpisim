@@ -62,15 +62,10 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
                                selectedCountry, 
                                " (1 sq. km resolution)")  
   }
-  # aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
-  #                        selectedCountry, 
-  #                        " (1 sq. km resolution)")
-  
+
   terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2)), legend="bottom", mar=c(8.5, 3.5, 2.5, 2.5))
   terra::north(type = 2, xy = "bottomleft", cex = 2)
-  # To avoid name clashes with tidyverse the function arrow() has been renamed to north().
-  # See https://github.com/rspatial/terra/issues/461
-  
+
   if (selectedCountry == "Czech Republic"){
        ## CZE
       sbar(100, type="bar", below="km", cex=0.9, xy="bottomright")

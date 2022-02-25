@@ -21,12 +21,21 @@ ui <- fluidPage(
                                  inputId = "selectedCountry",
                                  choices = population$Country,
                                  multiple = FALSE,
-                                 select = NULL, #"Nigeria",
+                                 select = "Nigeria",#NULL, #
                                  options = pickerOptions(
                                       actionsBox = TRUE,
                                       title = "Please select a country"),
-                                 width = "240px"
-                              )
+                                 width = "240px")
+
+                            # , radioButtons(
+                            #      inputId = "qValue",
+                            #      label = ("Image Size"),
+                            #      choiceValues = list(1, 0),
+                            #      choiceNames = list("800 x 600", "1024 x 768"),
+                            #      inline = TRUE,
+                            #      width = "1000px",
+                            #      selected = "0"
+                            #        )
                             ),
                         ), 
                         
