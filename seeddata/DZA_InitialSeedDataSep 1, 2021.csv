@@ -1,0 +1,4 @@
+Location,lat,lon,InitialVaccinated,InitialExposed,InitialInfections,InitialRecovered,InitialDead
+Algiers,36.753889,3.058889,50000,1000,500,500,50
+Oran,35.696944,-0.633056,50000,1000,500,500,50
+Constantine,36.35,6.6,50000,1000,500,500,50
