@@ -17,7 +17,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   u <- unique(values(raster))
   hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
   pal <- colorRampPalette(hex)
-  
+
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
   
@@ -26,14 +26,14 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   tifFileName <- basename(url)    # name of the .tif file
   tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
   
-                                # navigate to parent folder first
+                                  # navigate to parent folder first
   if (!file.exists(paste0(tifFolder, tifFileName)))
   {
     download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
   }
+  
   WorldPop <- raster(paste0(tifFolder, tifFileName))
 
-  
   WorldPop <- replace(WorldPop, is.na(WorldPop), 0) 
   
   if (!(rasterAgg == 0 || rasterAgg == 1)) 
@@ -43,43 +43,60 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   
   print(WorldPop)
   
-  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")    # name of the .rds file
+  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file
   gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
   
-  print(paste0(gadmFolder, gadmFileName))
+  #print(paste0(gadmFolder, gadmFileName))
   GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
   GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Region), ]
   
   lvl1Raster <- crop(WorldPop, GADMdata)
   lvl1Raster <- mask(lvl1Raster, GADMdata)
-  
-  newProj <- CRS("+proj=longlat +datum=WGS84 +no_defs")     # Warning message, look into later...
-  countryProj <- spTransform(GADMdata, newProj)             # This is not used anywhere
+
+  # newProj <- CRS("+proj=longlat +datum=WGS84 +no_defs")     # Warning message, look into later...
+  # countryProj <- spTransform(GADMdata, newProj)             # This is not used anywhere
   
   print(lvl1Raster)
-  plot(lvl1Raster, col=pal(20)[-1])
+  # print(ext(lvl1Raster))
+  # print(crs(lvl1Raster))
   
-  # @Gurs Currently the clipped raster is written on to the root directory. Write this to /tif directory.
+  terra::plot(lvl1Raster, col=pal(20)[-1], axes = TRUE, cex.main = 1)
+  #terra::north(type = 2, xy = "bottomleft", cex = 2)
   
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Raster, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE)
+  writeRaster(lvl1Raster, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
   setwd('./R')
 }
-
 
 #------------------------#
 # Example Function Calls #
 #------------------------#
 
-#createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
+# setwd('..')
 # 
+# createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
+#
+# setwd('..')
+#  
 # createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0)
+#  
+# setwd('..')
 # 
 # createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0)
 # 
-# createClippedRaster(selectedCountry = "Canada", level1Region = "Alberta", rasterAgg = 0)
-# 
+# setwd('..')
+#  
 # createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0)
+#  
+# setwd('..')
+#  
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0)
 # 
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 10)
+# setwd('..')
+#  
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 15)
+# 
+# setwd('..')
+# createClippedRaster(selectedCountry = "Canada", level1Region = "Alberta", rasterAgg = 0)
+#
