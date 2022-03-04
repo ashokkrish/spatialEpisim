@@ -2,7 +2,7 @@
  
 ## Overview
 
-**spatialEpisim** is an open-source platform-independent browser-based interface for tracking the spatial spread of an infectious diseases (ex: COVID-19, Ebola, Measles etc.). 
+**spatialEpisim** is an open-source platform-independent browser-based interface for tracking the spatial spread of infectious diseases (ex: COVID-19, Ebola, Measles etc.). 
 
 Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io/spatialepisim>
 
