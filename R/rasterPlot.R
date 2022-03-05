@@ -18,8 +18,7 @@ modelSelect <- "SEIRD"                            # select model from SEIR, SEIR
 isoCode <- "CZE"                                  # user should pass ISO code as parameter
 year <- 2020                                      # default year (2020)
 resKm <- 1                                        # default resolution (1Km)
-#aggrFactor <- 10                                 # default aggregation factor (10x10)
-rasterAgg <- 10                                   #
+rasterAgg <- 10                                   # default aggregation factor (10x10)
 PNGFileName <- "susceptible.png"                  # default output file name
 MP4FileName <- "susceptible_MP4.mp4"              # default MP4 file name
 stackLayerFileName <- "susceptible.png"           # default name for arbitrary raster stack PNG TODO: change format to ISR_Susceptible_0001.png
@@ -42,10 +41,10 @@ printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identi
   createPlotPNG(rasterStack[[layerName]], Level1Identifier, directOutput, maxVal, includeLabels)
 }
 
-# createMP4 <- function(isoCode, year, resKm, aggrFactor, fname, iterations) {
+# createMP4 <- function(isoCode, year, resKm, rasterAgg, fname, iterations) {
 #   n <- 1
 #   while (n <= iterations) { # create the .png files
-#     setUp(isoCode, year, resKm, aggrFactor, paste0("MP4/", isoCode, "_", layerName, "_", sprintf("%04d", n), ".png"))
+#     setUp(isoCode, year, resKm, rasterAgg, paste0("MP4/", isoCode, "_", layerName, "_", sprintf("%04d", n), ".png"))
 #     WorldPop <<- WorldPop*(n/iterations)
 #     setPopulationBreaks()
 #     createPlotPNG(toPlot) 
@@ -57,9 +56,9 @@ printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identi
 #    setwd("./../..")
 # }
 
-# createPNG <- function(isoCode, year, resKm, aggrFactor, fname) {
-#   setUp(isoCode, year, resKm, aggrFactor, fname)
-#   if (aggrFactor != 0){
+# createPNG <- function(isoCode, year, resKm, rasterAgg, fname) {
+#   setUp(isoCode, year, resKm, rasterAgg, fname)
+#   if (rasterAgg != 0){
 #     aggregateWorldPop()
 #   }
 #   setPopulationBreaks()
@@ -188,12 +187,12 @@ setPopulationBreaks <- function() {
 # # Aggregate the WorldPop raster by specified aggregation factor #
 # #---------------------------------------------------------------#
 # aggregateWorldPop <- function() {
-#   WorldPop_aggr_count <<- terra :: aggregate(WorldPop, fact = c(aggrFactor, aggrFactor), fun = sum, na.rm = TRUE)
+#   WorldPop_aggr_count <<- terra :: aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
 #   is.na(WorldPop_aggr_count) <<- !WorldPop_aggr_count # sets cells which are 0 as NA, allows for 0 lower bound in plot
 # }
 
 # END OF CODE #
 
-# createMP4(isoCode = "ISR", year = 2020, resKm = 1, aggrFactor = 1, fname = "susceptible_MP4.mp4", iterations = 30)    # example function calls, comment out before calling script
-# createPNG(isoCode = "ISR", year = 2020, resKm = 1, aggrFactor = 1, fname = "susceptible.png") # example function call
+# createMP4(isoCode = "ISR", year = 2020, resKm = 1, rasterAgg = 1, fname = "susceptible_MP4.mp4", iterations = 30)    # example function calls, comment out before calling script
+# createPNG(isoCode = "ISR", year = 2020, resKm = 1, rasterAgg = 1, fname = "susceptible.png") # example function call
 # printStackLayer(rasterStack = ?, rasterLayer = "Susceptible", fname = "susceptible.png", includeLabels = T)
