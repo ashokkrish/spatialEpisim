@@ -20,6 +20,7 @@ Alternatively you can send a pull request to download all the files in this repo
 ```R
 # The absolute minimum
 install.packages("av")
+install.packages("bslib")
 install.packages("countrycode")
 install.packages("cptcity")
 install.packages("dplyr")
