@@ -53,7 +53,8 @@ appCSS <- ".invisible {display:none;}"
 appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
 
 ui <- fluidPage(
-  theme = bs_theme(bootswatch = "slate"),
+  theme = bs_theme(version = 4, bootswatch = "minty"),
+  #theme = bs_theme(bootswatch = "slate"),
   div(
     class = "invisible",
     titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
