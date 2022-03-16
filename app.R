@@ -25,11 +25,14 @@ shhh(library(dplyr))
 shhh(library(maps))
 shhh(library(shinyalert))
 shhh(library(shinyvalidate))
+library(bslib)
 
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
 
 fieldsMandatory <- c("selectedCountry", "modelSelect", "stochasticSelect", "seedData")
+
+hoverDrop <- "selectedCountry"
 
 labelMandatory <- function(label) {
   tagList(
@@ -38,11 +41,19 @@ labelMandatory <- function(label) {
   )
 }
 
+highlightDrop <- function(menu) {
+  tagList(
+    menu, 
+    span(class = "dropDown")
+  )
+}
+
 appCSS <- ".mandatory_star {color: red;}"
 appCSS <- ".invisible {display:none;}"
+appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
 
 ui <- fluidPage(
-  
+  theme = bs_theme(bootswatch = "slate"),
   div(
     class = "invisible",
     titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
@@ -268,13 +279,30 @@ server <- function(input, output, session){
         shinyjs::toggleState(id = "go", condition = mandatoryFilled)
     }
   })
+  ##############################################################################
+  #highlight drop down item when hovering                                       #
+  ##############################################################################
+  observe({
+    hoverDrop <-
+      vapply(hoverDrop,
+             function(x) {
+               !is.null(input[[x]]) && input[[x]] != ""
+             },
+             logical(1))
+    hoverDrop <- all(hoverDrop)
+    # enable/disable the submit button
+    if (isolate(values$allow_simulation_run) == TRUE){
+      shinyjs::toggleClass(class = hoverDrop)
+    }
+  })
   
   ############################################################################    
   # This static ui field is in server since other dynamic ui elements need it#
   ############################################################################
-  output$countryDropdown <- renderUI({
+  output$countryDropdown <- renderUI( {
     pickerInput(
       inputId = "selectedCountry",
+      highlightDrop ("Country"), 
       labelMandatory ("Country"), 
       choices = population$Country,
       multiple = FALSE,
