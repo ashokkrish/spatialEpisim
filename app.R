@@ -189,7 +189,11 @@ ui <- fluidPage(
                                                imageOutput("cumulativePlot"),
                                                imageOutput("fullPlot"),
                                                imageOutput("fracSusPlot"),
-                                               downloadButton(outputId = "downloadPlot", label = "Save Image"))
+                                               downloadButton(outputId = "downloadPlot", label = "Save Image")),
+                                      tabPanel(title = "Mathematical Model", id= "modelTab"),
+                                      
+                                      tabPanel(title = "Schematic Diagram", id = "schDiagram")
+                                              
                           )
                         ),
                       )
