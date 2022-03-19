@@ -26,6 +26,7 @@ shhh(library(maps))
 shhh(library(shinyalert))
 shhh(library(shinyvalidate))
 library(bslib)
+shhh(library(tinytex))
 
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
