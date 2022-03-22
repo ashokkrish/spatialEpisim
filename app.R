@@ -308,7 +308,6 @@ server <- function(input, output, session){
   output$countryDropdown <- renderUI( {
     pickerInput(
       inputId = "selectedCountry",
-      highlightDrop ("Country"), 
       labelMandatory ("Country"), 
       choices = population$Country,
       multiple = FALSE,
