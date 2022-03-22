@@ -48,7 +48,8 @@ ui <- fluidPage(
                     )
                )
           )
-     )
+     ),
+  downloadButton('downloadPlot', 'Save Image'),
 )
 
 server <- function(input, output, session){
@@ -64,7 +65,15 @@ server <- function(input, output, session){
       
       list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
     }, deleteFile = TRUE)
-  #}
+    
+    output$downloadPlot <- downloadHandler(
+      isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
+      filename = sprintf("%s_2020PopulationCount.png",isoCode),
+      content = function(outfile) {
+        png(outfile, width = 800, height = 600)
+        createBasePlot(input$selectedCountry, 1, TRUE)
+        dev.off()
+      }) 
 }
 
 shinyApp(ui,server)
