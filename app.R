@@ -33,7 +33,7 @@ epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
 
 fieldsMandatory <- c("selectedCountry", "modelSelect", "stochasticSelect", "seedData")
 
-hoverDrop <- "selectedCountry"
+#hoverDrop <- "selectedCountry"
 
 labelMandatory <- function(label) {
   tagList(
@@ -190,8 +190,9 @@ ui <- fluidPage(
                                                imageOutput("fullPlot"),
                                                imageOutput("fracSusPlot"),
                                                downloadButton(outputId = "downloadPlot", label = "Save Image")),
-                                      tabPanel(title = "Mathematical Model", id= "modelTab"),
                                       
+                                      tabPanel(title = "Mathematical Model", id= "modelTab"),
+
                                       tabPanel(title = "Schematic Diagram", id = "schDiagram")
                                               
                           )
@@ -288,19 +289,19 @@ server <- function(input, output, session){
   ##############################################################################
   #highlight drop down item when hovering                                       #
   ##############################################################################
-  observe({
-    hoverDrop <-
-      vapply(hoverDrop,
-             function(x) {
-               !is.null(input[[x]]) && input[[x]] != ""
-             },
-             logical(1))
-    hoverDrop <- all(hoverDrop)
-    # enable/disable the submit button
-    if (isolate(values$allow_simulation_run) == TRUE){
-      shinyjs::toggleClass(class = hoverDrop)
-    }
-  })
+  # observe({
+  #   hoverDrop <-
+  #     vapply(hoverDrop,
+  #            function(x) {
+  #              !is.null(input[[x]]) && input[[x]] != ""
+  #            },
+  #            logical(1))
+  #   hoverDrop <- all(hoverDrop)
+  #   # enable/disable the submit button
+  #   if (isolate(values$allow_simulation_run) == TRUE){
+  #     shinyjs::toggleClass(class = hoverDrop)
+  #   }
+  # })
   
   ############################################################################    
   # This static ui field is in server since other dynamic ui elements need it#
@@ -843,6 +844,7 @@ server <- function(input, output, session){
   observe(
     hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
   )
+
   
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Initial Seed Data')
@@ -890,6 +892,32 @@ server <- function(input, output, session){
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Plot')
+  })
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Mathematical Model')
+  )
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId= 'tabSet', target = 'Mathematical Model')
+  })
+  
+  observeEvent(input$go,{
+    showTab(inputId= 'tabSet', target = 'Mathematical Model')
+  })
+  
+  
+  observe(
+    hideTab(inputId ='tabSet', target = 'Schematic Diagram')
+  )
+  
+
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
+  })
+  
+  observeEvent(input$go,{
+    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
   })
   
   # output$downloadOutputSummary <- downloadHandler(
