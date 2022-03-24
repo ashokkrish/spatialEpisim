@@ -56,6 +56,7 @@ install.packages("sf")
 install.packages("sp")
 install.packages("stringr")
 install.packages("terra")
+install.packages("tinetex")
 install.packages("xlsx")
 ```
 
