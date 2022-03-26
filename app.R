@@ -25,8 +25,9 @@ shhh(library(dplyr))
 shhh(library(maps))
 shhh(library(shinyalert))
 shhh(library(shinyvalidate))
-library(bslib)
+shhh(library(bslib))
 shhh(library(tinytex))
+shhh(library(devtools))
 
 population <- read.xlsx("misc/population.xlsx", 1)
 epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
@@ -42,19 +43,19 @@ labelMandatory <- function(label) {
   )
 }
 
-highlightDrop <- function(menu) {
-  tagList(
-    menu, 
-    span(class = "dropDown")
-  )
-}
+# highlightDrop <- function(menu) {
+#   tagList(
+#     menu, 
+#     span(class = "dropDown")
+#   )
+# }
 
 appCSS <- ".mandatory_star {color: red;}"
 appCSS <- ".invisible {display:none;}"
-appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
+#appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
 
 ui <- fluidPage(
-  theme = bs_theme(version = 4, bootswatch = "minty"),
+  #theme = bs_theme(version = 4, bootswatch = "minty"),
   #theme = bs_theme(bootswatch = "slate"),
   div(
     class = "invisible",
@@ -157,7 +158,7 @@ ui <- fluidPage(
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             actionButton("resetAll","Reset Values", 
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                          ),
+                          )
                         ), 
                         
                         mainPanel(
@@ -190,7 +191,7 @@ ui <- fluidPage(
                                                imageOutput("fullPlot"),
                                                imageOutput("fracSusPlot"),
                                                downloadButton(outputId = "downloadPlot", label = "Save Image")),
-                                      
+
                                       tabPanel(title = "Mathematical Model", id= "modelTab"),
 
                                       tabPanel(title = "Schematic Diagram", id = "schDiagram")
@@ -318,6 +319,9 @@ server <- function(input, output, session){
         title = "Please select a country")
     )
   })
+  
+  output$countryDropdown <- renderUI({})
+  outputOptions(output, "countryDropdown", suspendWhenHidden = FALSE)
   
   ############################################################################    
   # Dynamically display the checkbox option to select for states/provinces   #
@@ -823,6 +827,10 @@ server <- function(input, output, session){
     # createBasePlot(input$selectedCountry, input$agg, FALSE)
   })
   
+  #######################
+  #Filter LMIC Checkbox #
+  #######################
+
   observeEvent(input$filterLMIC,{
     updateCheckboxInput(session, inputId = "clipLev1", value = FALSE) # uncheck the clip box first
     if(input$filterLMIC){
@@ -833,38 +841,10 @@ server <- function(input, output, session){
     updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country)
   })
   
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Input Summary')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Input Summary')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
-  )
-
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Initial Seed Data')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'MP4 Animation')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'MP4 Animation')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Output Summary')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Output Summary')
-  })
+ 
+  #############################
+  #Plot Tab Panel             #
+  #############################
   
   observe(
     hideTab(inputId = 'tabSet', target = 'Plot')
@@ -875,24 +855,76 @@ server <- function(input, output, session){
   })
   
   observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Plot')
+  })
+  
+  #############################
+  #Initial Seed Data Tab Panel#
+  #############################
+  
+  observe(
     hideTab(inputId = 'tabSet', target = 'Input Summary')
+  )
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'Input Summary')
+  })
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Input Summary')
+  })
+  
+  #############################
+  #Initial Seed Data Tab Panel#
+  #############################
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
+  )
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'Initial Seed Data')
   })
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
   })
   
+  #############################
+  #MP4 Animation Tab Panel    #
+  #############################
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'MP4 Animation')
+  )
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'MP4 Animation')
+  })
+  
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'MP4 Animation')
+  })
+  
+  #############################
+  #Output Summary Tab Panel   #
+  #############################
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Output Summary')
+  )
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'Output Summary')
   })
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Output Summary')
   })
   
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Plot')
-  })
+  ##############################
+  #Mathematical Model Tab Panel#
+  ##############################
   
   observe(
     hideTab(inputId = 'tabSet', target = 'Mathematical Model')
@@ -906,18 +938,20 @@ server <- function(input, output, session){
     showTab(inputId= 'tabSet', target = 'Mathematical Model')
   })
   
+  #############################
+  #Schematic Diagram Tab Panel#
+  #############################
   
   observe(
     hideTab(inputId ='tabSet', target = 'Schematic Diagram')
   )
   
-
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
   })
   
   observeEvent(input$go,{
-    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
+    showTab(inputId = 'tabSet', target = 'Schematic Diagram')
   })
   
   # output$downloadOutputSummary <- downloadHandler(
