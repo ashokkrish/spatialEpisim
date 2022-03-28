@@ -833,6 +833,14 @@ server <- function(input, output, session){
     updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country)
   })
   
+  #############################
+  #Input Summary Tab Panel    #
+  #############################
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Input Summary')
+  })
+  
   observe(
     hideTab(inputId = 'tabSet', target = 'Input Summary')
   )
@@ -841,13 +849,28 @@ server <- function(input, output, session){
     showTab(inputId = 'tabSet', target = 'Input Summary')
   })
   
+  #############################
+  #Intial Seed Data Tab Panel #
+  #############################
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
+  })
+  
   observe(
     hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
   )
-
   
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Initial Seed Data')
+  })
+  
+  ##########################
+  #MP4 Animation Tab Panel #
+  ##########################
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'MP4 Animation')
   })
   
   observe(
@@ -858,12 +881,28 @@ server <- function(input, output, session){
     showTab(inputId = 'tabSet', target = 'MP4 Animation')
   })
   
+  ##############################
+  #Output Summary Tab Panel    #
+  ##############################
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Output Summary')
+  })
+  
   observe(
     hideTab(inputId = 'tabSet', target = 'Output Summary')
   )
   
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Output Summary')
+  })
+  
+  ####################
+  #Plot Tab Panel    #
+  ####################
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Plot')
   })
   
   observe(
@@ -874,25 +913,9 @@ server <- function(input, output, session){
     showTab(inputId = 'tabSet', target = 'Plot')
   })
   
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Input Summary')
-  })
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
-  })
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'MP4 Animation')
-  })
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Output Summary')
-  })
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Plot')
-  })
+  ###############################
+  #Mathematical Model Tab Panel #
+  ###############################
   
   observe(
     hideTab(inputId = 'tabSet', target = 'Mathematical Model')
@@ -906,12 +929,14 @@ server <- function(input, output, session){
     showTab(inputId= 'tabSet', target = 'Mathematical Model')
   })
   
+  ##############################
+  #Schematic Diagram Tab Panel #
+  ##############################
   
   observe(
     hideTab(inputId ='tabSet', target = 'Schematic Diagram')
   )
   
-
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
   })
