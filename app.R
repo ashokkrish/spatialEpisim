@@ -191,7 +191,8 @@ ui <- fluidPage(
                                                imageOutput("fracSusPlot"),
                                                downloadButton(outputId = "downloadPlot", label = "Save Image")),
                                       
-                                      tabPanel(title = "Mathematical Model", id= "modelTab"),
+                                      tabPanel(title = "Mathematical Model", id= "modelTab",
+                                               imageOutput("modelImg")),
 
                                       tabPanel(title = "Schematic Diagram", id = "schDiagram")
                                               
@@ -224,7 +225,7 @@ ui <- fluidPage(
                       br(), 
                       
                       p(span("Jake Doody", style= "font-weight:bold" )),
-                      p("Undergraduate Student, University of Maryland Baltimore Country, MD, USA"),
+                      p("Undergraduate Student, University of Maryland Baltimore County, MD, USA"),
                       
                       br(),
                       
@@ -252,6 +253,44 @@ server <- function(input, output, session){
   values$allow_simulation_run <- TRUE
   values$df <- data.frame(Variable = character(), Value = character()) 
   output$table <- renderTable(values$df)
+  
+  ############################################################################    
+  # Create a country plot cropped by level1Identifier and output to UI       #
+  ############################################################################ 
+  observeEvent(input$go, {
+    if(input$clipLev1 == TRUE){
+      output$croppedOutputImage <- renderImage({
+        #source("R/clippingBaseRaster.R")
+        #print(getwd())
+        source("R/clippingBaseRasterHaxby.R")
+        outfile <- tempfile(fileext = '.png')
+        
+        png(outfile, width = 800, height = 600)
+        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg)
+        dev.off()
+        
+        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+      }, deleteFile = TRUE)
+    }
+  })
+  
+  ############################################################################    
+  # Output population base plot image to the app UI                          #
+  ############################################################################ 
+  observeEvent(input$go, {
+    output$outputImage <- renderImage({
+      source("R/rasterBasePlot.R")
+      outfile <- tempfile(fileext = '.png')
+      
+      #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
+      png(outfile, width = 800, height = 600)
+      createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
+      dev.off()
+      
+      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+      # The above line adjusts the dimensions of the base plot rendered in UI
+    }, deleteFile = TRUE)
+  })
   
   ############################################################################    
   # Reset all parameter sliders, country selection, etc.                     #
@@ -604,44 +643,7 @@ server <- function(input, output, session){
     )
   })
   
-  ############################################################################    
-  # Output population base plot image to the app UI                          #
-  ############################################################################ 
-  observeEvent(input$go, {
-    output$outputImage <- renderImage({
-      source("R/rasterBasePlot.R")
-      outfile <- tempfile(fileext = '.png')
-      
-      #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 800, height = 600)
-      createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
-      dev.off()
-      
-      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
-      # The above line adjusts the dimensions of the base plot rendered in UI
-    }, deleteFile = TRUE)
-  })
-  
-  ############################################################################    
-  # Create a country plot cropped by level1Identifier and output to UI       #
-  ############################################################################ 
-  observeEvent(input$go, {
-    if(input$clipLev1 == TRUE){
-      output$croppedOutputImage <- renderImage({
-        #source("R/clippingBaseRaster.R")
-        #print(getwd())
-        source("R/clippingBaseRasterHaxby.R")
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 800, height = 600)
-        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
-      }, deleteFile = TRUE)
-    }
-  })
-  
+
   ############################################################################    
   # Output bubble plot with initial seed data directly to the app UI         #
   ############################################################################ 
@@ -693,6 +695,17 @@ server <- function(input, output, session){
     # }, deleteFile = TRUE)
   })
   
+  output$modelImg <- renderImage( {
+    if (input$modelSelect == "SEIRD"){
+      return(list(src= "www/SEIRD.png",
+                  contentType = "image/png"))
+    }
+    else if (input$modelSelect == "SVEIRD"){
+      return(list(src = "www/SVEIRD.png",
+                  contentType = "image/png"))
+    }
+  })
+  
   ##########################################################################    
   # Allow the user to download the time-series plots from UI               #
   ########################################################################## 
@@ -735,6 +748,7 @@ server <- function(input, output, session){
     output$dataPlot <- renderPlot({
       buildPlot()
     })
+  
     
     # # Allow user to download the raster plot
     # output$downloadPlot <- downloadHandler(
