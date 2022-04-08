@@ -390,7 +390,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     
   # MERGE THE PNGs TO A GET AN MP4 VIDEO  
   setwd("www/MP4")
-  videoDuration <- 10 # in seconds
+  videoDuration <- 15 # in seconds
   av::av_encode_video(list.files(pattern = ".png"), framerate = timestep/videoDuration, output = paste0(rasterLayer, "_MP4.mp4"))
   setwd("./../..")
   
