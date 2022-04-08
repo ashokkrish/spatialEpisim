@@ -41,7 +41,7 @@ ui <- fluidPage(
                         
                         mainPanel(
                           tabsetPanel(id = 'tabSet',
-                                      tabPanel(title = "Raster Base Plot", 
+                                      tabPanel(#title = "Raster Base Plot", 
                                                imageOutput("outputImage")
                               )
                          )
@@ -59,18 +59,18 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
       
       #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 800, height = 600)
+      png(outfile, width = 1024, height = 768)
       createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
     }, deleteFile = TRUE)
     
     output$downloadPlot <- downloadHandler(
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
       filename = sprintf("%s_2020PopulationCount.png",isoCode),
       content = function(outfile) {
-        png(outfile, width = 800, height = 600)
+        png(outfile, width = 1024, height = 768)
         createBasePlot(input$selectedCountry, 1, TRUE)
         dev.off()
       }) 
