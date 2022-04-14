@@ -78,7 +78,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   #plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
   
-  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex=100)
+  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
 
   if (rasterAgg == 0 || rasterAgg == 1) {
     Susceptible <- WorldPop
