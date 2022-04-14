@@ -21,7 +21,7 @@ ui <- fluidPage(
                                  inputId = "selectedCountry",
                                  choices = population$Country,
                                  multiple = FALSE,
-                                 select = "Nigeria",#NULL, #
+                                 select = NULL,
                                  options = pickerOptions(
                                       actionsBox = TRUE,
                                       title = "Please select a country"),
@@ -54,26 +54,31 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
-  # if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
     output$outputImage <- renderImage({
-      outfile <- tempfile(fileext = '.png')
-      
-      #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 1024, height = 768)
-      createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
-      dev.off()
-      
-      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+      if (input$selectedCountry == ""){
+        list(src = "", width = 0, height = 0)
+      } else {
+        outfile <- tempfile(fileext = '.png')
+        
+        #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
+        png(outfile, width = 1024, height = 768)
+        createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
+        dev.off()
+        
+        list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+      }
     }, deleteFile = TRUE)
     
     output$downloadPlot <- downloadHandler(
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
       filename = sprintf("%s_2020PopulationCount.png",isoCode),
       content = function(outfile) {
-        png(outfile, width = 1024, height = 768)
-        createBasePlot(input$selectedCountry, 1, TRUE)
-        dev.off()
-      }) 
+        if (input$selectedCountry != ""){
+          png(outfile, width = 1024, height = 768)
+          createBasePlot(input$selectedCountry, 1, TRUE)
+          dev.off()
+        }
+      })
 }
 
 shinyApp(ui,server)
