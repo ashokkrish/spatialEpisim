@@ -57,7 +57,6 @@ install.packages("sp")
 install.packages("stringr")
 install.packages("terra")
 install.packages("tinytex")
-install.packages("xlsx")
 ```
 
 ## Compartmental Models
