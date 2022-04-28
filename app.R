@@ -171,6 +171,10 @@ ui <- fluidPage(
                                                #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
                                       ),
                                       
+                                      
+                                      tabPanel(title = "Mathematical Model", id= "modelTab",
+                                               imageOutput("modelImg")),
+                                      
                                       tabPanel(title = "Initial Seed Data", 
                                                dataTableOutput("tableSeed")
                                       ),
@@ -191,9 +195,6 @@ ui <- fluidPage(
                                                imageOutput("fullPlot"),
                                                imageOutput("fracSusPlot"),
                                                downloadButton(outputId = "downloadPlot", label = "Save Image")),
-                                      
-                                      tabPanel(title = "Mathematical Model", id= "modelTab",
-                                               imageOutput("modelImg")),
 
                                       tabPanel(title = "Schematic Diagram", id = "schDiagram")
                                               
@@ -253,7 +254,7 @@ server <- function(input, output, session){
   values <- reactiveValues()
   values$allow_simulation_run <- TRUE
   values$df <- data.frame(Variable = character(), Value = character()) 
-  output$table <- renderDateTable(values$df)
+  output$table <- renderDataTable(values$df)
   
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -739,7 +740,7 @@ server <- function(input, output, session){
       data()
     })
     
-    output$outputSummary <- renderDateTable({ # print output summary table to UI
+    output$outputSummary <- renderDataTable({ # print output summary table to UI
       # req(input$seedData)
       # TODO: make sure the file exists
       outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
