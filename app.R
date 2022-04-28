@@ -18,7 +18,8 @@ shhh(library(cptcity))
 shhh(library(rasterVis))
 shhh(library(purrr))
 shhh(library(stringr))
-shhh(library(xlsx))
+#shhh(library(xlsx))
+shhh(library(readxl))
 shhh(library(countrycode))
 shhh(library(av))
 shhh(library(dplyr))
@@ -28,8 +29,8 @@ shhh(library(shinyvalidate))
 library(bslib)
 shhh(library(tinytex))
 
-population <- read.xlsx("misc/population.xlsx", 1)
-epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
+population <- read_excel("misc/population.xlsx", 1)
+epiparms <- read_excel("misc/epiparms.xlsx", 1)
 
 fieldsMandatory <- c("selectedCountry", "modelSelect", "stochasticSelect", "seedData")
 
@@ -170,6 +171,9 @@ ui <- fluidPage(
                                                #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
                                       ),
                                       
+                                      tabPanel(title = "Mathematical Model", id= "modelTab",
+                                               imageOutput("modelImg")),
+                                      
                                       tabPanel(title = "Initial Seed Data", 
                                                dataTableOutput("tableSeed")
                                       ),
@@ -191,8 +195,7 @@ ui <- fluidPage(
                                                imageOutput("fracSusPlot"),
                                                downloadButton(outputId = "downloadPlot", label = "Save Image")),
                                       
-                                      tabPanel(title = "Mathematical Model", id= "modelTab",
-                                               imageOutput("modelImg")),
+                                      
 
                                       tabPanel(title = "Schematic Diagram", id = "schDiagram")
                                               
@@ -738,10 +741,10 @@ server <- function(input, output, session){
       data()
     })
     
-    output$outputSummary <- renderTable({ # print output summary table to UI
+    output$outputSummary <- renderDataTable({ # print output summary table to UI
       # req(input$seedData)
       # TODO: make sure the file exists
-      outputSummaryTable <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
+      outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
       outputSummaryTable
     })
     
