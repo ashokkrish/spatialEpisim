@@ -1,9 +1,10 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-library(xlsx)
+#library(xlsx)
+library(readxl)
 
-population <- read.xlsx("misc/population.xlsx", 1)
+population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 
 ui <- fluidPage(

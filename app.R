@@ -18,7 +18,7 @@ shhh(library(cptcity))
 shhh(library(rasterVis))
 shhh(library(purrr))
 shhh(library(stringr))
-shhh(library(xlsx))
+#shhh(library(xlsx))
 shhh(library(countrycode))
 shhh(library(av))
 shhh(library(dplyr))
@@ -27,9 +27,10 @@ shhh(library(shinyalert))
 shhh(library(shinyvalidate))
 library(bslib)
 shhh(library(tinytex))
+shhh(library(readxl))
 
-population <- read.xlsx("misc/population.xlsx", 1)
-epiparms <- read.xlsx("misc/epiparms.xlsx", 1)
+population <- read_excel("misc/population.xlsx", 1)
+epiparms <- read_excel("misc/epiparms.xlsx", 1)
 
 fieldsMandatory <- c("selectedCountry", "modelSelect", "stochasticSelect", "seedData")
 
@@ -252,7 +253,7 @@ server <- function(input, output, session){
   values <- reactiveValues()
   values$allow_simulation_run <- TRUE
   values$df <- data.frame(Variable = character(), Value = character()) 
-  output$table <- renderTable(values$df)
+  output$table <- renderDateTable(values$df)
   
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -682,7 +683,7 @@ server <- function(input, output, session){
     #   outfile <- tempfile(fileext = '.png')
     #   
     #   png(outfile, width = 1024, height = 768)
-    #   df <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
+    #   df <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
     #   plotData = data.frame(X = df[,"S"]/df[,"N"], Y = df[,"I"]/df[,"N"])
     #   p = ggplot(plotData, mapping = aes(X, Y, group = 1)) +
     #     geom_line(aes(X, Y), size=lineThickness, color="black") +
@@ -738,10 +739,10 @@ server <- function(input, output, session){
       data()
     })
     
-    output$outputSummary <- renderTable({ # print output summary table to UI
+    output$outputSummary <- renderDateTable({ # print output summary table to UI
       # req(input$seedData)
       # TODO: make sure the file exists
-      outputSummaryTable <- read.xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
+      outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
       outputSummaryTable
     })
     

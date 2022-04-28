@@ -6,7 +6,8 @@ library(rgdal)
 library(countrycode)
 library(rstudioapi)
 library(av)
-library(xlsx)
+#library(xlsx)
+library(readxl)
 library(lubridate)
 
 source("R/rasterStack.R") # This code generates the base RasterStack
@@ -142,8 +143,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   
   if (missing(seedFile)){
     seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
-    seedData <<- read.csv(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
-    seedData <<- read.xlsx(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
+    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
+    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
   } else {
     seedData <<- seedFile
   }
@@ -152,7 +153,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   # print(seedData)
   
   # seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
-  # seedData <<- read.xlsx(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
+  # seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
   # seedData <<- read.csv(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
 
   numLocations <- dim(seedData)[1] #nrow(data())
