@@ -1,13 +1,20 @@
-library(sp)
-library(sf)
-library(raster)
-library(terra)
-library(rgdal)
-library(countrycode)
-library(rstudioapi)
-library(av)
-#library(xlsx)
-library(readxl)
+options(conflicts.policy = list(warn = FALSE))
+shhh <- suppressPackageStartupMessages # It's a library, so shhh!
+shhh(library(av))
+shhh(library(countrycode))
+shhh(library(cptcity))
+shhh(library(lattice))
+shhh(library(magick))
+shhh(library(sp))
+shhh(library(sf))     # classes and functions for vector data
+options("rgdal_show_exportToProj4_warnings"="none")
+shhh(library(rgdal, warn.conflicts=FALSE))
+shhh(library(raster, warn.conflicts=FALSE))
+shhh(library(rasterVis))
+shhh(library(terra, warn.conflicts=FALSE))
+shhh(library(rstudioapi))
+shhh(library(readxl))
+shhh(library(writexl))
 library(lubridate)
 
 source("R/rasterStack.R") # This code generates the base RasterStack
@@ -397,7 +404,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   
   summary[is.na(summary)] <- 0
   
-  write.xlsx(summary, file = paste0("www/MP4/", inputISO, "_summary.xlsx"), col.names = T, row.names = F, append = F)
+  write_xlsx(summary, path = paste0("www/MP4/", inputISO, "_summary.xlsx"), col_names = T)
+  
   #print(tail(summary))
   
   return(summary)

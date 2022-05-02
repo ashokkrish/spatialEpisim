@@ -1,6 +1,6 @@
-library(terra)
-library(raster)
 library(countrycode)
+library(terra, warn.conflicts=FALSE)
+library(raster, warn.conflicts=FALSE)
 
 getPal <- function(f) {
   x <- rast(f)

@@ -1,32 +1,32 @@
+options(conflicts.policy = list(warn = FALSE))
 shhh <- suppressPackageStartupMessages # It's a library, so shhh!
-
+shhh(library(av))
+shhh(library(bslib))
+shhh(library(cptcity))
+shhh(library(countrycode))
+shhh(library(dplyr))
+shhh(library(ggplot2))
 shhh(library(lattice))
 shhh(library(latticeExtra))
+shhh(library(maps))
+shhh(library(markdown))
+shhh(library(purrr))
 options("rgdal_show_exportToProj4_warnings"="none")
-shhh(library(sp))
-shhh(library(sf))     # classes and functions for vector data
-shhh(library(rgdal))
+shhh(library(raster, warn.conflicts=FALSE)) # classes and functions for raster data
+shhh(library(rasterVis))
+shhh(library(readxl))
+shhh(library(writexl))
+shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(shiny))
+shhh(library(shinyalert))
+shhh(library(shinyvalidate))
 shhh(library(shinyjs))
 shhh(library(shinyhelper))
 shhh(library(shinyWidgets))
-shhh(library(terra))  # suppressWarnings(suppressMessages(library(terra)))
-shhh(library(raster)) # classes and functions for raster data
-shhh(library(ggplot2))
-shhh(library(markdown))
-shhh(library(cptcity))
-shhh(library(rasterVis))
-shhh(library(purrr))
+shhh(library(sp))
+shhh(library(sf))     # classes and functions for vector data
 shhh(library(stringr))
-#shhh(library(xlsx))
-shhh(library(readxl))
-shhh(library(countrycode))
-shhh(library(av))
-shhh(library(dplyr))
-shhh(library(maps))
-shhh(library(shinyalert))
-shhh(library(shinyvalidate))
-library(bslib)
+shhh(library(terra, warn.conflicts=FALSE))  # suppressWarnings(suppressMessages(library(terra)))
 shhh(library(tinytex))
 
 population <- read_excel("misc/population.xlsx", 1)
@@ -171,12 +171,11 @@ ui <- fluidPage(
                                                #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
                                       ),
                                       
-                                      tabPanel(title = "Mathematical Model", id= "modelTab",
+                                      tabPanel(title = "Mathematical Model", id = "modelTab",
                                                imageOutput("modelImg")),
                                       
                                       tabPanel(title = "Initial Seed Data", 
-                                               dataTableOutput("tableSeed")
-                                      ),
+                                               dataTableOutput("tableSeed")),
                                       
                                       tabPanel(title = "MP4 Animation",
                                                id = "mp4Tab",
@@ -264,7 +263,6 @@ server <- function(input, output, session){
     if(input$clipLev1 == TRUE){
       output$croppedOutputImage <- renderImage({
         #source("R/clippingBaseRaster.R")
-        #print(getwd())
         source("R/clippingBaseRasterHaxby.R")
         outfile <- tempfile(fileext = '.png')
         
@@ -293,6 +291,23 @@ server <- function(input, output, session){
       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
+  })
+  
+  ############################################################################    
+  # Output flowchart image to the app UI                                     #
+  ############################################################################ 
+  
+  observeEvent(input$go, {
+  output$modelImg <- renderImage({
+    if (input$modelSelect == "SEIRD"){
+      return(list(src= "www/SEIRD.png",
+                  contentType = "image/png"))
+    }
+    else if (input$modelSelect == "SVEIRD"){
+      return(list(src = "www/SVEIRD.png",
+                  contentType = "image/png"))
+    }
+    }, deleteFile = FALSE)
   })
   
   ############################################################################    
@@ -439,23 +454,24 @@ server <- function(input, output, session){
   })
   
   ############################################################################    
-  # TODO: refactor numericInouts into single function #
+  # TODO: refactor numericInputs into single function                        #
   ############################################################################ 
   output$alphaSlider <- renderUI({
     alphaValue <- 0.00015
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        alphaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"alpha"]
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"alpha"])
       } else if (input$selectedCountry == "Nigeria"){
-        alphaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"alpha"]
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"alpha"])
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        alphaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"alpha"]
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"alpha"])
       } else if (input$selectedCountry == "Nigeria"){
-        alphaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"alpha"]
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"alpha"])
       }
     }
      
@@ -471,17 +487,18 @@ server <- function(input, output, session){
     betaValue <- 0.00001
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        betaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"beta"]
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"beta"])
       } else if (input$selectedCountry == "Nigeria"){
-        betaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"beta"]
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"beta"])
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        betaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"beta"]
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"beta"])
       } else if (input$selectedCountry == "Nigeria"){
-        betaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"beta"]
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"beta"])
       }
     }
     
@@ -497,17 +514,18 @@ server <- function(input, output, session){
     gammaValue <- 0.008
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        gammaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"gamma"]
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"gamma"])
       } else if (input$selectedCountry == "Nigeria"){
-        gammaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"gamma"]
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"gamma"])
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        gammaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"gamma"]
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"gamma"])
       } else if (input$selectedCountry == "Nigeria"){
-        gammaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"gamma"]
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"gamma"])
       }
     }
 
@@ -523,17 +541,18 @@ server <- function(input, output, session){
     sigmaValue <- 0.065
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        sigmaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"sigma"]
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"sigma"])
       } else if (input$selectedCountry == "Nigeria"){
-        sigmaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"sigma"]
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"sigma"])
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        sigmaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"sigma"]
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"sigma"])
       } else if (input$selectedCountry == "Nigeria"){
-        sigmaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"sigma"]
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"sigma"])
       }
     }
     
@@ -549,17 +568,18 @@ server <- function(input, output, session){
     deltaValue <- 0.0015
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        deltaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"delta"]
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"delta"])
       } else if (input$selectedCountry == "Nigeria"){
-        deltaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"delta"]
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"delta"])
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        deltaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"delta"]
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"delta"])
       } else if (input$selectedCountry == "Nigeria"){
-        deltaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"delta"]
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"delta"])
       }
     }
 
@@ -575,17 +595,18 @@ server <- function(input, output, session){
     lambdaValue <- 15
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        lambdaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"lambda"]
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"lambda"])
       } else if (input$selectedCountry == "Nigeria"){
-        lambdaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"lambda"]
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"lambda"])
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        lambdaValue <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"lambda"]
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"lambda"])
       } else if (input$selectedCountry == "Nigeria"){
-        lambdaValue <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"lambda"]
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"lambda"])
       }
     }
     
@@ -598,20 +619,21 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$startDateInput <- renderUI({
-    startDateInput <- NULL
+    startDateInput <- Sys.Date() # NULL
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        startDateInput <- filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"startDate"]
+        startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"startDate"]
       } else if (input$selectedCountry == "Nigeria"){
-        startDateInput <- filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"startDate"]
+        startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"startDate"]
       }
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
-        startDateInput <- filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"startDate"]
+        startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"startDate"]
       } else if (input$selectedCountry == "Nigeria"){
-        startDateInput <- filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"startDate"]
+        startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"startDate"]
       }
     }
     
@@ -620,9 +642,8 @@ server <- function(input, output, session){
               language = "en", width = NULL)
   })
   
-  
   ############################################################################     
-  # numeric input for number of iterations                       #
+  # numeric input for number of iterations                                   #
   ############################################################################  
   output$timestepInput <- renderUI({
        validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
@@ -645,7 +666,6 @@ server <- function(input, output, session){
       controls = "controls"
     )
   })
-  
 
   ############################################################################    
   # Output bubble plot with initial seed data directly to the app UI         #
@@ -698,17 +718,6 @@ server <- function(input, output, session){
     # }, deleteFile = TRUE)
   })
   
-  output$modelImg <- renderImage( {
-    if (input$modelSelect == "SEIRD"){
-      return(list(src= "www/SEIRD.png",
-                  contentType = "image/png"))
-    }
-    else if (input$modelSelect == "SVEIRD"){
-      return(list(src = "www/SVEIRD.png",
-                  contentType = "image/png"))
-    }
-  })
-  
   ##########################################################################    
   # Allow the user to download the time-series plots from UI               #
   ########################################################################## 
@@ -744,7 +753,7 @@ server <- function(input, output, session){
     output$outputSummary <- renderDataTable({ # print output summary table to UI
       # req(input$seedData)
       # TODO: make sure the file exists
-      outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"), sheetIndex = 1)
+      outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"))
       outputSummaryTable
     })
     
@@ -752,7 +761,6 @@ server <- function(input, output, session){
       buildPlot()
     })
   
-    
     # # Allow user to download the raster plot
     # output$downloadPlot <- downloadHandler(
     #     filename = function() {
@@ -845,7 +853,7 @@ server <- function(input, output, session){
     if(input$filterLMIC){
       population <- population[population$LMIC == 'TRUE',]
     } else {
-      population <- population[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
+      population <- population#[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
     }
     updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country)
   })

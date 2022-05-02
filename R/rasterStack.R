@@ -1,5 +1,5 @@
 library(countrycode)
-library(raster)
+library(raster, warn.conflicts=FALSE)
 
 createRasterStack <- function(selectedCountry, rasterAgg) {
   

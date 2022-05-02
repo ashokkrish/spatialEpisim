@@ -1,14 +1,19 @@
-library(sp)
-library(sf)
-library(raster)
-library(terra)
-library(rgdal)
-library(countrycode)
-library(rstudioapi)
-library(av)
-library(cptcity)
-library(rasterVis)
-library(magick)
+options(conflicts.policy = list(warn = FALSE))
+shhh <- suppressPackageStartupMessages # It's a library, so shhh!
+shhh(library(av))
+shhh(library(countrycode))
+shhh(library(cptcity))
+shhh(library(lattice))
+shhh(library(magick))
+shhh(library(sp))
+shhh(library(sf))     # classes and functions for vector data
+options("rgdal_show_exportToProj4_warnings"="none")
+shhh(library(rgdal, warn.conflicts=FALSE))
+shhh(library(raster, warn.conflicts=FALSE))
+shhh(library(rasterVis))
+shhh(library(terra, warn.conflicts=FALSE))
+shhh(library(rstudioapi))
+shhh(library(fasterize))
 
 #------------------------------------------------------------------------------#
 # R Script Variables                                                           #
