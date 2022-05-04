@@ -3,7 +3,8 @@ library(shinyjs)
 library(shinyWidgets)
 #library(xlsx)
 library(readxl)
-
+#library(echarts4r)
+library(data.table)
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 
@@ -46,7 +47,9 @@ ui <- fluidPage(
                                                imageOutput("outputImage")
                               )
                          )
-                    )
+                    ),
+                  #print("tablePlot")
+                   
                )
           )
      ),
@@ -80,6 +83,9 @@ server <- function(input, output, session){
           dev.off()
         }
       })
+    
+    #output$tablePlot <- data.table(group=c("Group 1","Group 1","Group 2","Group 2","Group 2"), subgroup = c("A","A","A","A","B"),value = c(2,2.5,1,2,1.5))
+   
 }
 
 shinyApp(ui,server)
