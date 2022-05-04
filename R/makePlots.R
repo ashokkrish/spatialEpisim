@@ -4,7 +4,7 @@ makePlot <- function (compartments, input, plotTitle, xTitle, yTitle, lineThickn
     outfile <- tempfile(fileext = '.png')
     
     png(outfile, width = 800, height = 600)
-    df <- read_xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"))
+    df <- as.data.frame(read_xlsx(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx")))
     plotData = data.frame(Date = ymd(df[,"Date"]))
     for (comp in compartments){
       plotData[comp] <- df[,comp]
