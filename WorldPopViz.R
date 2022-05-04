@@ -4,10 +4,10 @@ library(shinyWidgets)
 #library(xlsx)
 library(readxl)
 #library(echarts4r)
-library(data.table)
+library(DT)
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
-
+source("R/rasterStack.R")
 ui <- fluidPage(
   
   navbarPage(title = span("2020 UN-Adjusted Population Count Rasters", style = "color:#000000; font-weight:bold; font-size:15pt"),
@@ -38,7 +38,7 @@ ui <- fluidPage(
                             #      width = "1000px",
                             #      selected = "0"
                             #        )
-                            ),
+                            )
                         ), 
                         
                         mainPanel(
@@ -46,14 +46,27 @@ ui <- fluidPage(
                                       tabPanel(#title = "Raster Base Plot", 
                                                imageOutput("outputImage")
                               )
-                         )
-                    ),
-                  #print("tablePlot")
+                         ),
+                         downloadButton('downloadPlot', 'Save Image')
+                    )
+                  
                    
                )
-          )
-     ),
-  downloadButton('downloadPlot', 'Save Image'),
+               
+          ),
+          tabPanel(title = "Aggregation Table",
+                   
+                          tabPanel(title = "Aggregation Table",
+                             DT::dataTableOutput("tablePlot")
+                             
+                         )
+                       )
+                  
+              
+          
+     
+  
+      )
 )
 
 server <- function(input, output, session){
@@ -69,7 +82,7 @@ server <- function(input, output, session){
         createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
         dev.off()
         
-        list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+        list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
       }
     }, deleteFile = TRUE)
     
@@ -84,7 +97,7 @@ server <- function(input, output, session){
         }
       })
     
-    #output$tablePlot <- data.table(group=c("Group 1","Group 1","Group 2","Group 2","Group 2"), subgroup = c("A","A","A","A","B"),value = c(2,2.5,1,2,1.5))
+    output$tablePlot <- DT :: renderDataTable({load("rasterStack.Level1Raster")}) 
    
 }
 
