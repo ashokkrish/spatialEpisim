@@ -32,7 +32,7 @@ shhh(library(tinytex))
 population <- read_excel("misc/population.xlsx", 1)
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
 
-fieldsMandatory <- c("selectedCountry", "modelSelect", "stochasticSelect", "seedData")
+fieldsMandatory <- c("selectedCountry", "seedData")
 
 #hoverDrop <- "selectedCountry"
 
@@ -78,80 +78,45 @@ ui <- fluidPage(
                             
                             uiOutput("clipStateCheckbox"),
                             
-                            conditionalPanel(condition = "input.clipLev1 == '1'",
-                                             uiOutput("Level1Ui")),
+                            conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
 
-                            uiOutput("aggSlider"),
+                            uiOutput("aggInput"),
                             
                             uiOutput("modelRadio"),
                             
                             uiOutput("stochasticRadio"),
                             
                             conditionalPanel(
-                              #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt")
-                            ),
-                            
-                            conditionalPanel(
-                              id = "SVEIRD",
+                              id = "SEIRD_SVEIRD",
                               withMathJax(),
-                              condition = "input.modelSelect == 'SVEIRD'", 
-                              
-                              uiOutput("alphaSlider"),
-                            ),
-                            
-                            # conditionalPanel(
-                            #     id = "SEIR",
-                            #     withMathJax(),
-                            #     condition = "input.modelSelect == 'SEIR'",
-                            # 
-                            # ),
-                            
-                            conditionalPanel(
-                              id = "SEIR_SEIRD_SVEIRD",
-                              withMathJax(),
-                              #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              
-                              uiOutput("betaSlider"),
-   
-                              uiOutput("gammaSlider"),
-                              
-                              uiOutput("sigmaSlider"),
-                              
-                              uiOutput("deltaSlider"),
-                            ),
-                            
-                            conditionalPanel(
-                              withMathJax(),
-                              #condition = "input.modelSelect == 'SEIR' || input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              
-                              #helpText('NOTE: Radius of 1 is called the Moore neighbourhood.'),
-                              #HTML("<p>NOTE: Radius of 1 is called the <a href='https://en.wikipedia.org/wiki/Moore_neighborhood'>Moore neighbourhood</a></p>", target = "_blank"),
-                              #p("NOTE:Radius of 1 is called the",a("Moore neighbourhood", href="https://en.wikipedia.org/wiki/Moore_neighborhood", target="_blank")),
-                              
-                              uiOutput("lambdaSlider"),
 
-                              fileInput(inputId = "seedData", labelMandatory ("Upload initial seed data (.csv or .xls or .xlsx)"),
-                                        accept = c(
-                                          "text/csv",
-                                          "text/comma-separated-values,text/plain",
-                                          ".csv",
-                                          ".xls",
-                                          ".xlsx"),
+                              h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
+                              
+                              conditionalPanel(
+                                id = "SVEIRD",
+                                withMathJax(),
+                                condition = "input.modelSelect == 'SVEIRD'", 
+                                
+                                uiOutput("alphaInput")
                               ),
                               
-                              p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data"),
+                              condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
+                              
+                              uiOutput("betaInput"),
+   
+                              uiOutput("gammaInput"),
+                              
+                              uiOutput("sigmaInput"),
+                              
+                              uiOutput("deltaInput"),
+                              
+                              uiOutput("lambdaInput"),
+                              
+                              uiOutput("seedUpload"),
                               
                               uiOutput("startDateInput"),
-
-                              uiOutput("timestepInput")
                               
-                              # numericInput(inputId = "timestep", 
-                              #              label = "Number of Iterations (days)",
-                              #              min = 1, max = 3650, value = 3, step = 1)
+                              uiOutput("timestepInput")
                             ),
                             
                             actionButton("go","Run Simulation", 
@@ -174,6 +139,9 @@ ui <- fluidPage(
                                       tabPanel(title = "Mathematical Model", id = "modelTab",
                                                imageOutput("modelImg")),
                                       
+                                      tabPanel(title = "Schematic Diagram", id = "flowchartTab",
+                                               imageOutput("flowchartImg")),
+                                      
                                       tabPanel(title = "Initial Seed Data", 
                                                dataTableOutput("tableSeed")),
                                       
@@ -192,12 +160,7 @@ ui <- fluidPage(
                                                imageOutput("cumulativePlot"),
                                                imageOutput("fullPlot"),
                                                imageOutput("fracSusPlot"),
-                                               downloadButton(outputId = "downloadPlot", label = "Save Image")),
-                                      
-                                      
-
-                                      tabPanel(title = "Schematic Diagram", id = "schDiagram")
-                                              
+                                               downloadButton(outputId = "downloadPlot", label = "Save Image"))
                           )
                         ),
                       )
@@ -221,7 +184,7 @@ ui <- fluidPage(
                       
                       br(),
                       
-                      p(span("Gursimran Dhaliwal, Crystal Wai, Timothy Pulfer, and Ryan Darby", style= "font-weight:bold" )),    
+                      p(span("Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
@@ -251,6 +214,34 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session){
+  iv <- InputValidator$new()
+  
+  iv$add_rule("alpha", sv_required())
+  iv$add_rule("alpha", sv_gte(0))
+  
+  iv$add_rule("beta", sv_required())
+  iv$add_rule("beta", sv_gte(0))
+  
+  iv$add_rule("gamma", sv_required())
+  iv$add_rule("gamma", sv_gte(0))
+  
+  iv$add_rule("sigma", sv_required())
+  iv$add_rule("sigma", sv_gte(0))
+  
+  iv$add_rule("delta", sv_required())
+  iv$add_rule("delta", sv_gte(0))
+
+  iv$add_rule("lambda", sv_required())
+  iv$add_rule("lambda", sv_gte(0))
+  
+  iv$add_rule("date", sv_required())
+  
+  iv$add_rule("timestep", sv_required())
+  iv$add_rule("timestep", sv_integer())
+  iv$add_rule("timestep", sv_gt(0))
+  
+  iv$enable()
+  
   values <- reactiveValues()
   values$allow_simulation_run <- TRUE
   values$df <- data.frame(Variable = character(), Value = character()) 
@@ -294,11 +285,20 @@ server <- function(input, output, session){
   })
   
   ############################################################################    
+  # Output IDE equations image to the app UI                                 #
+  ############################################################################ 
+  observeEvent(input$go, {
+    output$modelImg <- renderImage({
+        return(list(src= "www/ModelEquations.png",
+                    contentType = "image/png"))
+    }, deleteFile = FALSE)
+  })
+  
+  ############################################################################    
   # Output flowchart image to the app UI                                     #
   ############################################################################ 
-  
   observeEvent(input$go, {
-  output$modelImg <- renderImage({
+  output$flowchartImg <- renderImage({
     if (input$modelSelect == "SEIRD"){
       return(list(src= "www/SEIRD.png",
                   contentType = "image/png"))
@@ -337,14 +337,17 @@ server <- function(input, output, session){
                  !is.null(input[[x]]) && input[[x]] != ""
                },
                logical(1))
-      mandatoryFilled <- all(mandatoryFilled)
+      
+        mandatoryFilled <- all(mandatoryFilled)
+
       # enable/disable the submit button
       if (isolate(values$allow_simulation_run) == TRUE){
         shinyjs::toggleState(id = "go", condition = mandatoryFilled)
     }
   })
+  
   ##############################################################################
-  #highlight drop down item when hovering                                       #
+  #highlight drop down item when hovering                                      #
   ##############################################################################
   # observe({
   #   hoverDrop <-
@@ -380,7 +383,8 @@ server <- function(input, output, session){
   # Dynamically display the checkbox option to select for states/provinces   #
   ############################################################################
   output$clipStateCheckbox <- renderUI({
-    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
       }
@@ -390,7 +394,7 @@ server <- function(input, output, session){
   # Create select box for choosing input country                             #
   ############################################################################      
   output$Level1Ui <- renderUI({
-    validate(need(input$clipLev1 == TRUE, "Loading App...")) # catches UI warning
+    validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
 
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
 
@@ -409,8 +413,8 @@ server <- function(input, output, session){
   ############################################################################    
   # Change the recommended aggregation factor for slider dynamically         #
   ############################################################################  
-  output$aggSlider <- renderUI({
-    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+  output$aggInput <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
 
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       sliderInput(inputId = "agg",
@@ -423,11 +427,11 @@ server <- function(input, output, session){
   # Radio button for SEIRD vs SVEIRD Model                                   #
   ############################################################################   
   output$modelRadio <- renderUI({
-       validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+       validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
        
        if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
             radioButtons(inputId = "modelSelect",
-                         labelMandatory ("Epidemic Model"),
+                         label = strong("Epidemic Model"),
                          choiceValues = list("SEIRD","SVEIRD"),
                          choiceNames = list("SEIRD","SVEIRD"),
                          selected = "SVEIRD", #character(0), # 
@@ -440,11 +444,11 @@ server <- function(input, output, session){
   # Radio button for Deterministic vs Stochastic Model                       #
   ############################################################################  
   output$stochasticRadio <- renderUI({
-       validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+       validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
        
        if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
             radioButtons(inputId = "stochasticSelect",
-                         labelMandatory ("Model Stochasticity"),
+                         label = strong("Model Stochasticity"),
                          choiceValues = list("Deterministic","Stochastic"),
                          choiceNames = list("Deterministic","Stochastic"),
                          selected = "Deterministic", #character(0), #
@@ -456,11 +460,13 @@ server <- function(input, output, session){
   ############################################################################    
   # TODO: refactor numericInputs into single function                        #
   ############################################################################ 
-  output$alphaSlider <- renderUI({
+  output$alphaInput <- renderUI({
     alphaValue <- 0.00015
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"alpha"])
@@ -478,16 +484,19 @@ server <- function(input, output, session){
     numericInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
+    }
   })
   
   ############################################################################    
   #                                                                          #
   ############################################################################ 
-  output$betaSlider <- renderUI({
+  output$betaInput <- renderUI({
     betaValue <- 0.00001
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"beta"])
@@ -505,16 +514,19 @@ server <- function(input, output, session){
     numericInput(inputId = "beta",
                 label = "Daily Exposure Rate (\\( \\beta\\))", 
                 value = betaValue, min = 0, max = 1, step = 0.00001)
+    }
   })
   
   ############################################################################    
   #                                                                          #
   ############################################################################ 
-  output$gammaSlider <- renderUI({
+  output$gammaInput <- renderUI({
     gammaValue <- 0.008
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"gamma"])
@@ -532,16 +544,19 @@ server <- function(input, output, session){
     numericInput(inputId = "gamma",
                 label = "Daily fraction that move out of the exposed compartment to the Infected compartment  (\\( \\gamma\\))", 
                 value = gammaValue, min = 0, max = 1, step = 0.00001)
+    }
   })
   
   ############################################################################    
   #                                                                          #
   ############################################################################ 
-  output$sigmaSlider <- renderUI({
+  output$sigmaInput <- renderUI({
     sigmaValue <- 0.065
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"sigma"])
@@ -559,16 +574,19 @@ server <- function(input, output, session){
     numericInput(inputId = "sigma",
                 label = "Daily fraction that move out of the Infected compartment to the recovered compartment (\\( \\sigma \\))", 
                 value = sigmaValue, min = 0, max = 1, step = 0.00001)
+    }
   })
   
   ############################################################################    
   #                                                                          #
   ############################################################################ 
-  output$deltaSlider <- renderUI({
+  output$deltaInput <- renderUI({
     deltaValue <- 0.0015
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"delta"])
@@ -586,16 +604,24 @@ server <- function(input, output, session){
     numericInput(inputId = "delta",
                 "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
                 value = deltaValue, min = 0, max = 1, step = 0.00001)
+    }
   })
   
   ############################################################################    
   #                                                                          #
   ############################################################################ 
-  output$lambdaSlider <- renderUI({
+  
+  #helpText('NOTE: Radius of 1 is called the Moore neighbourhood.'),
+  #HTML("<p>NOTE: Radius of 1 is called the <a href='https://en.wikipedia.org/wiki/Moore_neighborhood'>Moore neighbourhood</a></p>", target = "_blank"),
+  #p("NOTE:Radius of 1 is called the",a("Moore neighbourhood", href="https://en.wikipedia.org/wiki/Moore_neighborhood", target="_blank")),
+  
+  output$lambdaInput <- renderUI({
     lambdaValue <- 15
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"lambda"])
@@ -613,6 +639,30 @@ server <- function(input, output, session){
     numericInput(inputId = "lambda",
                 "Distance parameter (\\( \\lambda\\), in km):",
                 value = lambdaValue,min = 1, max = 50, step = 1)
+    }
+  })
+  
+  ############################################################################    
+  #                                                                          #
+  ############################################################################ 
+  
+  output$seedUpload <- renderUI({
+
+        validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
+      fileInput(inputId = "seedData", labelMandatory ("Upload initial seed data (.csv or .xls or .xlsx)"),
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"),   )
+      
+      #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
+      
+    }
   })
   
   ############################################################################    
@@ -623,6 +673,8 @@ server <- function(input, output, session){
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
     if(input$modelSelect == "SEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"startDate"]
@@ -640,13 +692,14 @@ server <- function(input, output, session){
     dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
               format = "yyyy-mm-dd", startview = "month", weekstart = 0,
               language = "en", width = NULL)
+    }
   })
   
   ############################################################################     
   # numeric input for number of iterations                                   #
   ############################################################################  
   output$timestepInput <- renderUI({
-       validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+       validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
        
        if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
             numericInput(inputId = "timestep",
@@ -844,8 +897,6 @@ server <- function(input, output, session){
     
     values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
     
-    # source("R/rasterBasePlot.R")
-    # createBasePlot(input$selectedCountry, input$agg, FALSE)
   })
   
   observeEvent(input$filterLMIC,{
@@ -874,9 +925,41 @@ server <- function(input, output, session){
     showTab(inputId = 'tabSet', target = 'Input Summary')
   })
   
-  #############################
-  #Intial Seed Data Tab Panel #
-  #############################
+  ###############################
+  #Mathematical Model Tab Panel #
+  ###############################
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Mathematical Model')
+  )
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId= 'tabSet', target = 'Mathematical Model')
+  })
+  
+  observeEvent(input$go,{
+    showTab(inputId= 'tabSet', target = 'Mathematical Model')
+  })
+  
+  ##############################
+  #Schematic Diagram Tab Panel #
+  ##############################
+  
+  observe(
+    hideTab(inputId ='tabSet', target = 'Schematic Diagram')
+  )
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
+  })
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'Schematic Diagram')
+  })
+  
+  ##############################
+  #Initial Seed Data Tab Panel #
+  ##############################
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
@@ -937,39 +1020,7 @@ server <- function(input, output, session){
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Plot')
   })
-  
-  ###############################
-  #Mathematical Model Tab Panel #
-  ###############################
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Mathematical Model')
-  )
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId= 'tabSet', target = 'Mathematical Model')
-  })
-  
-  observeEvent(input$go,{
-    showTab(inputId= 'tabSet', target = 'Mathematical Model')
-  })
-  
-  ##############################
-  #Schematic Diagram Tab Panel #
-  ##############################
-  
-  observe(
-    hideTab(inputId ='tabSet', target = 'Schematic Diagram')
-  )
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
-  })
-  
-  observeEvent(input$go,{
-    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
-  })
-  
+
   # output$downloadOutputSummary <- downloadHandler(
   #   filename = function() {"output.csv"},
   #   content = function(file){
