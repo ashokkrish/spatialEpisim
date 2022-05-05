@@ -151,7 +151,7 @@ ui <- fluidPage(
                                                downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")),
                                       
                                       tabPanel(title = "Output Summary",
-                                               tableOutput("outputSummary"),
+                                               dataTableOutput("outputSummary"),
                                                # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
                                       ),
                                       
@@ -797,15 +797,13 @@ server <- function(input, output, session){
       }
     })
     
-    output$tableSeed <- renderDataTable({ # output initial seed data to UI
+    output$tableSeed <- renderDataTable({ # print initial seed data to UI
       req(input$seedData)
       if(is.null(data())){return ()}
       data()
     })
     
-    output$outputSummary <- renderDataTable({ # print output summary table to UI
-      # req(input$seedData)
-      # TODO: make sure the file exists
+    output$outputSummary <- renderDataTable({ # print output summary to UI
       outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"))
       outputSummaryTable
     })
