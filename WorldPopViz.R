@@ -1,34 +1,28 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-#library(xlsx)
 library(readxl)
-#library(echarts4r)
 library(DT)
+
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
-source("R/rasterStack.R")
+
 ui <- fluidPage(
   
-  navbarPage(title = span("2020 UN-Adjusted Population Count Rasters", style = "color:#000000; font-weight:bold; font-size:15pt"),
+  navbarPage(title = span("2020 UN-Adjusted Population Count", style = "color:#000000; font-weight:bold; font-size:15pt"),
              
-             tabPanel(title = "Raster Base Plot",
+             tabPanel(title = "Plots and Tables",
                       sidebarLayout(
                         sidebarPanel(
-
                           div(
                             id = "dashboard",
                             
-                            pickerInput(
-                                 inputId = "selectedCountry",
-                                 choices = population$Country,
-                                 multiple = FALSE,
-                                 select = NULL,
-                                 options = pickerOptions(
-                                      actionsBox = TRUE,
-                                      title = "Please select a country"),
-                                 width = "240px")
-
+                            uiOutput("countryDropdown"),
+                            
+                            uiOutput("aggSlider"),
+                            
+                            uiOutput("goButton"),
+                          
                             # , radioButtons(
                             #      inputId = "qValue",
                             #      label = ("Image Size"),
@@ -43,35 +37,55 @@ ui <- fluidPage(
                         
                         mainPanel(
                           tabsetPanel(id = 'tabSet',
-                                      tabPanel(#title = "Raster Base Plot", 
-                                               imageOutput("outputImage")
-                              )
-                         ),
-                         downloadButton('downloadPlot', 'Save Image')
-                    )
-                  
-                   
-               )
-               
-          ),
-          tabPanel(title = "Aggregation Table",
-                   
-                          tabPanel(title = "Aggregation Table",
-                             DT::dataTableOutput("tablePlot")
-                             
+                                      tabPanel(title ="Population Map", imageOutput("outputImage"),
+                                               #downloadButton('downloadPlot', 'Save Image')
+                                               ),
+                                      tabPanel(title ="Population Count by State/Province",
+                                               DT::dataTableOutput("aggTable"))
                          )
-                       )
-                  
-              
-          
-     
-  
-      )
+                    )
+               )
+          )
+     )
 )
 
 server <- function(input, output, session){
-  # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
-    output$outputImage <- renderImage({
+  
+  output$countryDropdown <- renderUI( {
+    pickerInput(
+      inputId = "selectedCountry",
+      choices = population$Country,
+      multiple = FALSE,
+      select = NULL,
+      options = pickerOptions(
+        actionsBox = TRUE,
+        title = "Please select a country"),
+      width = "240px"
+    )
+  })
+  
+  output$aggSlider <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      sliderInput(inputId = "agg",
+                  label = "Aggregation Factor",
+                  min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+    }
+  })
+  
+  output$goButton <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      actionButton("go","Population Count by State/Province", 
+                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    }
+  })
+  
+  output$outputImage <- renderImage({
+      validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+      
       if (input$selectedCountry == ""){
         list(src = "", width = 0, height = 0)
       } else {
@@ -86,7 +100,7 @@ server <- function(input, output, session){
       }
     }, deleteFile = TRUE)
     
-    output$downloadPlot <- downloadHandler(
+  output$downloadPlot <- downloadHandler(
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
       filename = sprintf("%s_2020PopulationCount.png",isoCode),
       content = function(outfile) {
@@ -96,9 +110,22 @@ server <- function(input, output, session){
           dev.off()
         }
       })
+
+  observeEvent(input$go, {
+    source("R/rasterStack.R")
+    rs <- createRasterStack(input$selectedCountry, input$agg)
+    print(rs$rasterStack)
+    # print(rs$rasterStack$Susceptible)
+    # print(rs$rasterStack$Level1Raster)
     
-    output$tablePlot <- DT :: renderDataTable({load("rasterStack.Level1Raster")}) 
-   
+    print(crosstab(rs$rasterStack$Inhabitable, rs$rasterStack$Level1Raster))
+      
+    # output$aggTable <- renderUI({
+    #   print(rs)
+    #   #req(rs$Level1Raster)
+    # })
+    })
+    
 }
 
 shinyApp(ui,server)
