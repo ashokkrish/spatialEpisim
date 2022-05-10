@@ -114,13 +114,35 @@ server <- function(input, output, session){
   observeEvent(input$go, {
     source("R/rasterStack.R")
     rs <- createRasterStack(input$selectedCountry, input$agg)
+    sus <- rs$rasterStack$Susceptible
+    lvOne <- rs$rasterStack$Level1Raster
+    names <- rs$Level1Identifier$NAME_1
     #print(rs$rasterStack)
-    # print(rs$rasterStack$Susceptible)
-    # print(rs$rasterStack$Level1Raster)
+    #print(sus)
+    #print(lvOne)
+    #print(names)
+ 
     
-    #print(crosstab(rs$rasterStack$Inhabitable, rs$rasterStack$Level1Raster))
-    rsMatrix <- data.frame(rasterToPoints(rs$rasterStack$Susceptible))
-     output$aggTable = DT::renderDataTable({DT::datatable(rsMatrix)})
+    #print(susMatrix)
+ 
+    popCount <- crosstab(sus,lvOne)
+    #print(popCount)
+   
+    lvMatrix <- as.matrix(lvOne)
+    susMatrix <- as.matrix(sus)
+    nMatrix <- as.matrix(names)
+    
+    sumMatrix <- aggregate(c(susMatrix) ~ c(lvMatrix), FUN = sum)
+    nameFrame <- data.frame(nMatrix)
+    tableFrame <- data.frame(sumMatrix)
+    colnames(tableFrame) <- c("Nums", "Values") #renaming Columns to make it easier to reference them
+    colnames(nameFrame) <- c("Names")
+    tableFrame$Nums <- nameFrame$Names
+    colnames(tableFrame) <- c("State/Province", "Susceptible Population") #Changing Names So it matches to Spec
+    #print(nameFrame)
+    #print(rsMatrix)
+   
+     output$aggTable = DT::renderDataTable({DT::datatable(tableFrame)})
         
      
     })
