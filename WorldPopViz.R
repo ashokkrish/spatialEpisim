@@ -3,6 +3,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(readxl)
 library(DT)
+library(dplyr)
 
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
@@ -120,7 +121,7 @@ server <- function(input, output, session){
     #print(rs$rasterStack)
     #print(sus)
     #print(lvOne)
-    #print(names)
+    print(names)
  
     
     #print(susMatrix)
@@ -135,12 +136,16 @@ server <- function(input, output, session){
     sumMatrix <- aggregate(c(susMatrix) ~ c(lvMatrix), FUN = sum)
     nameFrame <- data.frame(nMatrix)
     tableFrame <- data.frame(sumMatrix)
+    testFrame <- data.frame(sumMatrix)
+    #tableFrame <- tail(tableFrame, -1)
+    tableFrame <- tableFrame %>% slice(-1)
     colnames(tableFrame) <- c("Nums", "Values") #renaming Columns to make it easier to reference them
     colnames(nameFrame) <- c("Names")
     tableFrame$Nums <- nameFrame$Names
     colnames(tableFrame) <- c("State/Province", "Susceptible Population") #Changing Names So it matches to Spec
     #print(nameFrame)
     #print(rsMatrix)
+    print(testFrame)
    
      output$aggTable = DT::renderDataTable({DT::datatable(tableFrame)})
         
