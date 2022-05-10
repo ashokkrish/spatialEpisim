@@ -114,16 +114,15 @@ server <- function(input, output, session){
   observeEvent(input$go, {
     source("R/rasterStack.R")
     rs <- createRasterStack(input$selectedCountry, input$agg)
-    print(rs$rasterStack)
+    #print(rs$rasterStack)
     # print(rs$rasterStack$Susceptible)
     # print(rs$rasterStack$Level1Raster)
     
-    print(crosstab(rs$rasterStack$Inhabitable, rs$rasterStack$Level1Raster))
-      
-    # output$aggTable <- renderUI({
-    #   print(rs)
-    #   #req(rs$Level1Raster)
-    # })
+    #print(crosstab(rs$rasterStack$Inhabitable, rs$rasterStack$Level1Raster))
+    rsMatrix <- data.frame(rasterToPoints(rs$rasterStack$Susceptible))
+     output$aggTable = DT::renderDataTable({DT::datatable(rsMatrix)})
+        
+     
     })
     
 }
