@@ -82,9 +82,19 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   
   Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb"))
   
-  #print(table(values(Level1Raster)))
+  # print(table(values(Level1Raster)))
+  # print(freq(Level1Raster))
   
   Level1Raster <- replace(Level1Raster, values(Level1Raster) < 0, 0)
+  
+  # Below line of code added on May 9, 2022
+  Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0) 
+  # Background: Aggregating typically an entire column or an entire row or both worth of NAs to the Level1Raster
+  # NOTE: If rasterAgg = 0 or 1, no NAs are added.
+  
+  # print(table(values(Level1Raster)))
+  # print(freq(Level1Raster))
+  
   # Unless you are using method = "ngb" the above line is needed for some countries.
   # The other method is called "bilinear"
   
