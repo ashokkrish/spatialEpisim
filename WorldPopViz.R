@@ -1,9 +1,9 @@
+library(DT)
+library(dplyr)
+library(readxl)
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-library(readxl)
-library(DT)
-library(dplyr)
 
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
@@ -122,11 +122,10 @@ server <- function(input, output, session){
     #print(sus)
     #print(lvOne)
     print(names)
- 
-    
+
     #print(susMatrix)
  
-    popCount <- crosstab(sus,lvOne)
+    #popCount <- crosstab(sus,lvOne)
     #print(popCount)
    
     lvMatrix <- as.matrix(lvOne)
@@ -142,16 +141,20 @@ server <- function(input, output, session){
     colnames(tableFrame) <- c("Nums", "Values") #renaming Columns to make it easier to reference them
     colnames(nameFrame) <- c("Names")
     tableFrame$Nums <- nameFrame$Names
-    colnames(tableFrame) <- c("State/Province", "Susceptible Population") #Changing Names So it matches to Spec
+    colnames(tableFrame) <- c("State/Province", "Population Count") #Changing Names So it matches to Spec
     #print(nameFrame)
     #print(rsMatrix)
     print(testFrame)
    
-     output$aggTable = DT::renderDataTable({DT::datatable(tableFrame)})
-        
-     
+    output$aggTable = DT::renderDataTable({DT::datatable(tableFrame, 
+                                                          options = list(paging = TRUE, 
+                                                                         pageLength = nrow(tableFrame), 
+                                                                         autoWidth = TRUE,
+                                                                         scrollX = T,
+                                                                         columnDefs = list(list(width = '200px', targets = "_all"))),
+                                                          rownames = FALSE
+                                                          )})
     })
-    
 }
 
 shinyApp(ui,server)
