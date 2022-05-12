@@ -38,14 +38,13 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   }
   
   #print(Susceptible)
-  
+
   Inhabitable <- Vaccinated <- Exposed <- Infected <- Recovered <- Dead <- Susceptible
-  values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0)
+
+  values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the rasterLayer with zeroes
+  values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with 0 or 1.
   
   #print(table(as.matrix(Inhabitable)))
-  
-  values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0
-  
   #print(table(as.matrix(Vaccinated)))
   
   #---------------------------------------#
@@ -73,37 +72,40 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   
   Level1Raster <- raster(Level1Identifier, resolution = res(Susceptible)[1])
   Level1Raster <- rasterize(Level1Identifier, Level1Raster) # May take a few seconds to run
-  Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
-  
+  #Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
+
   #print(table(values(Level1Raster)))
+  #(freq(Level1Raster))
+  
+  # Resampling methods
+  # "ngb": Nearest-neighbor; assigns the value of the nearest cell
+  # "bilinear": Bilinear interpolation; assigns a weighted average of the four nearest cells (the default)
   
   # Level1Raster <- round(resample(Level1Raster, Susceptible, method = "bilinear"))
-  # print(table(values(Level1Raster)))
+  # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb", fun ='modal'))
   
-  Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb"))
+   Level1Raster <-  resample(Level1Raster, Susceptible, method = "ngb")
   
-  # print(table(values(Level1Raster)))
+   values(Level1Raster) <- ifelse(values(Inhabitable) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
+   
   # print(freq(Level1Raster))
-  
-  Level1Raster <- replace(Level1Raster, values(Level1Raster) < 0, 0)
+  # 
+  # Level1Raster <- replace(Level1Raster, values(Level1Raster) < 0, 0)
+  # Unless you are using method = "ngb" the above line is needed for some countries.
+  # The other method is called "bilinear"
   
   # Below line of code added on May 9, 2022
-  Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0) 
+  # Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0) 
   # Background: Aggregating typically an entire column or an entire row or both worth of NAs to the Level1Raster
   # NOTE: If rasterAgg = 0 or 1, no NAs are added.
   
   # print(table(values(Level1Raster)))
-  # print(freq(Level1Raster))
-  
-  # Unless you are using method = "ngb" the above line is needed for some countries.
-  # The other method is called "bilinear"
-  
-  # print(table(values(Level1Raster)))
-  
+   
+   print(freq(Level1Raster))
+   print(freq(Inhabitable))
+
   # print(dim(Level1Raster)); print(dim(Susceptible))
-  # 
   # print(res(Level1Raster)); print(res(Susceptible))
-  # 
   # print(origin(Level1Raster)); print(origin(Susceptible))
   
   # print(extent(Level1Raster))
@@ -123,14 +125,21 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
 
   returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
   
-  return(returnList)
+  #return(returnList)
 }
+
 
 #------------------------#
 # Example Function Calls #
 #------------------------#
 # #set working directory to source file location if this function is to be tested standalone
 #
+
+#createRasterStack("Czech Republic", 0)
+#createRasterStack("Latvia", 0)
+#createRasterStack("Nigeria", 0)
+#createRasterStack("Italy", 0)
+
 # rs <- createRasterStack("Czech Republic", 10)
 # rs
 # names(rs)
@@ -139,6 +148,6 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
 #
 # createRasterStack("Nigeria", 25)
 # 
-# createRasterStack("Czech Republic", 10)
+# createRasterStack("Italy", 30)
 # 
 # createRasterStack("Latvia", 10)
