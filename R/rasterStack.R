@@ -41,8 +41,8 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
 
   Inhabitable <- Vaccinated <- Exposed <- Infected <- Recovered <- Dead <- Susceptible
 
-  values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the rasterLayer with zeroes
-  values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with 0 or 1.
+  values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
+  values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with either a 0 or 1.
   
   #print(table(as.matrix(Inhabitable)))
   #print(table(as.matrix(Vaccinated)))
@@ -95,7 +95,7 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
   # The other method is called "bilinear"
   
   # Below line of code added on May 9, 2022
-  # Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0) 
+   Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0) 
   # Background: Aggregating typically an entire column or an entire row or both worth of NAs to the Level1Raster
   # NOTE: If rasterAgg = 0 or 1, no NAs are added.
   
@@ -125,7 +125,7 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
 
   returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
   
-  #return(returnList)
+  return(returnList)
 }
 
 
@@ -133,7 +133,6 @@ createRasterStack <- function(selectedCountry, rasterAgg) {
 # Example Function Calls #
 #------------------------#
 # #set working directory to source file location if this function is to be tested standalone
-#
 
 #createRasterStack("Czech Republic", 0)
 #createRasterStack("Latvia", 0)
