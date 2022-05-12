@@ -1,9 +1,9 @@
-library(DT)
-library(dplyr)
-library(readxl)
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(readxl)
+library(DT)
+library(dplyr)
 
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
@@ -20,7 +20,7 @@ ui <- fluidPage(
                             
                             uiOutput("countryDropdown"),
                             
-                            uiOutput("aggSlider"),
+                            # uiOutput("aggSlider"),
                             
                             uiOutput("goButton"),
                           
@@ -65,15 +65,15 @@ server <- function(input, output, session){
     )
   })
   
-  output$aggSlider <- renderUI({
-    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+  #output$aggSlider <- renderUI({
+   # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
-    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      sliderInput(inputId = "agg",
-                  label = "Aggregation Factor",
-                  min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
-    }
-  })
+    #if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+     # sliderInput(inputId = "agg",
+      #            label = "Aggregation Factor",
+       #           min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+    #}
+  #})
   
   output$goButton <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
@@ -114,18 +114,19 @@ server <- function(input, output, session){
 
   observeEvent(input$go, {
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, input$agg)
+    rs <- createRasterStack(input$selectedCountry, 0)
     sus <- rs$rasterStack$Susceptible
     lvOne <- rs$rasterStack$Level1Raster
     names <- rs$Level1Identifier$NAME_1
     #print(rs$rasterStack)
     #print(sus)
     #print(lvOne)
-    print(names)
-
+    #print(names)
+ 
+    
     #print(susMatrix)
  
-    #popCount <- crosstab(sus,lvOne)
+    popCount <- crosstab(sus,lvOne)
     #print(popCount)
    
     lvMatrix <- as.matrix(lvOne)
@@ -141,20 +142,23 @@ server <- function(input, output, session){
     colnames(tableFrame) <- c("Nums", "Values") #renaming Columns to make it easier to reference them
     colnames(nameFrame) <- c("Names")
     tableFrame$Nums <- nameFrame$Names
-    colnames(tableFrame) <- c("State/Province", "Population Count") #Changing Names So it matches to Spec
+    colnames(tableFrame) <- c("State/Province", "Susceptible Population") #Changing Names So it matches to Spec
     #print(nameFrame)
     #print(rsMatrix)
     print(testFrame)
    
-    output$aggTable = DT::renderDataTable({DT::datatable(tableFrame, 
-                                                          options = list(paging = TRUE, 
-                                                                         pageLength = nrow(tableFrame), 
-                                                                         autoWidth = TRUE,
-                                                                         scrollX = T,
-                                                                         columnDefs = list(list(width = '200px', targets = "_all"))),
-                                                          rownames = FALSE
-                                                          )})
+    output$aggTable = DT::renderDataTable({DT::datatable(tableFrame,
+                                                         options = list(paging = TRUE,
+                                                                        pageLength = nrow(tableFrame),
+                                                                        autoWidth = TRUE,
+                                                                        scrollX = T,
+                                                                        columnDefs = list(list(width = '200px', targets = "_all"))),
+                                                         rownames = FALSE
+    )})
+        
+     
     })
+    
 }
 
 shinyApp(ui,server)
