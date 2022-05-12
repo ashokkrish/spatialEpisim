@@ -34,6 +34,7 @@ ui <- fluidPage(
                             #      selected = "0"
                             #        )
                             )
+                           ,width = 3
                         ), 
                         
                         mainPanel(
@@ -52,9 +53,10 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   
-  output$countryDropdown <- renderUI( {
+  output$countryDropdown <- renderUI({
     pickerInput(
       inputId = "selectedCountry",
+      label = strong("Country"),
       choices = population$Country,
       multiple = FALSE,
       select = NULL,
@@ -122,8 +124,6 @@ server <- function(input, output, session){
     #print(sus)
     #print(lvOne)
     #print(names)
- 
-    
     #print(susMatrix)
  
     popCount <- crosstab(sus,lvOne)
@@ -133,7 +133,7 @@ server <- function(input, output, session){
     susMatrix <- as.matrix(sus)
     nMatrix <- as.matrix(names)
     
-    sumMatrix <- aggregate(c(susMatrix) ~ c(lvMatrix), FUN = sum)
+    sumMatrix <- round(aggregate(c(susMatrix) ~ c(lvMatrix), FUN = sum))
     nameFrame <- data.frame(nMatrix)
     tableFrame <- data.frame(sumMatrix)
     testFrame <- data.frame(sumMatrix)
@@ -142,23 +142,22 @@ server <- function(input, output, session){
     colnames(tableFrame) <- c("Nums", "Values") #renaming Columns to make it easier to reference them
     colnames(nameFrame) <- c("Names")
     tableFrame$Nums <- nameFrame$Names
-    colnames(tableFrame) <- c("State/Province", "Susceptible Population") #Changing Names So it matches to Spec
+    colnames(tableFrame) <- c("State/Province", "Population Count") #Changing Names So it matches to Spec
     #print(nameFrame)
     #print(rsMatrix)
     print(testFrame)
    
     output$aggTable = DT::renderDataTable({DT::datatable(tableFrame,
-                                                         options = list(paging = TRUE,
+                                                         options = list(paging = FALSE,
                                                                         pageLength = nrow(tableFrame),
-                                                                        autoWidth = TRUE,
-                                                                        scrollX = T,
-                                                                        columnDefs = list(list(width = '200px', targets = "_all"))),
+                                                                        #autoWidth = TRUE,
+                                                                        #scrollX = TRUE,
+                                                                        columnDefs = list(list(width = '20%', targets = "_all"))
+                                                                        ),
+                                                         selection = 'single',
                                                          rownames = FALSE
-    )})
-        
-     
+                                          )})
     })
-    
 }
 
 shinyApp(ui,server)
