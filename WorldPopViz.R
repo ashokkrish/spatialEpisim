@@ -124,8 +124,7 @@ server <- function(input, output, session){
     #print(sus)
     #print(lvOne)
     #print(names)
-    #print(susMatrix)
- 
+
     popCount <- crosstab(sus,lvOne)
     #print(popCount)
    
