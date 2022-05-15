@@ -104,7 +104,7 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   selected = "", multiple = FALSE,
+                   selected = "", multiple = TRUE,
                    options = list(placeholder = "Select a state/province"))
   })
   
