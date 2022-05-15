@@ -7,6 +7,7 @@ library(dplyr)
 
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
+source("R/clippingBaseRasterHaxby.R")
 
 ui <- fluidPage(
   
@@ -20,9 +21,15 @@ ui <- fluidPage(
                             
                             uiOutput("countryDropdown"),
                             
-                            # uiOutput("aggSlider"),
+                            uiOutput("clipStateCheckbox"),
                             
-                            uiOutput("goButton"),
+                            conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
+                            
+                            # uiOutput("aggSlider"),
+
+                            uiOutput("clippedPlotButton"),
+
+                            uiOutput("tableButton"),
                           
                             # , radioButtons(
                             #      inputId = "qValue",
@@ -42,6 +49,9 @@ ui <- fluidPage(
                                       tabPanel(title ="Population Map", imageOutput("outputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
                                                ),
+                                      tabPanel(title ="Single State/Province Map", imageOutput("croppedOutputImage"),
+                                               #downloadButton('downloadPlot', 'Save Image')
+                                      ),
                                       tabPanel(title ="Population Count by State/Province",
                                                DT::dataTableOutput("aggTable"))
                          )
@@ -67,54 +77,123 @@ server <- function(input, output, session){
     )
   })
   
-  #output$aggSlider <- renderUI({
-   # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+  ############################################################################    
+  # Dynamically display the checkbox option to select for states/provinces   #
+  ############################################################################
+  output$clipStateCheckbox <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
-    #if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-     # sliderInput(inputId = "agg",
-      #            label = "Aggregation Factor",
-       #           min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
-    #}
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
+    }
+  })
+  
+  ############################################################################    
+  # Create select box for choosing input country                             #
+  ############################################################################      
+  output$Level1Ui <- renderUI({
+    validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
+    
+    isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
+    
+    if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
+      level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
+    } else {
+      level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
+    }
+    
+    selectizeInput(inputId = "level1List", "",
+                   choices = level1Options,
+                   selected = "", multiple = FALSE,
+                   options = list(placeholder = "Select a state/province"))
+  })
+  
+  #output$aggSlider <- renderUI({
+  # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+  
+  #if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+  # sliderInput(inputId = "agg",
+  #            label = "Aggregation Factor",
+  #           min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+  #}
   #})
   
-  output$goButton <- renderUI({
+  output$outputImage <- renderImage({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (input$selectedCountry == ""){
+      list(src = "", width = 0, height = 0)
+    } else {
+      outfile <- tempfile(fileext = '.png')
+      
+      #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
+      png(outfile, width = 1024, height = 768)
+      createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
+      dev.off()
+      
+      list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
+    }
+  }, deleteFile = TRUE)
+  
+  output$downloadPlot <- downloadHandler(
+    isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
+    filename = sprintf("%s_2020PopulationCount.png",isoCode),
+    content = function(outfile) {
+      if (input$selectedCountry != ""){
+        png(outfile, width = 1024, height = 768)
+        createBasePlot(input$selectedCountry, 1, TRUE)
+        dev.off()
+      }
+    })
+  
+  ############################################################################    
+  # Create a country plot cropped by level1Identifier and output to UI       #
+  ############################################################################ 
+  
+  output$clippedPlotButton <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      actionButton("go","Population Count by State/Province", 
+      actionButton("go","Plot clipped raster", 
                    style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
     }
   })
   
-  output$outputImage <- renderImage({
-      validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+  observeEvent(input$go, {
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-      if (input$selectedCountry == ""){
-        list(src = "", width = 0, height = 0)
-      } else {
+     if(input$clipLev1 == TRUE){
+      output$croppedOutputImage <- renderImage({
+        #source("R/clippingBaseRaster.R")
+        #source("R/clippingBaseRasterHaxby.R")
         outfile <- tempfile(fileext = '.png')
         
-        #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
-        png(outfile, width = 1024, height = 768)
-        createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
+        png(outfile, width = 800, height = 600)
+        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0)
         dev.off()
         
-        list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
-      }
-    }, deleteFile = TRUE)
+        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+      }, deleteFile = TRUE)
+     }
+    }
+  })
+  
+  #######################################################################################    
+  # Create a table of population count stratified by states/provinces and output to UI  #
+  ####################################################################################### 
+  
+  output$tableButton <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
-  output$downloadPlot <- downloadHandler(
-      isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
-      filename = sprintf("%s_2020PopulationCount.png",isoCode),
-      content = function(outfile) {
-        if (input$selectedCountry != ""){
-          png(outfile, width = 1024, height = 768)
-          createBasePlot(input$selectedCountry, 1, TRUE)
-          dev.off()
-        }
-      })
-
-  observeEvent(input$go, {
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      actionButton("table","Population Count Table", 
+                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    }
+  })
+  
+  observeEvent(input$table, {
     source("R/rasterStack.R")
     rs <- createRasterStack(input$selectedCountry, 0)
     sus <- rs$rasterStack$Susceptible
