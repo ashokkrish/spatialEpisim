@@ -90,7 +90,9 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
   writeRaster(lvl1Raster, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
-  setwd('./R')
+  print(getwd())
+  #setwd('./R')
+  #print(getwd())
 }
 
 #------------------------#
