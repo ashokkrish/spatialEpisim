@@ -21,6 +21,8 @@ ui <- fluidPage(
                             
                             uiOutput("countryDropdown"),
                             
+                            uiOutput("tableButton"),
+                            
                             uiOutput("clipStateCheckbox"),
                             
                             conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
@@ -29,8 +31,6 @@ ui <- fluidPage(
 
                             uiOutput("clippedPlotButton"),
 
-                            uiOutput("tableButton"),
-                          
                             # , radioButtons(
                             #      inputId = "qValue",
                             #      label = ("Image Size"),
@@ -174,7 +174,7 @@ server <- function(input, output, session){
         createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0)
         dev.off()
         
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+        list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
       }, deleteFile = TRUE)
      }
     }
