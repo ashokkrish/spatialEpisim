@@ -68,8 +68,24 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   # print(ext(lvl1Raster))
   # print(crs(lvl1Raster))
   
-  terra::plot(lvl1Raster, col=pal(20)[-1], axes = TRUE, cex.main = 1)
-  #terra::north(type = 2, xy = "bottomleft", cex = 2)
+  # if (selectedCountry == "Czech Republic"){
+  #   aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for the ", 
+  #                           selectedCountry, 
+  #                           " (1 sq. km resolution)")
+  # }
+  # else
+  # {
+  #   aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
+  #                           selectedCountry, 
+  #                           " (1 sq. km resolution)")  
+  # }
+  
+  aggrPlotTitle <- "2020 UN-Adjusted Population Count"
+  
+  terra::plot(lvl1Raster, col=pal(20)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle)
+  terra::north(type = 2, xy = "bottomleft", cex = 2)
+  
+  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
   
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
