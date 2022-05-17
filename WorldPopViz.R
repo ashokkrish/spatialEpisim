@@ -281,6 +281,30 @@ server <- function(input, output, session){
     }
   })
 
+  ######################################
+  #Single State/Province Map Tab Panel #
+  ######################################
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Single State/Province Map')
+  )
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'Single State/Province Map')
+  })
+  
+  ######################################
+  #Single State/Province Map Tab Panel #
+  ######################################
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Population Count by State/Province')
+  )
+  
+  observeEvent(input$table,{
+    showTab(inputId = 'tabSet', target = 'Population Count by State/Province')
+  })
+  
 }
 
 shinyApp(ui,server)
