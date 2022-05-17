@@ -31,6 +31,8 @@ ui <- fluidPage(
 
                             uiOutput("clippedPlotButton"),
 
+                            uiOutput("seedDataButton"),
+                            
                             # , radioButtons(
                             #      inputId = "qValue",
                             #      label = ("Image Size"),
@@ -87,27 +89,7 @@ server <- function(input, output, session){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
     }
   })
-  
-  ############################################################################    
-  # Create select box for choosing input country                             #
-  ############################################################################      
-  output$Level1Ui <- renderUI({
-    validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
-    
-    isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-    
-    if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
-      level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
-    } else {
-      level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
-    }
-    
-    selectizeInput(inputId = "level1List", "",
-                   choices = level1Options,
-                   selected = "", multiple = TRUE,
-                   options = list(placeholder = "Select a state/province"))
-  })
-  
+
   #output$aggSlider <- renderUI({
   # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
   
@@ -128,7 +110,7 @@ server <- function(input, output, session){
       
       #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
       png(outfile, width = 1024, height = 768)
-      createBasePlot(input$selectedCountry, 1, TRUE)  # print the susceptible plot direct to UI
+      createBasePlot(input$selectedCountry, 1, TRUE)   # print the susceptible plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
@@ -145,6 +127,84 @@ server <- function(input, output, session){
         dev.off()
       }
     })
+  
+  #######################################################################################    
+  # Create a table of population count stratified by states/provinces and output to UI  #
+  ####################################################################################### 
+  
+  output$tableButton <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      actionButton("table","Population Count Table", 
+                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    }
+  })
+  
+  observeEvent(input$table, {
+    source("R/rasterStack.R")
+    rs <- createRasterStack(input$selectedCountry, 0)
+    sus <- rs$rasterStack$Susceptible
+    lvOne <- rs$rasterStack$Level1Raster
+    names <- rs$Level1Identifier$NAME_1
+    #print(rs$rasterStack)
+    #print(sus)
+    #print(lvOne)
+    #print(names)
+    
+    popCount <- crosstab(sus,lvOne)
+    #print(popCount)
+    
+    lvMatrix <- as.matrix(lvOne)
+    susMatrix <- as.matrix(sus)
+    nMatrix <- as.matrix(names)
+    
+    sumMatrix <- round(aggregate(c(susMatrix) ~ c(lvMatrix), FUN = sum))
+    nameFrame <- data.frame(nMatrix)
+    tableFrame <- data.frame(sumMatrix)
+    testFrame <- data.frame(sumMatrix)
+    #tableFrame <- tail(tableFrame, -1)
+    tableFrame <- tableFrame %>% slice(-1)
+    colnames(tableFrame) <- c("Nums", "Values") # renaming Columns to make it easier to reference them
+    colnames(nameFrame) <- c("Names")
+    tableFrame$Nums <- nameFrame$Names
+    colnames(tableFrame) <- c("State/Province", "Population Count") # Changing Names so it matches to Spec
+    #print(nameFrame)
+    #print(rsMatrix)
+    print(testFrame)
+    
+    output$aggTable = DT::renderDataTable({DT::datatable(tableFrame,
+                                                         options = list(paging = FALSE,
+                                                                        pageLength = nrow(tableFrame),
+                                                                        #autoWidth = TRUE,
+                                                                        #scrollX = TRUE,
+                                                                        columnDefs = list(list(width = '20%', targets = "_all"))
+                                                         ),
+                                                         selection = 'single',
+                                                         rownames = FALSE
+    )})
+  })
+  
+  ############################################################################    
+  # Create select box for choosing input country                             #
+  ############################################################################ 
+  
+  output$Level1Ui <- renderUI({
+    validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
+    
+    isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
+    
+    if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
+      level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
+    } else {
+      level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
+    }
+    
+    selectizeInput(inputId = "level1List", "",
+                   choices = level1Options,
+                   selected = "", multiple = TRUE,
+                   options = list(placeholder = "Select a state/province"))
+  })
   
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -179,63 +239,48 @@ server <- function(input, output, session){
      }
     }
   })
+
+  ############################################################################    
+  # Generate seed data and have an option to download the file locally       #
+  ############################################################################ 
   
-  #######################################################################################    
-  # Create a table of population count stratified by states/provinces and output to UI  #
-  ####################################################################################### 
-  
-  output$tableButton <- renderUI({
+  output$seedDataButton <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      actionButton("table","Population Count Table", 
+      actionButton("seed","Generate Seed Data", 
                    style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
     }
   })
   
-  observeEvent(input$table, {
-    source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, 0)
-    sus <- rs$rasterStack$Susceptible
-    lvOne <- rs$rasterStack$Level1Raster
-    names <- rs$Level1Identifier$NAME_1
-    #print(rs$rasterStack)
-    #print(sus)
-    #print(lvOne)
-    #print(names)
-
-    popCount <- crosstab(sus,lvOne)
-    #print(popCount)
-   
-    lvMatrix <- as.matrix(lvOne)
-    susMatrix <- as.matrix(sus)
-    nMatrix <- as.matrix(names)
+  observeEvent(input$seed, {
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
-    sumMatrix <- round(aggregate(c(susMatrix) ~ c(lvMatrix), FUN = sum))
-    nameFrame <- data.frame(nMatrix)
-    tableFrame <- data.frame(sumMatrix)
-    testFrame <- data.frame(sumMatrix)
-    #tableFrame <- tail(tableFrame, -1)
-    tableFrame <- tableFrame %>% slice(-1)
-    colnames(tableFrame) <- c("Nums", "Values") #renaming Columns to make it easier to reference them
-    colnames(nameFrame) <- c("Names")
-    tableFrame$Nums <- nameFrame$Names
-    colnames(tableFrame) <- c("State/Province", "Population Count") #Changing Names So it matches to Spec
-    #print(nameFrame)
-    #print(rsMatrix)
-    print(testFrame)
-   
-    output$aggTable = DT::renderDataTable({DT::datatable(tableFrame,
-                                                         options = list(paging = FALSE,
-                                                                        pageLength = nrow(tableFrame),
-                                                                        #autoWidth = TRUE,
-                                                                        #scrollX = TRUE,
-                                                                        columnDefs = list(list(width = '20%', targets = "_all"))
-                                                                        ),
-                                                         selection = 'single',
-                                                         rownames = FALSE
-                                          )})
-    })
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
+      inputISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+      
+      gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file
+      
+      #print(gadmFileName)
+      
+      gadmFolder <- "gadm/"         # .rds files should be stored in local gadm/ folder
+      
+      #print(paste0(gadmFolder, gadmFileName))
+      
+      # if (file.exists(paste0(gadmFolder, gadmFileName)))
+      # {
+      Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
+      # }
+      # else
+      # {
+      #     Level1Identifier <- getData("GADM", level = 1, country = inputISOLower)
+      # }
+      
+      print(Level1Identifier$NAME_1) # List of all states/provinces/regions
+    }
+  })
+
 }
 
 shinyApp(ui,server)
