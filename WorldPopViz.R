@@ -51,7 +51,7 @@ ui <- fluidPage(
                                       tabPanel(title ="Population Map", imageOutput("outputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
                                                ),
-                                      tabPanel(title ="Single State/Province Map", imageOutput("croppedOutputImage"),
+                                      tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
                                       ),
                                       tabPanel(title ="Population Count by State/Province",
@@ -281,16 +281,16 @@ server <- function(input, output, session){
     }
   })
 
-  ######################################
-  #Single State/Province Map Tab Panel #
-  ######################################
+  ########################################
+  #Selected State/Province Map Tab Panel #
+  ########################################
   
   observe(
-    hideTab(inputId = 'tabSet', target = 'Single State/Province Map')
+    hideTab(inputId = 'tabSet', target = 'Selected State/Province Map')
   )
   
   observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Single State/Province Map')
+    showTab(inputId = 'tabSet', target = 'Selected State/Province Map')
   })
   
   ######################################
