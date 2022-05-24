@@ -5,6 +5,7 @@ library(readxl)
 library(DT)
 library(dplyr)
 
+
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
@@ -152,7 +153,7 @@ server <- function(input, output, session){
     #print(lvOne)
     #print(names)
     
-    popCount <- crosstab(sus,lvOne)
+    #popCount <- crosstab(sus,lvOne)
     #print(popCount)
     
     lvMatrix <- as.matrix(lvOne)
@@ -171,7 +172,7 @@ server <- function(input, output, session){
     colnames(tableFrame) <- c("State/Province", "Population Count") # Changing Names so it matches to Spec
     #print(nameFrame)
     #print(rsMatrix)
-    print(testFrame)
+    #print(testFrame)
     
     output$aggTable = DT::renderDataTable({DT::datatable(tableFrame,
                                                          options = list(paging = FALSE,
@@ -276,8 +277,25 @@ server <- function(input, output, session){
       # {
       #     Level1Identifier <- getData("GADM", level = 1, country = inputISOLower)
       # }
+      #print(coordinates(Level1Identifier)) #coords of the region
+      #print(Level1Identifier$NAME_1) # List of all states/provinces/regions
       
-      print(Level1Identifier$NAME_1) # List of all states/provinces/regions
+      seedNames <- Level1Identifier$NAME_1
+      seedCoords <- coordinates(Level1Identifier)
+      seedVaxx <- c(0)
+      seedExpo <- c(0)
+      seedInfect <- c(0)
+      seedRec <- c(0)
+      seedDead <- c(0)
+      seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
+      frameCombine <- data.frame(seedCombine)
+      colnames(frameCombine) <- c("Location", "Lat", "Lon", "InitalVaccinated", "InitialExposed", "InitalInfections", "InitalRecovered", "InitalDead")
+      print(frameCombine)
+      isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
+      sheetName = sprintf("C:\\Users\\00gun\\Desktop\\ashok stuff\\spatialEpisim-main\\spatialEpisim-main\\seeddata\\%s_initialSeedData.csv",isoCode)
+      write.csv(frameCombine, sheetName, row.names = FALSE)
+      
+      
     }
   })
 
