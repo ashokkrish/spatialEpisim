@@ -34,6 +34,11 @@ ui <- fluidPage(
 
                             uiOutput("seedDataButton"),
                             
+                            conditionalPanel(condition = "input.seed == 1", uiOutput("downloadTableButton"))
+                            
+                            #uiOutput("downloadTableButton")
+                           
+                            
                             # , radioButtons(
                             #      inputId = "qValue",
                             #      label = ("Image Size"),
@@ -292,12 +297,30 @@ server <- function(input, output, session){
       colnames(frameCombine) <- c("Location", "Lat", "Lon", "InitalVaccinated", "InitialExposed", "InitalInfections", "InitalRecovered", "InitalDead")
       print(frameCombine)
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-      sheetName = sprintf("C:\\Users\\00gun\\Desktop\\ashok stuff\\spatialEpisim-main\\spatialEpisim-main\\seeddata\\%s_initialSeedData.csv",isoCode)
-      write.csv(frameCombine, sheetName, row.names = FALSE)
+      sheetName = sprintf("%s_initialSeedData",isoCode)
       
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          paste(sheetName, Sys.Date(), ".csv",  sep="")
+        },
+        content = function(sheetName) {
+          write.csv(frameCombine, sheetName, row.names = FALSE)
+        }
+      )
+
       
     }
   })
+  
+  output$downloadTableButton <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      downloadButton('downloadData',"Download Table", 
+                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    }
+  })
+
 
   ########################################
   #Selected State/Province Map Tab Panel #
