@@ -782,8 +782,22 @@ server <- function(input, output, session){
   # Multiple functionality when 'Run Simulation' is pressed                  #
   ############################################################################ 
   observeEvent(input$go, {
+    
+    isCropped <- FALSE
+    
+    if(input$clipLev1 == TRUE)
+    {
+      isCropped <- TRUE
+    }
+    else
+    {
+      isCropped <- FALSE
+    }
+    
+    print(paste0(c("isCropped", isCropped)))
+    
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped = F)
+    rs <- createRasterStack(input$selectedCountry, input$agg, F)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
@@ -880,7 +894,7 @@ server <- function(input, output, session){
       isDeterministic <- FALSE
     }
     
-    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic)
+    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic, isCropped)
     
     row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$WorldPopRows, " rows x ", rs$WorldPopCols, " columns = ", rs$WorldPopCells, " grid cells"))

@@ -71,14 +71,14 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
 # Compartmental model simulation begins #
 #---------------------------------------#
 
- SpatialCompartmentalModel <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic)
+ SpatialCompartmentalModel <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped)
  {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-  rs <- createRasterStack(selectedCountry, rasterAgg, isCropped = F)
+  rs <- createRasterStack(selectedCountry, rasterAgg, isCropped)
   
   Susceptible <- rs$rasterStack$Susceptible
   Vaccinated <- rs$rasterStack$Vaccinated
