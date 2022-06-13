@@ -5,7 +5,6 @@ library(readxl)
 library(DT)
 library(dplyr)
 
-
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
@@ -149,7 +148,7 @@ server <- function(input, output, session){
   
   observeEvent(input$table, {
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, 0)
+    rs <- createRasterStack(input$selectedCountry, 0, isCropped = F)
     sus <- rs$rasterStack$Susceptible
     lvOne <- rs$rasterStack$Level1Raster
     names <- rs$Level1Identifier$NAME_1
@@ -307,8 +306,6 @@ server <- function(input, output, session){
           write.csv(frameCombine, sheetName, row.names = FALSE)
         }
       )
-
-      
     }
   })
   
