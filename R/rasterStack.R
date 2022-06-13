@@ -140,19 +140,19 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
 #------------------------#
 # #set working directory to source file location if this function is to be tested standalone
 
-#createRasterStack("Czech Republic", 0)
-#createRasterStack("Latvia", 0)
-#createRasterStack("Nigeria", 0)
-#createRasterStack("Italy", 0)
+#createRasterStack("Czech Republic", 0, isCropped = F)
+#createRasterStack("Latvia", 0, isCropped = F)
+#createRasterStack("Nigeria", 0, isCropped = F)
+#createRasterStack("Italy", 0, isCropped = F)
 
-# rs <- createRasterStack("Czech Republic", 10)
+# rs <- createRasterStack("Czech Republic", 10, isCropped = F)
 # rs
 # names(rs)
 #
 # rs$rasterStack$Susceptible
 #
-# createRasterStack("Nigeria", 25)
+# createRasterStack("Nigeria", 25, isCropped = F)
 # 
-# createRasterStack("Italy", 30)
+# createRasterStack("Italy", 30, isCropped = F)
 # 
-# createRasterStack("Latvia", 10)
+# createRasterStack("Latvia", 10, isCropped = F)
