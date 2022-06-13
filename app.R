@@ -783,7 +783,7 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$go, {
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, input$agg)
+    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped = F)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
