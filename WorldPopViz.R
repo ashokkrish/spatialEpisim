@@ -5,6 +5,7 @@ library(readxl)
 library(DT)
 library(dplyr)
 
+
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
@@ -33,7 +34,7 @@ ui <- fluidPage(
 
                             uiOutput("seedDataButton"),
                             
-                            conditionalPanel(condition = "input.seed == 1", uiOutput("downloadTableButton"))
+                            
                             
                             #uiOutput("downloadTableButton")
                            
@@ -148,7 +149,7 @@ server <- function(input, output, session){
   
   observeEvent(input$table, {
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, 0, isCropped = F)
+    rs <- createRasterStack(input$selectedCountry, 0)
     sus <- rs$rasterStack$Susceptible
     lvOne <- rs$rasterStack$Level1Raster
     names <- rs$Level1Identifier$NAME_1
@@ -253,12 +254,14 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      actionButton("seed","Generate Seed Data", 
-                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+      downloadButton('downloadData',"Generate Seed Data", 
+                     style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+      
+     
     }
   })
   
-  observeEvent(input$seed, {
+  observeEvent(input$selectedCountry, {
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
@@ -293,7 +296,7 @@ server <- function(input, output, session){
       seedDead <- c(0)
       seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
       frameCombine <- data.frame(seedCombine)
-      colnames(frameCombine) <- c("Location", "Lat", "Lon", "InitalVaccinated", "InitialExposed", "InitalInfections", "InitalRecovered", "InitalDead")
+      colnames(frameCombine) <- c("Location", "Lat", "Lon", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
       print(frameCombine)
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
       sheetName = sprintf("%s_initialSeedData",isoCode)
@@ -306,17 +309,12 @@ server <- function(input, output, session){
           write.csv(frameCombine, sheetName, row.names = FALSE)
         }
       )
+
+      
     }
   })
   
-  output$downloadTableButton <- renderUI({
-    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
-    
-    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      downloadButton('downloadData',"Download Table", 
-                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-    }
-  })
+ 
 
 
   ########################################
