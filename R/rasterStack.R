@@ -107,6 +107,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped) {
     print(freq(Level1Raster))
     print(freq(Inhabitable))
     
+    print("isCropped selected")
     # print(dim(Level1Raster)); print(dim(Susceptible))
     # print(res(Level1Raster)); print(res(Susceptible))
     # print(origin(Level1Raster)); print(origin(Susceptible))
@@ -233,6 +234,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped) {
   
   print(freq(Level1Raster))
   print(freq(Inhabitable))
+  print("isCropped not selected")
   
   # print(dim(Level1Raster)); print(dim(Susceptible))
   # print(res(Level1Raster)); print(res(Susceptible))

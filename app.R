@@ -797,7 +797,7 @@ server <- function(input, output, session){
     print(paste0(c("isCropped", isCropped)))
     
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, input$agg, F)
+    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
