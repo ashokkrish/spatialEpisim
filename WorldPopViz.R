@@ -22,7 +22,7 @@ ui <- fluidPage(
                             
                             uiOutput("countryDropdown"),
                             
-                            uiOutput("tableButton"),
+                          
                             
                             uiOutput("clipStateCheckbox"),
                             
@@ -30,10 +30,13 @@ ui <- fluidPage(
                             
                             # uiOutput("aggSlider"),
 
-                            uiOutput("clippedPlotButton"),
-
-                            uiOutput("seedDataButton"),
+                            conditionalPanel(id = "listCheck",condition = "input.level1List != null",uiOutput("clippedPlotButton")),
                             
+
+                            uiOutput("seedDataButton"),  
+                            
+                            uiOutput("tableButton"),
+                          
                             
                             
                             #uiOutput("downloadTableButton")
@@ -54,7 +57,7 @@ ui <- fluidPage(
                         
                         mainPanel(
                           tabsetPanel(id = 'tabSet',
-                                      tabPanel(title ="Population Map", imageOutput("outputImage"),
+                                      tabPanel(id = "main", title ="Population Map", imageOutput("outputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
                                                ),
                                       tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
@@ -143,7 +146,8 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton("table","Population Count Table", 
-                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4", 
+                   style="length:800px")
     }
   })
   
@@ -207,8 +211,9 @@ server <- function(input, output, session){
     }
     
     selectizeInput(inputId = "level1List", "",
+                   
                    choices = level1Options,
-                   selected = "", multiple = TRUE,
+                   selected = 1, multiple = TRUE,
                    options = list(placeholder = "Select a state/province"))
   })
   
@@ -221,7 +226,8 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton("go","Plot clipped raster", 
-                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                   style="length:800px")
     }
   })
   
@@ -255,7 +261,8 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       downloadButton('downloadData',"Generate Seed Data", 
-                     style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                     style="color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                     style="length:800px")
       
      
     }
@@ -296,8 +303,8 @@ server <- function(input, output, session){
       seedDead <- c(0)
       seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
       frameCombine <- data.frame(seedCombine)
-      colnames(frameCombine) <- c("Location", "Lat", "Lon", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
-      print(frameCombine)
+      colnames(frameCombine) <- c("Location", "lon", "lat", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
+      #print(frameCombine)
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
       sheetName = sprintf("%s_initialSeedData",isoCode)
       
