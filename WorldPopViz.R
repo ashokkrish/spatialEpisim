@@ -152,6 +152,16 @@ server <- function(input, output, session){
   })
   
   observeEvent(input$table, {
+    isCropped <- FALSE
+    
+    if(input$clipLev1 == TRUE)
+    {
+      isCropped <- TRUE
+    }
+    else
+    {
+      isCropped <- FALSE
+    }
     source("R/rasterStack.R")
     rs <- createRasterStack(input$selectedCountry, 0)
     sus <- rs$rasterStack$Susceptible
