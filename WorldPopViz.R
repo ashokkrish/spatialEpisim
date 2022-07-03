@@ -296,6 +296,7 @@ server <- function(input, output, session){
       
       seedNames <- Level1Identifier$NAME_1
       seedCoords <- coordinates(Level1Identifier)
+      #print(seedCoords)
       seedVaxx <- c(0)
       seedExpo <- c(0)
       seedInfect <- c(0)
@@ -303,8 +304,12 @@ server <- function(input, output, session){
       seedDead <- c(0)
       seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
       frameCombine <- data.frame(seedCombine)
-      colnames(frameCombine) <- c("Location", "lon", "lat", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
+      
+      frameCombine <- frameCombine[c("seedNames", "V3", "V2", "seedVaxx", "seedExpo", "seedInfect", "seedRec", "seedDead")]
+      
+      colnames(frameCombine) <- c("Location", "lat", "lon", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
       #print(frameCombine)
+      
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
       sheetName = sprintf("%s_initialSeedData",isoCode)
       
