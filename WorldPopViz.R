@@ -5,7 +5,6 @@ library(readxl)
 library(DT)
 library(dplyr)
 
-
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
@@ -21,9 +20,7 @@ ui <- fluidPage(
                             id = "dashboard",
                             
                             uiOutput("countryDropdown"),
-                            
-                          
-                            
+
                             uiOutput("clipStateCheckbox"),
                             
                             conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
@@ -31,17 +28,13 @@ ui <- fluidPage(
                             # uiOutput("aggSlider"),
 
                             conditionalPanel(id = "listCheck",condition = "input.level1List != null",uiOutput("clippedPlotButton")),
-                            
 
                             uiOutput("seedDataButton"),  
                             
                             uiOutput("tableButton"),
-                          
-                            
-                            
+
                             #uiOutput("downloadTableButton")
-                           
-                            
+
                             # , radioButtons(
                             #      inputId = "qValue",
                             #      label = ("Image Size"),
@@ -57,7 +50,7 @@ ui <- fluidPage(
                         
                         mainPanel(
                           tabsetPanel(id = 'tabSet',
-                                      tabPanel(id = "main", title ="Population Map", imageOutput("outputImage"),
+                                      tabPanel(id = "main", title ="Population Count Map", imageOutput("outputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
                                                ),
                                       tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
@@ -162,8 +155,10 @@ server <- function(input, output, session){
     {
       isCropped <- FALSE
     }
+    
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, 0)
+    rs <- createRasterStack(input$selectedCountry, 0, isCropped)
+    
     sus <- rs$rasterStack$Susceptible
     lvOne <- rs$rasterStack$Level1Raster
     names <- rs$Level1Identifier$NAME_1
@@ -273,8 +268,6 @@ server <- function(input, output, session){
       downloadButton('downloadData',"Generate Seed Data", 
                      style="color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      style="length:800px")
-      
-     
     }
   })
   
@@ -317,7 +310,7 @@ server <- function(input, output, session){
       
       frameCombine <- frameCombine[c("seedNames", "V3", "V2", "seedVaxx", "seedExpo", "seedInfect", "seedRec", "seedDead")]
       
-      colnames(frameCombine) <- c("Location", "lat", "lon", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
+      colnames(frameCombine) <- c("Location", "lat", "lon", "InitialVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
       #print(frameCombine)
       
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
@@ -331,13 +324,8 @@ server <- function(input, output, session){
           write.csv(frameCombine, sheetName, row.names = FALSE)
         }
       )
-
-      
     }
   })
-  
- 
-
 
   ########################################
   #Selected State/Province Map Tab Panel #
