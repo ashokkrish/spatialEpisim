@@ -44,7 +44,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   #plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
   levs <- levels(x)[[1]]
-  levs[7] <- "> 1000"
+  #levs[7] <- "> 1000"
   levels(x) <- levs
 
   #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
