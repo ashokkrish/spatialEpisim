@@ -1,7 +1,7 @@
 library(countrycode)
 library(raster, warn.conflicts=FALSE)
 
-createRasterStack <- function(selectedCountry, rasterAgg, isCropped) {
+createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
   
   if (isCropped)
   {
