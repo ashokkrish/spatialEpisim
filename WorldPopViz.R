@@ -163,7 +163,7 @@ server <- function(input, output, session){
       isCropped <- FALSE
     }
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, 0)
+    rs <- createRasterStack(input$selectedCountry, 0, isCropped = F)
     sus <- rs$rasterStack$Susceptible
     lvOne <- rs$rasterStack$Level1Raster
     names <- rs$Level1Identifier$NAME_1
