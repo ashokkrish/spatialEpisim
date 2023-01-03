@@ -5,7 +5,6 @@ library(readxl)
 library(DT)
 library(dplyr)
 
-
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
@@ -22,8 +21,6 @@ ui <- fluidPage(
                             
                             uiOutput("countryDropdown"),
                             
-                          
-                            
                             uiOutput("clipStateCheckbox"),
                             
                             conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
@@ -32,16 +29,16 @@ ui <- fluidPage(
 
                             conditionalPanel(id = "listCheck",condition = "input.level1List != null",uiOutput("clippedPlotButton")),
                             
-
+                            br(),
+                            
                             uiOutput("seedDataButton"),  
+                            
+                            br(),
                             
                             uiOutput("tableButton"),
                           
-                            
-                            
                             #uiOutput("downloadTableButton")
                            
-                            
                             # , radioButtons(
                             #      inputId = "qValue",
                             #      label = ("Image Size"),
@@ -223,7 +220,7 @@ server <- function(input, output, session){
     selectizeInput(inputId = "level1List", "",
                    
                    choices = level1Options,
-                   selected = 1, multiple = TRUE,
+                   selected = 1, #multiple = TRUE,
                    options = list(placeholder = "Select a state/province"))
   })
   
@@ -273,8 +270,6 @@ server <- function(input, output, session){
       downloadButton('downloadData',"Generate Seed Data", 
                      style="color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      style="length:800px")
-      
-     
     }
   })
   
@@ -335,9 +330,6 @@ server <- function(input, output, session){
       
     }
   })
-  
- 
-
 
   ########################################
   #Selected State/Province Map Tab Panel #
