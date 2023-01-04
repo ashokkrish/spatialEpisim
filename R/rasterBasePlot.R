@@ -133,3 +133,9 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 # 
 # createBasePlot(selectedCountry = "Korea", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Korea", rasterAgg = 0, directOutput = F)
+# 
+# createBasePlot(selectedCountry = "Rwanda", rasterAgg = 0, directOutput = T)
+# createBasePlot(selectedCountry = "Rwanda", rasterAgg = 0, directOutput = F)
+# 
+# createBasePlot(selectedCountry = "Uganda", rasterAgg = 0, directOutput = T)
+# createBasePlot(selectedCountry = "Uganda", rasterAgg = 0, directOutput = F)
