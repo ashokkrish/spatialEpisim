@@ -461,7 +461,7 @@ server <- function(input, output, session){
   # TODO: refactor numericInputs into single function                        #
   ############################################################################ 
   output$alphaInput <- renderUI({
-    alphaValue <- 0.00015
+    alphaValue <- 0.2100 # 0.00015
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -491,7 +491,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$betaInput <- renderUI({
-    betaValue <- 0.00001
+    betaValue <- 0.055 # 0.00001
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -521,7 +521,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$gammaInput <- renderUI({
-    gammaValue <- 0.008
+    gammaValue <- 0.009 #0.008
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
