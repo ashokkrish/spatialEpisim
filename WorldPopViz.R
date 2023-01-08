@@ -27,7 +27,7 @@ ui <- fluidPage(
                             
                             # uiOutput("aggSlider"),
 
-                            conditionalPanel(id = "listCheck",condition = "input.level1List != null",uiOutput("clippedPlotButton")),
+                            conditionalPanel(id = "listCheck", condition = "input.level1List != null", uiOutput("clippedPlotButton")),
                             
                             br(),
                             
@@ -49,7 +49,7 @@ ui <- fluidPage(
                             #      selected = "0"
                             #        )
                             )
-                           ,width = 3
+                           , width = 3
                         ), 
                         
                         mainPanel(
@@ -59,15 +59,16 @@ ui <- fluidPage(
                                                ),
                                       tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
-                                      ),
+                                               ),
                                       tabPanel(title ="Population Count by State/Province",
-                                               DT::dataTableOutput("aggTable"))
+                                               DT::dataTableOutput("aggTable")
+                                               )
                          )
-                    )
-               )
-          )
-     )
-)
+                    ) #mainPanel
+               ) # sidebarLayout
+          ) #tabPanel
+     ) #navbarPage
+) # fluidPage
 
 server <- function(input, output, session){
   
@@ -125,7 +126,7 @@ server <- function(input, output, session){
   
   output$downloadPlot <- downloadHandler(
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
-    filename = sprintf("%s_2020PopulationCount.png",isoCode),
+    filename = sprintf("%s_2020PopulationCount.png", isoCode),
     content = function(outfile) {
       if (input$selectedCountry != ""){
         png(outfile, width = 1024, height = 768)
@@ -134,17 +135,17 @@ server <- function(input, output, session){
       }
     })
   
-  #######################################################################################    
-  # Create a table of population count stratified by states/provinces and output to UI  #
-  ####################################################################################### 
+  ######################################################################################    
+  # Create a table of population count stratified by states/provinces and output to UI #
+  ###################################################################################### 
   
   output$tableButton <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton("table","Population Count Table", 
-                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4", 
-                   style="length:800px")
+                   style = "color: #fff; background-color: #337ab7; border-color: #2e6da4", 
+                   style = "length:800px")
     }
   })
   
@@ -202,9 +203,9 @@ server <- function(input, output, session){
     )})
   })
   
-  ############################################################################    
-  # Create select box for choosing input country                             #
-  ############################################################################ 
+  ################################################    
+  # Create select box for choosing input country #
+  ################################################ 
   
   output$Level1Ui <- renderUI({
     validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
@@ -218,7 +219,6 @@ server <- function(input, output, session){
     }
     
     selectizeInput(inputId = "level1List", "",
-                   
                    choices = level1Options,
                    selected = 1, #multiple = TRUE,
                    options = list(placeholder = "Select a state/province"))
@@ -267,9 +267,9 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      downloadButton('downloadData',"Generate Seed Data", 
-                     style="color: #fff; background-color: #337ab7; border-color: #2e6da4",
-                     style="length:800px")
+      downloadButton('downloadData', "Generate Seed Data", 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                     style = "length:800px")
     }
   })
   
@@ -284,7 +284,7 @@ server <- function(input, output, session){
       
       #print(gadmFileName)
       
-      gadmFolder <- "gadm/"         # .rds files should be stored in local gadm/ folder
+      gadmFolder <- "gadm/" # .rds files should be stored in local gadm/ folder
       
       #print(paste0(gadmFolder, gadmFileName))
       
@@ -294,14 +294,14 @@ server <- function(input, output, session){
       # }
       # else
       # {
-      #     Level1Identifier <- getData("GADM", level = 1, country = inputISOLower)
+      #   Level1Identifier <- getData("GADM", level = 1, country = inputISOLower)
       # }
-      #print(coordinates(Level1Identifier)) #coords of the region
+      #print(coordinates(Level1Identifier)) # coords of the region
       #print(Level1Identifier$NAME_1) # List of all states/provinces/regions
       
       seedNames <- Level1Identifier$NAME_1
       seedCoords <- coordinates(Level1Identifier)
-      #print(seedCoords)
+      print(seedCoords)
       seedVaxx <- c(0)
       seedExpo <- c(0)
       seedInfect <- c(0)
@@ -310,24 +310,24 @@ server <- function(input, output, session){
       seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
       frameCombine <- data.frame(seedCombine)
       
+      #print(frameCombine)
+      
       frameCombine <- frameCombine[c("seedNames", "V3", "V2", "seedVaxx", "seedExpo", "seedInfect", "seedRec", "seedDead")]
       
-      colnames(frameCombine) <- c("Location", "lat", "lon", "IniitalVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
+      colnames(frameCombine) <- c("Location", "lat", "lon", "InitialVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
       #print(frameCombine)
       
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-      sheetName = sprintf("%s_initialSeedData",isoCode)
+      sheetName = sprintf("%s_initialSeedData", isoCode)
       
       output$downloadData <- downloadHandler(
         filename = function() {
-          paste(sheetName, Sys.Date(), ".csv",  sep="")
+          paste(sheetName, Sys.Date(), ".csv",  sep = "")
         },
         content = function(sheetName) {
           write.csv(frameCombine, sheetName, row.names = FALSE)
         }
       )
-
-      
     }
   })
 
@@ -342,11 +342,7 @@ server <- function(input, output, session){
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Selected State/Province Map')
   })
-  
-  ######################################
-  #Single State/Province Map Tab Panel #
-  ######################################
-  
+
   observe(
     hideTab(inputId = 'tabSet', target = 'Population Count by State/Province')
   )
@@ -354,7 +350,6 @@ server <- function(input, output, session){
   observeEvent(input$table,{
     showTab(inputId = 'tabSet', target = 'Population Count by State/Province')
   })
-  
 }
 
 shinyApp(ui,server)
