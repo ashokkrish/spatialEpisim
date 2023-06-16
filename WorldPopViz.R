@@ -116,7 +116,7 @@ server <- function(input, output, session){
     } else {
       outfile <- tempfile(fileext = '.png')
       
-      #createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
+      createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
       png(outfile, width = 1024, height = 768)
       createBasePlot(input$selectedCountry, 1, TRUE)   # print the susceptible plot direct to UI
       dev.off()
