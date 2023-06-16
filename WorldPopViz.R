@@ -8,6 +8,7 @@ library(dplyr)
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
+#source("R/clippingBaseRaster.R")
 
 ui <- fluidPage(
   
@@ -29,13 +30,13 @@ ui <- fluidPage(
 
                             conditionalPanel(id = "listCheck", condition = "input.level1List != null", uiOutput("clippedPlotButton")),
                             
-                            br(),
-                            
-                            uiOutput("seedDataButton"),  
-                            
-                            br(),
-                            
-                            uiOutput("tableButton"),
+                            # br(),
+                            # 
+                            # uiOutput("seedDataButton"),  
+                            # 
+                            # br(),
+                            # 
+                            # uiOutput("tableButton"),
                           
                             #uiOutput("downloadTableButton")
                            
@@ -78,7 +79,7 @@ server <- function(input, output, session){
       label = strong("Country"),
       choices = population$Country,
       multiple = FALSE,
-      select = NULL,
+      select = "Democratic Republic of Congo", #NULL,
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country"),
@@ -93,7 +94,7 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
+      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = TRUE)
     }
   })
 
@@ -220,7 +221,7 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   selected = 1, #multiple = TRUE,
+                   selected = 1, multiple = TRUE,
                    options = list(placeholder = "Select a state/province"))
   })
   
@@ -244,17 +245,19 @@ server <- function(input, output, session){
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
      if(input$clipLev1 == TRUE){
-      output$croppedOutputImage <- renderImage({
-        #source("R/clippingBaseRaster.R")
-        #source("R/clippingBaseRasterHaxby.R")
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 800, height = 600)
-        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
-      }, deleteFile = TRUE)
+       
+       if(!is.null(input$level1List) && input$level1List != "" ){
+        output$croppedOutputImage <- renderImage({
+  
+          outfile <- tempfile(fileext = '.png')
+          
+          png(outfile, width = 800, height = 600)
+          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0)
+          dev.off()
+          
+          list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
+        }, deleteFile = TRUE)
+      }
      }
     }
   })
