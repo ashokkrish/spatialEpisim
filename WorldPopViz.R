@@ -117,11 +117,13 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
       
       createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 1024, height = 768)
+      png(outfile, width = 800, height = 600)
+      #png(outfile, width = 1024, height = 768)
       createBasePlot(input$selectedCountry, 1, TRUE)   # print the susceptible plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
+      #list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
     }
   }, deleteFile = TRUE)
   
@@ -130,7 +132,8 @@ server <- function(input, output, session){
     filename = sprintf("%s_2020PopulationCount.png", isoCode),
     content = function(outfile) {
       if (input$selectedCountry != ""){
-        png(outfile, width = 1024, height = 768)
+        png(outfile, width = 800, height = 600)
+        #png(outfile, width = 1024, height = 768)
         createBasePlot(input$selectedCountry, 1, TRUE)
         dev.off()
       }
@@ -234,8 +237,8 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton("go","Plot clipped raster", 
-                   style="color: #fff; background-color: #337ab7; border-color: #2e6da4",
-                   style="length:800px")
+                   style ="color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                   style ="length:800px")
     }
   })
   
@@ -252,6 +255,7 @@ server <- function(input, output, session){
           outfile <- tempfile(fileext = '.png')
           
           png(outfile, width = 800, height = 600)
+          #png(outfile, width = 1024, height = 768)
           createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0)
           dev.off()
           
@@ -281,7 +285,7 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-      inputISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+      inputISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
       
       gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file
       
@@ -293,7 +297,7 @@ server <- function(input, output, session){
       
       # if (file.exists(paste0(gadmFolder, gadmFileName)))
       # {
-      Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
+          Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
       # }
       # else
       # {
