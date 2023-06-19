@@ -255,9 +255,9 @@ server <- function(input, output, session){
           
           png(outfile, width = 800, height = 600)
           #png(outfile, width = 1024, height = 768)
-          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE)
-          dev.off()
           createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
+          dev.off()
+          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE)
           
           list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
         }, deleteFile = TRUE)
