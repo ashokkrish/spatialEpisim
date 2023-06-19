@@ -83,18 +83,18 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
                                " (1 sq. km resolution)")  
   }
 
-  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend="bottom", mar=c(8.5, 3.5, 2.5, 2.5))
+  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend="bottom", mar=c(8.5, 3.5, 2.5, 2.5))
   terra::north(type = 2, xy = "bottomleft", cex = 1)
 
-  if (selectedCountry == "Czech Republic"){
-       ## CZE
-      sbar(100, type="bar", below="km", cex=0.9, xy="bottomright")
-  }
-  else if (selectedCountry == "Nigeria")
-  {
-       ## NGA
-      sbar(300, type="bar", below="km", cex=0.9, xy="bottomright")
-  }
+  # if (selectedCountry == "Czech Republic"){
+  #      ## CZE
+  #     sbar(100, type="bar", below="km", cex=0.9, xy="bottomright")
+  # }
+  # else if (selectedCountry == "Nigeria")
+  # {
+  #      ## NGA
+  #     sbar(300, type="bar", below="km", cex=0.9, xy="bottomright")
+  # }
 
   #plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
   
@@ -133,8 +133,8 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 #------------------------#
 # # Set working directory to the root directory /spatialEpisim otherwise the below examples will not run
 #
-# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
+#createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
+createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
 #
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = F)
