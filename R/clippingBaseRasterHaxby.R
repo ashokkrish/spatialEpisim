@@ -15,7 +15,7 @@ shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(rstudioapi))
 shhh(library(fasterize))
 
-createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
+createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, directOutput)
 {
   # setwd(dirname(getActiveDocumentContext()$path))
   
@@ -42,6 +42,11 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
     download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
   }
   
+  fname <- paste0("clipped_", inputISO, "_PopulationCount.png")
+  PNGFileName <<- paste0("www/", fname)
+  
+  if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
+  
   WorldPop <- raster(paste0(tifFolder, tifFileName))
 
   WorldPop <- replace(WorldPop, is.na(WorldPop), 0) 
@@ -64,7 +69,10 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   
   lvl1Raster <- crop(WorldPop, GADMdata)
   # print(WorldPop)
-  # print(lvl1Raster)
+  
+  dlong = abs(xmax(lvl1Raster) - xmin(lvl1Raster))
+  dlat = abs(ymax(lvl1Raster) - xmax(lvl1Raster))
+   
  
   lvl1Raster <- mask(lvl1Raster, GADMdata)
   
@@ -76,13 +84,14 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   
   #plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
-  levs <- levels(x)[[1]]
-  #levs[7] <- "> 1000"
-  levels(x) <- levs
+   levs <- levels(x)[[1]]
+  # #levs[7] <- "> 1000"
+   levels(x) <- levs
   
   #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
+  
 
   # newProj <- CRS("+proj=longlat +datum=WGS84 +no_defs")     # Warning message, look into later...
   # countryProj <- spTransform(GADMdata, newProj)             # This is not used anywhere
@@ -107,8 +116,8 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
                           selectedCountry,
                           " (1 sq. km resolution)")
   
-  terra::plot(x, col=pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend = "bottom", mar=c(8.5, 3.5, 2.5, 2.5))
-  terra::north(type = 2, xy = "bottomleft", cex = 2)
+  terra::plot(x, col=pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(x = xmin(lvl1Raster)-0.24*dlong, y = ymin(lvl1Raster)-0.015*dlat, title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  terra::north(type = 2, xy = "bottomleft", cex = 1)
   
   title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
   # 
@@ -119,7 +128,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   plot(GADMdata, add = TRUE)
   
   # if(!directOutput){dev.off()} 
-  
+  if(!directOutput){dev.off()}     # closes the file opened with png(PNGFileName)
   # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
   
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
@@ -148,11 +157,11 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
 # 
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0)
+ createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput=FALSE)
 #  
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0)
+#createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0, directOutput = FALSE)
 # 
 # setwd('..')
 #  
