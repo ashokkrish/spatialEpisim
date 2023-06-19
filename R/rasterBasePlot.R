@@ -37,6 +37,12 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   
   WorldPop <- terra::rast(paste0(tifFolder, tifFileName))
 
+  print(res(WorldPop))
+  
+  print(ext(WorldPop))
+
+  print(ncell(WorldPop))
+
   # WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # TODO: delete this line for clear plot @Gurs why???
 
   x <- classify(WorldPop, c(0, 10, 25, 50, 100, 250, 1000, 100000))
@@ -78,7 +84,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   }
 
   terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend="bottom", mar=c(8.5, 3.5, 2.5, 2.5))
-  terra::north(type = 2, xy = "bottomleft", cex = 2)
+  terra::north(type = 2, xy = "bottomleft", cex = 1)
 
   if (selectedCountry == "Czech Republic"){
        ## CZE
