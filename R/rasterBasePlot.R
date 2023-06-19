@@ -2,14 +2,14 @@ library(countrycode)
 library(terra, warn.conflicts=FALSE)
 library(raster, warn.conflicts=FALSE)
 
-getPal <- function(f) {
-  x <- rast(f)
-  u <- unique(values(x))
-  hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
-  colorRampPalette(hex)
-}
+# getPal <- function(f) {
+#   x <- rast(f)
+#   u <- unique(values(x))
+#   hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
+#   colorRampPalette(hex)
+# }
 
-palettePng <- "misc/seminf_haxby.png"  # default colour palette found in misc folder
+# palettePng <- "misc/seminf_haxby.png"  # default colour palette found in misc folder
 
 createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
@@ -51,13 +51,27 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
   
-  if (selectedCountry == "Czech Republic"){
+  if(selectedCountry == "Czech Republic"){
        aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for the ", 
                                selectedCountry, 
                                " (1 sq. km resolution)")
   }
-  else
-  {
+  else if(selectedCountry == "Democratic Republic of Congo"){
+      aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for the ", 
+                              selectedCountry, 
+                              " (1 sq. km resolution)")
+  }
+  else if(selectedCountry == "Gambia"){
+    aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for the ", 
+                            selectedCountry, 
+                            " (1 sq. km resolution)")
+  }
+  else if(selectedCountry == "Netherlands"){
+    aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for the ", 
+                            selectedCountry, 
+                            " (1 sq. km resolution)")
+  }
+  else{
        aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
                                selectedCountry, 
                                " (1 sq. km resolution)")  
