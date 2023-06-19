@@ -8,7 +8,6 @@ library(dplyr)
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
-#source("R/clippingBaseRaster.R")
 
 ui <- fluidPage(
   
@@ -256,8 +255,9 @@ server <- function(input, output, session){
           
           png(outfile, width = 800, height = 600)
           #png(outfile, width = 1024, height = 768)
-          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0)
+          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE)
           dev.off()
+          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
           
           list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
         }, deleteFile = TRUE)
