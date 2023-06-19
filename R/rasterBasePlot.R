@@ -118,7 +118,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 }
 
 # NOTE:
-# During the first run an error message appears which can be safely ignored.
+# During the first run an error message may appear which can be safely ignored.
 # See details here: https://github.com/rspatial/terra/issues/30
 # In fact, in the second call of the above function the error disappears.
 
