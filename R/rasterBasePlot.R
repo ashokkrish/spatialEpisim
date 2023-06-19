@@ -133,8 +133,8 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 #------------------------#
 # # Set working directory to the root directory /spatialEpisim otherwise the below examples will not run
 #
-#createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
-createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
+# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
+# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
 #
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = F)
