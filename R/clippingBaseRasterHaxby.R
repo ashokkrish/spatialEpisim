@@ -134,9 +134,9 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
 # Example Function Calls #
 #------------------------#
 
- setwd('..')
+#setwd('..')
 #
- createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
+#createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
 #
 # setwd('..')
 #  
