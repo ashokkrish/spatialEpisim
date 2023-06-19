@@ -111,12 +111,12 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
   terra::north(type = 2, xy = "bottomleft", cex = 2)
   
   title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
-  
-  Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
-  
-  Level1Identifier<- Level1Identifier[Level1Identifier$NAME_1 %in% c(level1Region), ]
-  
-  plot(Level1Identifier, add = TRUE)
+  # 
+  # Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
+  # 
+  # Level1Identifier<- Level1Identifier[Level1Identifier$NAME_1 %in% c(level1Region), ]
+  # 
+  plot(GADMdata, add = TRUE)
   
   # if(!directOutput){dev.off()} 
   
@@ -134,9 +134,9 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg)
 # Example Function Calls #
 #------------------------#
 
-# setwd('..')
+ setwd('..')
 #
-# createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
+ createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
 #
 # setwd('..')
 #  
