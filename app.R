@@ -330,21 +330,21 @@ server <- function(input, output, session){
   ############################################################################    
   # Check if all mandatory fields have a value                               #
   ############################################################################   
-  observe({
-        mandatoryFilled <-
-        vapply(fieldsMandatory,
-               function(x) {
-                 !is.null(input[[x]]) && input[[x]] != ""
-               },
-               logical(1))
-      
-        mandatoryFilled <- all(mandatoryFilled)
-
-      # enable/disable the submit button
-      if (isolate(values$allow_simulation_run) == TRUE){
-        shinyjs::toggleState(id = "go", condition = mandatoryFilled)
-    }
-  })
+  # observe({
+  #       mandatoryFilled <-
+  #       vapply(fieldsMandatory,
+  #              function(x) {
+  #                !is.null(input[[x]]) && input[[x]] != ""
+  #              },
+  #              logical(1))
+  #     
+  #       mandatoryFilled <- all(mandatoryFilled)
+  # 
+  #     # enable/disable the submit button
+  #     if (isolate(values$allow_simulation_run) == TRUE){
+  #       shinyjs::toggleState(id = "go", condition = mandatoryFilled)
+  #   }
+  # })
   
   ##############################################################################
   #highlight drop down item when hovering                                      #
