@@ -15,6 +15,11 @@ shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(rstudioapi))
 shhh(library(fasterize))
 
+# selectedCountry = "Democratic Republic of Congo"
+# level1Region = "Nord-Kivu"
+# rasterAgg = 0
+# directOutput = T
+
 createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, directOutput)
 {
   # setwd(dirname(getActiveDocumentContext()$path))
@@ -45,7 +50,9 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   fname <- paste0("clipped_", inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
   
-  if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
+ if(!directOutput){png(PNGFileName, width = 1024, height = 768)}
+  
+  # if (!directOutput) {png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
   
   WorldPop <- raster(paste0(tifFolder, tifFileName))
 
@@ -153,7 +160,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
 #  
 # setwd('..')
 # 
-# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0)
+ #createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0, directOutput = T)
 # 
 # setwd('..')
 #  
