@@ -157,7 +157,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
 # 
 # setwd('..')
 #  
- createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput=FALSE)
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput=FALSE)
 #  
 # setwd('..')
 #  
