@@ -11,7 +11,7 @@ library(raster, warn.conflicts=FALSE)
 
 # palettePng <- "misc/seminf_haxby.png"  # default colour palette found in misc folder
 
-createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
+ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   #----------------------------------------------------------------#
   # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
@@ -120,8 +120,9 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   plot(Level1Identifier, add = TRUE)
   
-  if(!directOutput){dev.off()}     # closes the file opened with png(PNGFileName)
-}
+  if(!directOutput){dev.off()}  
+  }# closes the file opened with png(PNGFileName)
+
 
 # NOTE:
 # During the first run an error message may appear which can be safely ignored.
@@ -133,7 +134,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 #------------------------#
 # # Set working directory to the root directory /spatialEpisim otherwise the below examples will not run
 #
-# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
+#createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
 # createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
 #
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
