@@ -1,47 +1,47 @@
 library(countrycode)
 library(raster, warn.conflicts=FALSE)
+#library(terra)
 
 createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
   
+  #----------------------------------------------------------------#
+  # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
+  #----------------------------------------------------------------#
+  
+  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+  inputISOLower <- tolower(inputISO)
+  
+  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
+  
+  tifFileName <- basename(url)    # name of the .tif file
+  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
+  
+  if (!file.exists(paste0(tifFolder, tifFileName)))
+  {
+    download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
+  }
+  
+  #print(paste0(tifFolder, tifFileName))
+  
+  WorldPop <- raster(paste0(tifFolder, tifFileName))
+  
+  WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # Delete this line for clear plot. Check!!!
+  
+  # print(WorldPop)
+  # print(nrow(WorldPop))
+  # print(ncol(WorldPop))
+  # print(ncell(WorldPop))
+
+  if (rasterAgg == 0 || rasterAgg == 1) {
+    Susceptible <- WorldPop
+  } else {
+    Susceptible <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
+  }
+  
+  #print(Susceptible)
+  
   if (isCropped)
   {
-    #TODO
-    #----------------------------------------------------------------#
-    # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
-    #----------------------------------------------------------------#
-    
-    inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-    inputISOLower <- tolower(inputISO)
-    
-    url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
-    
-    tifFileName <- basename(url)    # name of the .tif file
-    tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
-    
-    if (!file.exists(paste0(tifFolder, tifFileName)))
-    {
-      download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
-    }
-    
-    #print(paste0(tifFolder, tifFileName))
-    
-    WorldPop <- raster(paste0(tifFolder, tifFileName))
-    
-    WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # TODO: delete this line for clear plot @Gurs why???
-    
-    # print(WorldPop)
-    # print(nrow(WorldPop))
-    # print(ncol(WorldPop))
-    # print(ncell(WorldPop))
-    
-    if (rasterAgg == 0 || rasterAgg == 1) {
-      Susceptible <- WorldPop
-    } else {
-      Susceptible <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
-    }
-    
-    #print(Susceptible)
-    
     Inhabitable <- Vaccinated <- Exposed <- Infected <- Recovered <- Dead <- Susceptible
     
     values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
@@ -89,7 +89,9 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
     
     Level1Raster <-  resample(Level1Raster, Susceptible, method = "ngb")
     
-    values(Level1Raster) <- ifelse(values(Inhabitable) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
+    values(Level1Raster) <- ifelse(values(Level1Raster) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
+    
+    #values(Level1Raster) <- ifelse(values(Inhabitable) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
     
     # print(freq(Level1Raster))
     # 
@@ -104,9 +106,8 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
     
     # print(table(values(Level1Raster)))
     
-    print(freq(Level1Raster))
+    print(freq(Level1Raster)) # Frequency table of the values of a RasterLayer.
     print(freq(Inhabitable))
-    
     print("isCropped selected")
     # print(dim(Level1Raster)); print(dim(Susceptible))
     # print(res(Level1Raster)); print(res(Susceptible))
@@ -130,46 +131,9 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
     returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
     
     return(returnList)
-    
   }
   else
   {
-  #----------------------------------------------------------------#
-  # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
-  #----------------------------------------------------------------#
-  
-  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-  inputISOLower <- tolower(inputISO)
-  
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
-  
-  tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
-  
-  if (!file.exists(paste0(tifFolder, tifFileName)))
-  {
-    download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
-  }
-  
-  #print(paste0(tifFolder, tifFileName))
-  
-  WorldPop <- raster(paste0(tifFolder, tifFileName))
-  
-  WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # TODO: delete this line for clear plot @Gurs why???
-  
-  # print(WorldPop)
-  # print(nrow(WorldPop))
-  # print(ncol(WorldPop))
-  # print(ncell(WorldPop))
-  
-  if (rasterAgg == 0 || rasterAgg == 1) {
-    Susceptible <- WorldPop
-  } else {
-    Susceptible <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
-  }
-  
-  #print(Susceptible)
-  
   Inhabitable <- Vaccinated <- Exposed <- Infected <- Recovered <- Dead <- Susceptible
   
   values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
@@ -217,7 +181,9 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
   
   Level1Raster <-  resample(Level1Raster, Susceptible, method = "ngb")
   
-  values(Level1Raster) <- ifelse(values(Inhabitable) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
+  values(Level1Raster) <- ifelse(values(Level1Raster) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
+  
+  #values(Level1Raster) <- ifelse(values(Inhabitable) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
   
   # print(freq(Level1Raster))
   # 
@@ -232,7 +198,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F) {
   
   # print(table(values(Level1Raster)))
   
-  print(freq(Level1Raster))
+  print(freq(Level1Raster)) # Frequency table of the values of a RasterLayer.
   print(freq(Inhabitable))
   print("isCropped not selected")
   
