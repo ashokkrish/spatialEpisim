@@ -461,7 +461,7 @@ server <- function(input, output, session){
   # TODO: refactor numericInputs into single function                        #
   ############################################################################ 
   output$alphaInput <- renderUI({
-    alphaValue <- 0.2100 # 0.00015
+    alphaValue <- 0.00015 # 0.2100
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
