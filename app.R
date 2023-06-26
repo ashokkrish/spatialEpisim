@@ -127,7 +127,7 @@ ui <- fluidPage(
                         ), 
                         
                         mainPanel(
-                          tabsetPanel(id = 'tabSet',
+                          tabsetPanel(id = "tabSet", selected = "Input Summary",
                                       tabPanel(title = "Input Summary", verbatimTextOutput("summary"), 
                                                tableOutput("table"),
                                                imageOutput("outputImage"),
@@ -181,6 +181,13 @@ ui <- fluidPage(
                       p("Email:",a("akrishnamurthy@mtroyal.ca", href="mailto:akrishnamurthy@mtroyal.ca")), 
                       p("Website:", a(href="https://bit.ly/2YKrXjX","https://bit.ly/2YKrXjX", target="_blank")),
                       p("GitHub:", a(href="https://github.com/ashokkrish/spatialEpisim","https://github.com/ashokkrish/spatialEpisim", target="_blank")),
+                      
+                      br(),
+                      
+                      p(span("Tom Bayliss White", style= "font-weight:bold" )),    
+                      p("Undergraduate Student, University of Exter, Exter, Devon, UK"),
+                      p("Mitacs Globalink Research Intern (2023)"),
+                      
                       
                       br(),
                       
@@ -258,7 +265,7 @@ server <- function(input, output, session){
         outfile <- tempfile(fileext = '.png')
         
         png(outfile, width = 800, height = 600)
-        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg)
+        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg, directOutput = T)
         dev.off()
         
         list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
@@ -797,7 +804,7 @@ server <- function(input, output, session){
     print(paste0(c("isCropped", isCropped)))
     
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped)
+    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = NULL)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
