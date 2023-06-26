@@ -78,7 +78,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-  rs <- createRasterStack(selectedCountry, rasterAgg, isCropped)
+  rs <- createRasterStack(selectedCountry, rasterAgg, isCropped = T, level1Names = "Prague")
   
   Susceptible <- rs$rasterStack$Susceptible
   Vaccinated <- rs$rasterStack$Vaccinated
