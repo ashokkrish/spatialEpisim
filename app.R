@@ -249,10 +249,10 @@ server <- function(input, output, session){
   
   iv$enable()
   
-  values <- reactiveValues()
-  values$allow_simulation_run <- TRUE
-  values$df <- data.frame(Variable = character(), Value = character()) 
-  output$table <- renderTable(values$df)
+   values <- reactiveValues()
+   values$allow_simulation_run <- TRUE
+  # values$df <- data.frame(Variable = character(), Value = character()) 
+   #output$table <- renderTable(values$df)
   
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -804,7 +804,7 @@ server <- function(input, output, session){
     print(paste0(c("isCropped", isCropped)))
     
     source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = NULL)
+    #rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = input$level1List)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
@@ -901,20 +901,20 @@ server <- function(input, output, session){
       isDeterministic <- FALSE
     }
     
-    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic, isCropped)
+    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic, isCropped, level1Names=input$level1List)
     
-    row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
-    row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$WorldPopRows, " rows x ", rs$WorldPopCols, " columns = ", rs$WorldPopCells, " grid cells"))
-    row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
-    row4  <- data.frame(Variable = "Aggregated Raster Dimension", Value = paste0(nrow(rs$rasterStack), " rows x ", ncol(rs$rasterStack), " columns = ", ncell(rs$rasterStack), " grid cells"))
-    row5  <- data.frame(Variable = "Compartmental Model", Value = input$modelSelect)
-    row6  <- data.frame(Variable = "Model Parameters", Value = paste("Alpha:", alpha,"Beta:", beta,"Gamma:", gamma, "Sigma:", sigma,"Delta:", delta))
-    row7  <- data.frame(Variable = "Average Distance Travelled/Day (in km)", Value = input$lambda)
-    row8  <- data.frame(Variable = "Radius (1 = Moore neighbourhood)", Value = radius)
-    row9  <- data.frame(Variable = "Uploaded Seed Data", Value = input$seedData$name)
-    row10 <- data.frame(Variable = "Number of iterations (days)", Value = input$timestep)
-    
-    values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
+    # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
+    # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$WorldPopRows, " rows x ", rs$WorldPopCols, " columns = ", rs$WorldPopCells, " grid cells"))
+    # row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
+    # row4  <- data.frame(Variable = "Aggregated Raster Dimension", Value = paste0(nrow(rs$rasterStack), " rows x ", ncol(rs$rasterStack), " columns = ", ncell(rs$rasterStack), " grid cells"))
+    # row5  <- data.frame(Variable = "Compartmental Model", Value = input$modelSelect)
+    # row6  <- data.frame(Variable = "Model Parameters", Value = paste("Alpha:", alpha,"Beta:", beta,"Gamma:", gamma, "Sigma:", sigma,"Delta:", delta))
+    # row7  <- data.frame(Variable = "Average Distance Travelled/Day (in km)", Value = input$lambda)
+    # row8  <- data.frame(Variable = "Radius (1 = Moore neighbourhood)", Value = radius)
+    # row9  <- data.frame(Variable = "Uploaded Seed Data", Value = input$seedData$name)
+    # row10 <- data.frame(Variable = "Number of iterations (days)", Value = input$timestep)
+    # 
+    #values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
     
   })
   
