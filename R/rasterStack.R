@@ -172,6 +172,7 @@ library(raster, warn.conflicts=FALSE)
     Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
     print(table(values(Level1Raster)))
     print(freq(Level1Raster))
+    print(values(Level1Raster))
     
     # Background: Aggregating typically an entire column or an entire row or both worth of NAs are added to the Level1Raster
     # NOTE: If rasterAgg = 0 or 1, no NAs are added.
@@ -222,7 +223,9 @@ library(raster, warn.conflicts=FALSE)
 #createRasterStack("Latvia", 0, isCropped = F, level1Names = NULL)
 #createRasterStack("Nigeria", 0, isCropped = F, level1Names = NULL)
 #createRasterStack("Italy", 0, isCropped = F, level1Names = NULL)
-
+#createRasterStack("Uganda", 0, level1Names = NULL)
+ 
+ 
 # rs <- createRasterStack("Czech Republic", 10, isCropped = F, level1Names = NULL)
 # rs
 # names(rs)
