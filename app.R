@@ -31,6 +31,7 @@ shhh(library(tinytex))
 
 population <- read_excel("misc/population.xlsx", 1)
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
+print(epiparms)
 
 fieldsMandatory <- c("selectedCountry", "seedData")
 
@@ -479,20 +480,29 @@ server <- function(input, output, session){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"alpha"])
       } else if (input$selectedCountry == "Nigeria"){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"alpha"])
-      }
+      } else if (input$selectedCountry == "Uganda"){
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"alpha"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"alpha"])}
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"alpha"])
       } else if (input$selectedCountry == "Nigeria"){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"alpha"])
-      }
+        }else if (input$selectedCountry == "Uganda"){
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
+      
     }
+    
      
     numericInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
-    }
-  })
+    
+  }
+    })
   
   ############################################################################    
   #                                                                          #
@@ -508,14 +518,21 @@ server <- function(input, output, session){
       if (input$selectedCountry == "Czech Republic"){
         betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"beta"])
       } else if (input$selectedCountry == "Nigeria"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"beta"])
-      }
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"beta"])}
+      else if (input$selectedCountry == "Uganda"){
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"beta"])}
+      else if (input$selectedCountry == "Democratic Republic of Congo"){
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"beta"])}
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"beta"])
       } else if (input$selectedCountry == "Nigeria"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"beta"])
-      }
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"beta"])}
+        else if (input$selectedCountry == "Uganda"){
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
+      
     }
     
     numericInput(inputId = "beta",
@@ -538,14 +555,22 @@ server <- function(input, output, session){
       if (input$selectedCountry == "Czech Republic"){
         gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"gamma"])
       } else if (input$selectedCountry == "Nigeria"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"gamma"])
-      }
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"gamma"])}
+      else if (input$selectedCountry == "Uganda"){
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"gamma"])}
+      else if (input$selectedCountry == "Democratic Republic of Congo"){
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"gamma"])}
+      
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"gamma"])
       } else if (input$selectedCountry == "Nigeria"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"gamma"])
-      }
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"gamma"])}
+        else if (input$selectedCountry == "Uganda"){
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"gamma"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"gamma"])}
+      
     }
 
     numericInput(inputId = "gamma",
@@ -568,14 +593,23 @@ server <- function(input, output, session){
       if (input$selectedCountry == "Czech Republic"){
         sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"sigma"])
       } else if (input$selectedCountry == "Nigeria"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"sigma"])
-      }
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"sigma"])}
+        else if (input$selectedCountry == "Uganda"){
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"sigma"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"sigma"])}
+      
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"sigma"])
       } else if (input$selectedCountry == "Nigeria"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"sigma"])
-      }
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"sigma"])}
+        else if (input$selectedCountry == "Uganda"){
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
+      
+      
     }
     
     numericInput(inputId = "sigma",
@@ -598,14 +632,24 @@ server <- function(input, output, session){
       if (input$selectedCountry == "Czech Republic"){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"delta"])
       } else if (input$selectedCountry == "Nigeria"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"delta"])
-      }
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"delta"])}
+        else if (input$selectedCountry == "Uganda"){
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
+      
+      
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"delta"])
       } else if (input$selectedCountry == "Nigeria"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"delta"])
-      }
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"delta"])}
+        else if (input$selectedCountry == "Uganda"){
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
+        
+      
     }
 
     numericInput(inputId = "delta",
@@ -633,14 +677,23 @@ server <- function(input, output, session){
       if (input$selectedCountry == "Czech Republic"){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"lambda"])
       } else if (input$selectedCountry == "Nigeria"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"lambda"])
-      }
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"lambda"])}
+        else if (input$selectedCountry == "Uganda"){
+        lambdaValue <- 5}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"lambda"])}
+      
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"lambda"])
       } else if (input$selectedCountry == "Nigeria"){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"lambda"])
-      }
+        }
+        else if (input$selectedCountry == "Uganda"){
+        lambdaValue <- 5}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
+      
     }
     
     numericInput(inputId = "lambda",
@@ -695,6 +748,14 @@ server <- function(input, output, session){
         startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"startDate"]
       }
     }
+      if (input$selectedCountry == "Uganda") {
+        startDateInput <- "2022-10-20"
+      }
+      else if (input$selectedCountry == "Democratic Republic of Congo") {
+        startDateInput <- "2018-08-01"}
+
+        
+      
     
     dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
               format = "yyyy-mm-dd", startview = "month", weekstart = 0,
@@ -712,6 +773,11 @@ server <- function(input, output, session){
             numericInput(inputId = "timestep",
                          label = "Number of Iterations (days)",
                          min = 1, max = 3650, value = 3, step = 1)
+         
+         if (input$selectedCountry == "Czech Republic" || input$selectedCountry == "Nigeria"){timestepInputValue = 120}
+         else if (input$selectedCountry == "Democratic Republic of Congo") {timestepInput = 440}
+         else if (input$selectedCountry == "Uganda") {timestepInput = 63}
+         
        }
   })
   
