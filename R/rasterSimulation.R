@@ -93,7 +93,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   Level1Identifier <- rs$Level1Identifier
   
   print(rs$rasterStack)
-  print(Level1Identifier$NAME_1) # List of all states/provinces/regions
+  print(Level1Identifier$NAME_1)
+ # List of all states/provinces/regions
 
   names <- c("Date", "N", "S", "V", "E", "I", "R", "D", 
              "newV", "newE", "newI", "newR","newD", "cumE", "cumI", "Alpha", "Beta", "Gamma", "Sigma", "Delta",
@@ -148,6 +149,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   # Initial seed locations #
   #------------------------#
   
+  
   if (missing(seedFile)){
     seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
     seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
@@ -157,14 +159,14 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   }
   
   # print(seedFile)
-  # print(seedData)
+   print(seedData)
   
   # seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
   # seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
   # seedData <<- read.csv(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
 
   numLocations <- dim(seedData)[1] #nrow(data())
-  
+
   #print(numLocations)
   
   for (ff in 1:numLocations)
@@ -177,14 +179,14 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     # print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
-    
+
     numCellsPerRegion    <- (2*radius + 1)^2
     newVaccinatedPerCell <- seedData[ff,4]/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
     newExpPerCell        <- seedData[ff,5]/numCellsPerRegion    #round(seedData[ff,5]/numCellsPerRegion)
     newInfPerCell        <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
     newRecoveredPerCell  <- seedData[ff,7]/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
     newDeadPerCell       <- seedData[ff,8]/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
-
+    
     Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] <- Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] + newVaccinatedPerCell
     Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] <- Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] + newExpPerCell
     Infected[(row-radius):(row+radius),(col-radius):(col+radius)] <- Infected[(row-radius):(row+radius),(col-radius):(col+radius)] + newInfPerCell
@@ -193,7 +195,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
 
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
-  
+
   sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
   sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
   sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
