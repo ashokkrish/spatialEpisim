@@ -74,7 +74,7 @@ ui <- fluidPage(
                             id = "dashboard",
                             
                             uiOutput("countryDropdown"),
-                            
+                          
                             checkboxInput(inputId = "filterLMIC", label = strong("Show LMIC only"), value = FALSE),
                             
                             uiOutput("clipStateCheckbox"),
@@ -117,13 +117,18 @@ ui <- fluidPage(
                               
                               uiOutput("startDateInput"),
                               
-                              uiOutput("timestepInput")
-                            ),
-                            
+                              uiOutput("timestepInput")),
+                              
+                              uiOutput("dataAssimCheckbox"),
+                          
+                            conditionalPanel(condition = "input.dataAssim == '1'",  uiOutput("dataAssimUi")),
+
                             actionButton("go","Run Simulation", 
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             actionButton("resetAll","Reset Values", 
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            
+                 
                           ),
                         ), 
                         
@@ -393,11 +398,27 @@ server <- function(input, output, session){
   output$clipStateCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
+    print("CB1")
+    
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
       }
   })
   
+   
+   ############################################################################     
+   # Checkbox for Data Assimilation                                           #
+   ############################################################################ 
+   output$dataAssimCheckbox <- renderUI({
+     validate(need(!is.null(input$selectedCountry), ""))
+     
+     print("CB2")
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+       checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
+     }
+   })
+   
   ############################################################################    
   # Create select box for choosing input country                             #
   ############################################################################      
@@ -416,19 +437,7 @@ server <- function(input, output, session){
                    choices = level1Options,
                    selected = "", multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
-  })
-  
-  ############################################################################    
-  # Change the recommended aggregation factor for slider dynamically         #
-  ############################################################################  
-  output$aggInput <- renderUI({
-    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      sliderInput(inputId = "agg",
-                  label = "Aggregation Factor",
-                  min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
-                  }
+    
   })
   
   ############################################################################     
@@ -712,14 +721,6 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-      fileInput(inputId = "seedData", labelMandatory ("Upload initial seed data (.csv or .xls or .xlsx)"),
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv",
-                  ".xls",
-                  ".xlsx"),   )
-      
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
       
     }
@@ -768,7 +769,7 @@ server <- function(input, output, session){
   ############################################################################  
   output$timestepInput <- renderUI({
     timestepValue <- 10
-       validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
        
          if (input$selectedCountry == "Czech Republic" || input$selectedCountry == "Nigeria"){timestepValue = 120}
          else if (input$selectedCountry == "Democratic Republic of Congo") {timestepValue = 440}
@@ -780,7 +781,35 @@ server <- function(input, output, session){
                       min = 1, max = 3650, value = timestepValue, step = 1)}
        }
   )
-  
+   ############################################################################     
+   # Data Assimilation settings                                               #
+   ############################################################################
+   output$dataAssimUi <- renderUI({
+     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+     
+     fileInput(inputId = "assimData", labelMandatory ("Upload data to be assimilated with the model (.csv or .xls or .xlsx)"),
+               accept = c(
+                 "text/csv",
+                 "text/comma-separated-values,text/plain",
+                 ".csv",
+                 ".xls",
+                 ".xlsx"),   )
+     
+   })
+   
+   ############################################################################    
+   # Change the recommended aggregation factor for slider dynamically         #
+   ############################################################################  
+   output$aggInput <- renderUI({
+     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+       sliderInput(inputId = "agg",
+                   label = "Aggregation Factor",
+                   min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+     }
+   })
+
   ############################################################################    
   # Output the .mp4 video from www/ to the app UI                            #
   ############################################################################  
