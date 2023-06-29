@@ -118,15 +118,21 @@ ui <- fluidPage(
                               uiOutput("startDateInput"),
                               
                               uiOutput("timestepInput")),
-                              
-                              uiOutput("dataAssimCheckbox"),
-                          
-                            conditionalPanel(condition = "input.dataAssim == '1'",  uiOutput("dataAssimUi")),
 
                             actionButton("go","Run Simulation", 
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             actionButton("resetAll","Reset Values", 
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            
+                            uiOutput("dataAssimCheckbox"),
+                            
+                            conditionalPanel(condition = "input.dataAssim == '1'",  
+                                             uiOutput("dataAssimFile"),
+                                             uiOutput("dataAssimCmpts"),
+                                             actionButton("goDA","Run Simulation with DA",
+                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
+                            
+                           
                             
                  
                           ),
@@ -721,6 +727,16 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
+        fileInput(inputId = "seedData", labelMandatory(""), placeholder = "Upload seed data(.csv or .xls or .xlsx)",
+                  accept = c(
+                    "text/csv",
+                    "text/comma-separated-values,text/plain",
+                    ".csv",
+                    ".xls",
+                    ".xlsx"),   )
+        
+        
+        
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
       
     }
@@ -784,7 +800,7 @@ server <- function(input, output, session){
    ############################################################################     
    # Data Assimilation settings                                               #
    ############################################################################
-   output$dataAssimUi <- renderUI({
+   output$dataAssimFile <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
      
      fileInput(inputId = "assimData", labelMandatory ("Upload data to be assimilated with the model (.csv or .xls or .xlsx)"),
@@ -795,7 +811,26 @@ server <- function(input, output, session){
                  ".xls",
                  ".xlsx"),   )
      
+
+     
    })
+   output$dataAssimCmpts <- renderUI({
+     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+   
+   selectizeInput(inputId = "level1List", "Select observable compartments",
+                  choices = c("V", "E", "I", "R", "D"),
+                  selected = "", multiple = TRUE,
+                  options = list(placeholder = ""))
+   })
+   
+   # output$dataAssimCmpts <- renderUI({
+   #   validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+   #   
+   #   selectizeInput(inputId = "level1List", "Select observable compartments",
+   #                  choices = c("V", "E", "I", "R", "D"),
+   #                  selected = "", multiple = TRUE,
+   #                  options = list(placeholder = ""))
+   #})
    
    ############################################################################    
    # Change the recommended aggregation factor for slider dynamically         #
