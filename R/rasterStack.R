@@ -222,7 +222,7 @@ library(raster, warn.conflicts=FALSE)
 #createRasterStack("Czech Republic", 0, isCropped = T, level1Names = c("Prague","Zlínský"))
 #createRasterStack("Latvia", 0, isCropped = F, level1Names = NULL)
 #createRasterStack("Nigeria", 0, isCropped = F, level1Names = NULL)
-#createRasterStack("Italy", 0, isCropped = F, level1Names = NULL)
+#createRasterStack("Democratic Republic of Congo", 15, isCropped = F, level1Names = NULL)
 #createRasterStack("Uganda", 0, level1Names = NULL)
  
  
