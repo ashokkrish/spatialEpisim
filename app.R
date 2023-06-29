@@ -380,7 +380,7 @@ server <- function(input, output, session){
       labelMandatory ("Country"), 
       choices = population$Country,
       multiple = FALSE,
-      select = NULL,
+      selected = "Democratic Republic of Congo", #NULL,
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country")
@@ -690,7 +690,7 @@ server <- function(input, output, session){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"lambda"])
         }
         else if (input$selectedCountry == "Uganda"){
-        lambdaValue <- 5}
+        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
       
@@ -767,19 +767,19 @@ server <- function(input, output, session){
   # numeric input for number of iterations                                   #
   ############################################################################  
   output$timestepInput <- renderUI({
+    timestepValue <- 10
        validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
        
-       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-            numericInput(inputId = "timestep",
-                         label = "Number of Iterations (days)",
-                         min = 1, max = 3650, value = 3, step = 1)
-         
-         if (input$selectedCountry == "Czech Republic" || input$selectedCountry == "Nigeria"){timestepInputValue = 120}
-         else if (input$selectedCountry == "Democratic Republic of Congo") {timestepInput = 440}
-         else if (input$selectedCountry == "Uganda") {timestepInput = 63}
-         
+         if (input$selectedCountry == "Czech Republic" || input$selectedCountry == "Nigeria"){timestepValue = 120}
+         else if (input$selectedCountry == "Democratic Republic of Congo") {timestepValue = 440}
+         else if (input$selectedCountry == "Uganda") {timestepValue = 63}
+
+         if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+         numericInput(inputId = "timestep",
+                      label = "Number of Iterations (days)",
+                      min = 1, max = 3650, value = timestepValue, step = 1)}
        }
-  })
+  )
   
   ############################################################################    
   # Output the .mp4 video from www/ to the app UI                            #
