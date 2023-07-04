@@ -166,6 +166,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   # seedData <<- read.csv(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
 
   numLocations <- dim(seedData)[1] #nrow(data())
+  
+  print(numLocations)
 
   #print(numLocations)
   
@@ -176,7 +178,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
     col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
     
-    # print(paste("row = ", row, "col = ", col))
+     print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
@@ -187,24 +189,50 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     newRecoveredPerCell  <- seedData[ff,7]/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
     newDeadPerCell       <- seedData[ff,8]/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
     
+    # print(newVaccinatedPerCell)
+    # print(newExpPerCell)
+    # print(newInfPerCell)
+    # print(newRecoveredPerCell)
+    # print(newDeadPerCell)
+    
     Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] <- Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] + newVaccinatedPerCell
     Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] <- Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] + newExpPerCell
     Infected[(row-radius):(row+radius),(col-radius):(col+radius)] <- Infected[(row-radius):(row+radius),(col-radius):(col+radius)] + newInfPerCell
     Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
     Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
 
+    #print(Exposed)
+    
     #print(paste("Susceptible = ", sum(values(Susceptible))))
+    
+    
   }
-
+  
+  print(Exposed)
   sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
   sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
   sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
+  
+  # print(sumS)
+  # print(sumV)
+  # print(sumE)
+  # print(sumI)
+  # print(sumR)
+  # print(sumD)
 
   propVaccinated <- sumV/sumS
   propExposed <- sumE/sumS
   propInfected <- sumI/sumS
   propRecovered <- sumR/sumS
   propDead <- sumD/sumS
+  
+  # print("Check")
+  # 
+  # print(propVaccinated)
+  # print(propExposed)
+  # print(propInfected)
+  # print(propRecovered)
+  # print(propDead)
   
   print(paste("Susceptible Count before removing initial seed values: ", sumS))
   
