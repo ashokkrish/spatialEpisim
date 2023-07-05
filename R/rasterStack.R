@@ -176,11 +176,19 @@ library(raster, warn.conflicts=FALSE)
     
     rasterStack <- crop(rasterStack, inhabitableTrim)
     
+    clippedSusceptible <- crop(Susceptible, inhabitableTrim)
+    
+    clippedIdentifier <- crop(Level1Raster, inhabitableTrim)
+    
+    writeRaster(clippedSusceptible, "DRCSusceptible", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
+    
+    writeRaster(clippedIdentifier, "DRCLvl1", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
+    
     # print(rasterStack)
     
     returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
     
-
+    
     
     return(returnList)
     
@@ -277,7 +285,7 @@ library(raster, warn.conflicts=FALSE)
 #createRasterStack("Czech Republic", 0, isCropped = T, level1Names = c("Prague","Zlínský"))
 #createRasterStack("Latvia", 0, isCropped = F, level1Names = NULL)
 #createRasterStack("Nigeria", 0, isCropped = F, level1Names = NULL)
-#createRasterStack("Democratic Republic of Congo", 15, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
+createRasterStack("Democratic Republic of Congo", 1, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
 #createRasterStack("Uganda", 0, level1Names = NULL)
  
  
