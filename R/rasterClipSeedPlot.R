@@ -216,5 +216,4 @@ createClippedSeedPlot<- function(selectedCountry, rasterAgg, level1Names = NULL,
 
 # createClippedSeedPlot("Democratic Republic of Congo", 15, level1Names = c("Ituri", "Nord-Kivu"), seedData = "COD_InitialSeedData.csv", radius = 1)
 
-createClippedSeedPlot("Nigeria", 5, level1Names = c("Kwara", "Oyo"), seedData = "NGA_InitialSeedDataSep 1, 2020_Oyo_Kwara.csv", radius = 0)
-
+createClippedSeedPlot("Nigeria", 5, level1Names = c("Kwara", "Oyo"), seedData = "NGA_InitialSeed_Oyo_Kwara.csv", radius = 0)
