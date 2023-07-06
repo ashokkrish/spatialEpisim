@@ -149,7 +149,6 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   # Initial seed locations #
   #------------------------#
   
-  
   if (missing(seedFile)){
     seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
     seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
@@ -159,15 +158,11 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   }
   
   # print(seedFile)
-   print(seedData)
-  
-  # seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
-  # seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
-  # seedData <<- read.csv(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
+  # print(seedData)
 
   numLocations <- dim(seedData)[1] #nrow(data())
   
-  print(numLocations)
+  #print(numLocations)
 
   #print(numLocations)
   
@@ -204,8 +199,6 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     #print(Exposed)
     
     #print(paste("Susceptible = ", sum(values(Susceptible))))
-    
-    
   }
   
   print(Exposed)
