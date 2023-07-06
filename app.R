@@ -157,6 +157,9 @@ ui <- fluidPage(
                                       tabPanel(title = "Initial Seed Data", 
                                                dataTableOutput("tableSeed")),
                                       
+                                      tabPanel(title = "Seed Data Map",
+                                               imageOutput("seedPlot")),
+                                      
                                       tabPanel(title = "MP4 Animation",
                                                id = "mp4Tab",
                                                uiOutput("outputVideo"),
@@ -269,21 +272,21 @@ server <- function(input, output, session){
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
   ############################################################################ 
-  observeEvent(input$go, {
-    if(input$clipLev1 == TRUE){
-      output$croppedOutputImage <- renderImage({
-        #source("R/clippingBaseRaster.R")
-        source("R/clippingBaseRasterHaxby.R")
-        outfile <- tempfile(fileext = '.png')
-        
-        png(outfile, width = 800, height = 600)
-        createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg, directOutput = T)
-        dev.off()
-        
-        list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
-      }, deleteFile = TRUE)
-    }
-  })
+  # observeEvent(input$go, {
+  #   if(input$clipLev1 == TRUE){
+  #     output$croppedOutputImage <- renderImage({
+  #       #source("R/clippingBaseRaster.R")
+  #       source("R/clippingBaseRasterHaxby.R")
+  #       outfile <- tempfile(fileext = '.png')
+  #       
+  #       png(outfile, width = 800, height = 600)
+  #       createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg, directOutput = T)
+  #       dev.off()
+  #       
+  #       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+  #     }, deleteFile = TRUE)
+  #   }
+  # })
   
   ############################################################################    
   # Output population base plot image to the app UI                          #
@@ -404,7 +407,7 @@ server <- function(input, output, session){
   output$clipStateCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
-    print("CB1")
+    #print("CB1")
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
@@ -418,7 +421,7 @@ server <- function(input, output, session){
    output$dataAssimCheckbox <- renderUI({
      validate(need(!is.null(input$selectedCountry), ""))
      
-     print("CB2")
+     #print("CB2")
      
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
        checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
@@ -511,7 +514,6 @@ server <- function(input, output, session){
       
     }
     
-     
     numericInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
@@ -727,16 +729,14 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-        fileInput(inputId = "seedData", labelMandatory(""), placeholder = "Upload seed data(.csv or .xls or .xlsx)",
+        fileInput(inputId = "seedData", labelMandatory(""), placeholder = "Upload seed data (.csv or .xls or .xlsx)",
                   accept = c(
                     "text/csv",
                     "text/comma-separated-values,text/plain",
                     ".csv",
                     ".xls",
                     ".xlsx"),   )
-        
-        
-        
+
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
       
     }
@@ -771,9 +771,6 @@ server <- function(input, output, session){
       else if (input$selectedCountry == "Democratic Republic of Congo") {
         startDateInput <- "2018-08-01"}
 
-        
-      
-    
     dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
               format = "yyyy-mm-dd", startview = "month", weekstart = 0,
               language = "en", width = NULL)
@@ -810,14 +807,11 @@ server <- function(input, output, session){
                  ".csv",
                  ".xls",
                  ".xlsx"),   )
-     
-
-     
    })
    output$dataAssimCmpts <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
    
-   selectizeInput(inputId = "level1List", "Select observable compartments",
+   selectizeInput(inputId = "selectedCompartments", "Select observable compartment(s)",
                   choices = c("V", "E", "I", "R", "D"),
                   selected = "", multiple = TRUE,
                   options = list(placeholder = ""))
@@ -907,7 +901,7 @@ server <- function(input, output, session){
     #   list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Image not found")
     # }, deleteFile = TRUE)
   })
-  
+
   ##########################################################################    
   # Allow the user to download the time-series plots from UI               #
   ########################################################################## 
@@ -1046,6 +1040,26 @@ server <- function(input, output, session){
     # 
     #values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
     
+    
+    ############################################################################    
+    # Output seed plot image to the app UI                          #
+    ############################################################################ 
+    
+    output$seedPlot <- renderImage({
+      source("R/rasterClipSeedPlot.R")
+      
+      outfile <- tempfile(fileext = '.png')
+      #print(input$seedData)
+     
+      png(outfile, width = 800, height = 600)
+      print(input$seedData)
+      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = data(), radius = 0)  # print the seed plot direct to UI
+      dev.off()
+      
+      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Seed plot image not found")
+      # The above line adjusts the dimensions of the base plot rendered in UI
+    }, deleteFile = TRUE)
+ 
   })
   
   observeEvent(input$filterLMIC,{
@@ -1120,6 +1134,22 @@ server <- function(input, output, session){
   
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Initial Seed Data')
+  })
+  
+  ###################################
+  #Initial Seed Data Plot Tab Panel #
+  ###################################
+  
+  observeEvent(input$resetAll,{
+    hideTab(inputId = 'tabSet', target = 'Seed Data Map')
+  })
+  
+  observe(
+    hideTab(inputId = 'tabSet', target = 'Seed Data Map')
+  )
+  
+  observeEvent(input$go,{
+    showTab(inputId = 'tabSet', target = 'Seed Data Map')
   })
   
   ##########################
