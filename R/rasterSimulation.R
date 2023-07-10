@@ -117,7 +117,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   
   hcellSize <- res(rs$rasterStack)[1]
   vcellSize <- res(rs$rasterStack)[2]
-
+  
+  
   Susceptible
   Vaccinated
   Exposed
@@ -162,6 +163,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
 
   numLocations <- dim(seedData)[1] #nrow(data())
   
+  midLongitude <-(LLCornerLongitude + ULCornerLongitude)/2 
+  midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
   #print(numLocations)
 
   #print(numLocations)
@@ -173,7 +176,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
     col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
     
-     print(paste("row = ", row, "col = ", col))
+    #print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
@@ -201,6 +204,15 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
   
+  # writeRaster(Infected, "seed.tif", overwrite=TRUE)
+  
+  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  # pal <- colorRampPalette(ramp)
+  # 
+  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # 
+  # plot(Level1Identifier, add = TRUE)
+  # 
   print(Exposed)
   sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
   sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
@@ -241,7 +253,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   cumInfected <- round(sumI)
   cumRecovered <- round(sumR)
   cumDead <- round(sumD)
-
+  
+#print(raster::as.matrix(Infected))
   #-------------------------------#
   # MAIN LOOP FOR TIME INCREMENTS #
   #-------------------------------#
@@ -261,6 +274,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
     summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
     
+
+    
     summary[t, 14]  <- cumExposed
     summary[t, 15]  <- cumInfected
     summary[t, 16]  <- alpha
@@ -273,6 +288,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
     
+    
+    
     nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
     
     dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
@@ -282,7 +299,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     #-------------------------------#
 
     I_tilda <- wtd_nbrs_sum(input_matrix = raster::as.matrix(Infected), radius = radius, lambda = lambda)
-    
+ 
     for(i in 1:nrows)
     { 							# nrows
       for(j in 1:ncols)
@@ -382,6 +399,29 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     Recovered <- nextRecovered
     Dead <- nextDead      
     
+    # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
+    # 
+    # plot(Level1Identifier, add = TRUE)
+    # 
+    # print(Infected)
+    
+    # infectedRaster <- raster(Infected)
+    
+    Susceptible <- raster(Susceptible)
+    Vaccinated <- raster(Vaccinated)
+    Exposed <- raster(Exposed)
+    Infected <- raster(Infected)
+    Recovered <- raster(Recovered)
+    Dead <- raster(Dead)
+    
+    extent(Susceptible) <- extent(Vaccinated) <- extent(Exposed) <- extent(Infected) <- extent(Recovered) <- extent(Dead) <- extent(rs$rasterStack)
+    
+    # print(extent(infectedRaster))
+    # print(extent(rs$rasterStack))
+    # 
+    # writeRaster(infectedRaster, file = "infectedRaster.tif", overwrite = TRUE)
+    # 
+    
     rs$rasterStack$Susceptible <- Susceptible
     rs$rasterStack$Vaccinated <- Vaccinated
     rs$rasterStack$Exposed <- Exposed
@@ -389,19 +429,30 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     rs$rasterStack$Recovered <- Recovered
     rs$rasterStack$Dead <- Dead
     
+    # print('check')
+    
     summary[t, 9]   <- dailyVaccinated
     summary[t, 10]  <- dailyExposed
     summary[t, 11]  <- dailyInfected
     summary[t, 12]  <- dailyRecovered
     summary[t, 13]  <- dailyDead
 
-    sumS <- sum(Susceptible); sumV <- sum(Vaccinated);
-    sumE <- sum(Exposed); sumI <- sum(Infected);
-    sumR <- sum(Recovered); sumD <- sum(Dead)
+    sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
+    sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
+    sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
     
+    #print(sumS)
+
     allRasters[[t]] <- rs;
+     # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
+     ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+     pal <- colorRampPalette(ramp)
+    
+    # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
+    # 
+    # plot(Level1Identifier, add = TRUE)
   }		      	# time increments
-  
+
   # Print a PNG for the infected variable
   rasterLayer <- "Infected"
   
