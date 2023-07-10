@@ -31,7 +31,7 @@ shhh(library(tinytex))
 
 population <- read_excel("misc/population.xlsx", 1)
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
-print(epiparms)
+#print(epiparms)
 
 fieldsMandatory <- c("selectedCountry", "seedData")
 
@@ -124,26 +124,26 @@ ui <- fluidPage(
                             actionButton("resetAll","Reset Values", 
                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             
+                            br(),
+                            br(),
                             uiOutput("dataAssimCheckbox"),
-                            
+
                             conditionalPanel(condition = "input.dataAssim == '1'",  
                                              uiOutput("dataAssimFile"),
                                              uiOutput("dataAssimCmpts"),
                                              actionButton("goDA","Run Simulation with DA",
-                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
-                            
-                           
-                            
-                 
+                                                           style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
                           ),
                         ), 
                         
                         mainPanel(
                           tabsetPanel(id = "tabSet", selected = "Input Summary",
-                                      tabPanel(title = "Input Summary", verbatimTextOutput("summary"), 
-                                               tableOutput("table"),
+                                      
+                                      tabPanel(title = "Input Summary",
+                                               verbatimTextOutput("summary"), 
+                                               #tableOutput("table"),
                                                imageOutput("outputImage"),
-                                               imageOutput("croppedOutputImage"),
+                                               #imageOutput("croppedOutputImage"),
                                                #imageOutput("seededOutputImage"),
                                                #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
                                       ),
@@ -158,15 +158,16 @@ ui <- fluidPage(
                                                dataTableOutput("tableSeed")),
                                       
                                       tabPanel(title = "Seed Data Map",
-                                               imageOutput("seedPlot")),
+                                               imageOutput("seedPlot")
+                                      ),
                                       
                                       tabPanel(title = "MP4 Animation",
-                                               id = "mp4Tab",
-                                               uiOutput("outputVideo"),
-                                               downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")),
+                                               uiOutput("outputVideo")#,
+                                               #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
+                                      ),
                                       
                                       tabPanel(title = "Output Summary",
-                                               dataTableOutput("outputSummary"),
+                                               dataTableOutput("outputSummary") ,
                                                # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
                                       ),
                                       
@@ -175,7 +176,8 @@ ui <- fluidPage(
                                                imageOutput("cumulativePlot"),
                                                imageOutput("fullPlot"),
                                                imageOutput("fracSusPlot"),
-                                               downloadButton(outputId = "downloadPlot", label = "Save Image"))
+                                               #downloadButton(outputId = "downloadPlot", label = "Save Image")
+                                      )
                           )
                         ),
                       )
@@ -232,7 +234,7 @@ ui <- fluidPage(
                            Please carefully consider the parameters you choose. Interpret and use the simulated results responsibly.
                            Authors are not liable for any direct or indirect consequences of this usage.")
              )
-  )
+      )
 )
 
 server <- function(input, output, session){
@@ -267,7 +269,7 @@ server <- function(input, output, session){
    values <- reactiveValues()
    values$allow_simulation_run <- TRUE
   # values$df <- data.frame(Variable = character(), Value = character()) 
-   #output$table <- renderTable(values$df)
+  # output$table <- renderTable(values$df)
   
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -275,7 +277,6 @@ server <- function(input, output, session){
   # observeEvent(input$go, {
   #   if(input$clipLev1 == TRUE){
   #     output$croppedOutputImage <- renderImage({
-  #       #source("R/clippingBaseRaster.R")
   #       source("R/clippingBaseRasterHaxby.R")
   #       outfile <- tempfile(fileext = '.png')
   #       
@@ -298,7 +299,8 @@ server <- function(input, output, session){
       
       #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
       png(outfile, width = 800, height = 600)
-      createBasePlot(input$selectedCountry, input$agg, TRUE)  # print the susceptible plot direct to UI
+      #createBasePlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, directOutput = TRUE)  # print the susceptible plot direct to UI
+      createBasePlot(selectedCountry = input$selectedCountry, rasterAgg = 0, directOutput = TRUE)  # print the susceptible plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
@@ -406,23 +408,18 @@ server <- function(input, output, session){
   ############################################################################
   output$clipStateCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-    
-    #print("CB1")
-    
+
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
       }
   })
-  
    
    ############################################################################     
    # Checkbox for Data Assimilation                                           #
    ############################################################################ 
    output$dataAssimCheckbox <- renderUI({
      validate(need(!is.null(input$selectedCountry), ""))
-     
-     #print("CB2")
-     
+
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
        checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
      }
@@ -475,8 +472,8 @@ server <- function(input, output, session){
        if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
             radioButtons(inputId = "stochasticSelect",
                          label = strong("Model Stochasticity"),
-                         choiceValues = list("Deterministic","Stochastic"),
-                         choiceNames = list("Deterministic","Stochastic"),
+                         choiceValues = list("Deterministic", "Stochastic"),
+                         choiceNames = list("Deterministic", "Stochastic"),
                          selected = "Deterministic", #character(0), #
                          inline = TRUE,
                          width = "1000px")
@@ -518,8 +515,8 @@ server <- function(input, output, session){
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
     
-  }
-    })
+    }
+  })
   
   ############################################################################    
   #                                                                          #
@@ -625,8 +622,6 @@ server <- function(input, output, session){
         sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
-      
-      
     }
     
     numericInput(inputId = "sigma",
@@ -654,8 +649,6 @@ server <- function(input, output, session){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
-      
-      
     } else if (input$modelSelect == "SVEIRD"){
       if (input$selectedCountry == "Czech Republic"){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"delta"])
@@ -665,8 +658,6 @@ server <- function(input, output, session){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
-        
-      
     }
 
     numericInput(inputId = "delta",
@@ -862,8 +853,6 @@ server <- function(input, output, session){
   #     # print the seed plot direct to UI
   #     png(outfile, width = 1024, height = 768)
   #     plot(c(1,3,6,9,12), c(1.5,2,7,8,15), main = "Bubble Plot Placeholder") # TODO: example plot, below lines don't work due to "Regions defined for each Polygons" warning
-  #     # print(input$selectedCountry)
-  #     # print(input$date)
   #     # createSeedPlot(countryName = "Czech Republic", seedData = "seeddata/CZE_InitialSeedData.csv", startDate = "2021-07-01", source = "testSource") 
   #     dev.off()
   #     
@@ -998,9 +987,9 @@ server <- function(input, output, session){
     # Compartmental model simulation begins #
     #---------------------------------------#
     
-    #print(data())          # This prints the entire seed data
+    #print(data())          # Prints the seed data
     
-    #print(names(data()))   # This prints the column names of the seed data
+    #print(names(data()))   # Prints the column names of the seed data
 
     alpha <- ifelse(input$modelSelect == "SVEIRD", input$alpha, 0) # DO NOT DELETE
     beta  <- input$beta  # DO NOT DELETE
@@ -1025,10 +1014,10 @@ server <- function(input, output, session){
       isDeterministic <- FALSE
     }
     
-    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic, isCropped, level1Names=input$level1List)
+    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic, isCropped, level1Names = input$level1List)
     
     # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
-    # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$WorldPopRows, " rows x ", rs$WorldPopCols, " columns = ", rs$WorldPopCells, " grid cells"))
+    # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
     # row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
     # row4  <- data.frame(Variable = "Aggregated Raster Dimension", Value = paste0(nrow(rs$rasterStack), " rows x ", ncol(rs$rasterStack), " columns = ", ncell(rs$rasterStack), " grid cells"))
     # row5  <- data.frame(Variable = "Compartmental Model", Value = input$modelSelect)
@@ -1039,27 +1028,23 @@ server <- function(input, output, session){
     # row10 <- data.frame(Variable = "Number of iterations (days)", Value = input$timestep)
     # 
     #values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
-    
-    
-    ############################################################################    
-    # Output seed plot image to the app UI                          #
-    ############################################################################ 
+
+    #########################################    
+    # Output seed plot image to the app UI  #
+    #########################################
     
     output$seedPlot <- renderImage({
       source("R/rasterClipSeedPlot.R")
       
       outfile <- tempfile(fileext = '.png')
-      #print(input$seedData)
-     
+
       png(outfile, width = 800, height = 600)
-      print(input$seedData)
-      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = data(), radius = 0)  # print the seed plot direct to UI
+      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = data(), seedNeighbourhood = 0)  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Seed plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
- 
   })
   
   observeEvent(input$filterLMIC,{
@@ -1072,9 +1057,9 @@ server <- function(input, output, session){
     updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country)
   })
   
-  #############################
-  #Input Summary Tab Panel    #
-  #############################
+  ##########################
+  #Input Summary Tab Panel #
+  ##########################
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Input Summary')
@@ -1168,9 +1153,9 @@ server <- function(input, output, session){
     showTab(inputId = 'tabSet', target = 'MP4 Animation')
   })
   
-  ##############################
-  #Output Summary Tab Panel    #
-  ##############################
+  ###########################
+  #Output Summary Tab Panel #
+  ###########################
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Output Summary')
