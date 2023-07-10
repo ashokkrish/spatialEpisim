@@ -158,7 +158,6 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       col <- trunc(abs((my_df[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
       
       col <- midCol - (col - midCol) #reflecting along middle vertica line of plot so that data is in the right place.
-      row <- row 
       
       # print(paste("row = ", row, "col = ", col)) 
       # print(Inhabitable[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)])
