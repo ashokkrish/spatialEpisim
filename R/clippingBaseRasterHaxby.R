@@ -3,65 +3,42 @@ shhh <- suppressPackageStartupMessages # It's a library, so shhh!
 shhh(library(av))
 shhh(library(countrycode))
 shhh(library(cptcity))
+shhh(library(fasterize))
 shhh(library(lattice))
 shhh(library(magick))
-shhh(library(sp))
-shhh(library(sf))     # classes and functions for vector data
 options("rgdal_show_exportToProj4_warnings"="none")
-shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(raster, warn.conflicts=FALSE))
 shhh(library(rasterVis))
-shhh(library(terra, warn.conflicts=FALSE))
+shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(rstudioapi))
-shhh(library(fasterize))
+shhh(library(sp))
+shhh(library(sf))     # classes and functions for vector data
+shhh(library(terra, warn.conflicts=FALSE))
 
-# selectedCountry = "Democratic Republic of Congo"
-# level1Region = "Nord-Kivu"
-# rasterAgg = 0
-# directOutput = T
+# selectedCountry <- "Democratic Republic of Congo"
+# level1Region <- "Nord-Kivu"
+# rasterAgg <- 0
+# directOutput <- T
 
-createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, directOutput)
+source("R/rasterWorldPop.R")
+
+createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, directOutput = F)
 {
   # setwd(dirname(getActiveDocumentContext()$path))
   
   #setwd('..') 
 
-  # palettePng <- './misc/seminf_haxby.png'  # default colour palette found in misc folder
-  # raster <- rast(palettePng)
-  # u <- unique(values(raster))
-
-  #----------------------------------------------------------------#
-  # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
-  #----------------------------------------------------------------#
-  
-  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
   
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", toupper(inputISO), "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
+  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
   
-  tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
+  #print(Susceptible)
 
-  if (!file.exists(paste0(tifFolder, tifFileName)))
-  {
-    download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
-  }
-  
   fname <- paste0("clipped_", inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
   
- if(!directOutput){png(PNGFileName, width = 1024, height = 768)}
-  
-  # if (!directOutput) {png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
-  
-  WorldPop <- raster(paste0(tifFolder, tifFileName))
-
-  WorldPop <- replace(WorldPop, is.na(WorldPop), 0) 
-  
-  if (!(rasterAgg == 0 || rasterAgg == 1)) 
-  {
-    WorldPop <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
-  }
+ if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
 
   #---------------------------------------#
   # Source 2: From GADM: Level1Identifier #
@@ -69,18 +46,15 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   
   gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file
   gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
-  
-  #print(paste0(gadmFolder, gadmFileName))
+
   GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
   GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Region), ]
   
-  lvl1Raster <- crop(WorldPop, GADMdata)
-  # print(WorldPop)
-  
+  lvl1Raster <- crop(Susceptible, GADMdata)
+
   dlong = abs(xmax(lvl1Raster) - xmin(lvl1Raster))
   dlat = abs(ymax(lvl1Raster) - xmax(lvl1Raster))
-   
- 
+
   lvl1Raster <- mask(lvl1Raster, GADMdata)
   
   lvl1Rasterrast <- lvl1Raster
@@ -92,14 +66,13 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   #plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
    levs <- levels(x)[[1]]
-  # #levs[7] <- "> 1000"
+  # levs[7] <- "> 1000"
    levels(x) <- levs
   
   #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
   
-
   # newProj <- CRS("+proj=longlat +datum=WGS84 +no_defs")     # Warning message, look into later...
   # countryProj <- spTransform(GADMdata, newProj)             # This is not used anywhere
   
@@ -127,14 +100,13 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   terra::north(type = 2, xy = "bottomleft", cex = 1)
   
   title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
-  # 
+ 
   # Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
   # 
   # Level1Identifier<- Level1Identifier[Level1Identifier$NAME_1 %in% c(level1Region), ]
   # 
   plot(GADMdata, add = TRUE)
-  
-  # if(!directOutput){dev.off()} 
+
   if(!directOutput){dev.off()}     # closes the file opened with png(PNGFileName)
   # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
   
@@ -150,30 +122,26 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
 # Example Function Calls #
 #------------------------#
 
-#setwd('..')
-#
-#createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0)
-#
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0)
-#  
-# setwd('..')
-# 
- #createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0, directOutput = T)
-# 
-# setwd('..')
-#  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput=FALSE)
-#  
-# setwd('..')
-#  
-#createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0, directOutput = FALSE)
-# 
-# setwd('..')
-#  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 15)
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0, directOutput = F)
 # 
 # setwd('..')
 #
-# createClippedRaster(selectedCountry = "Canada", level1Region = "Alberta", rasterAgg = 0)
+# createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0, directOutput = F)
+#
+# setwd('..')
+#  
+# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0, directOutput = F)
+#  
+# setwd('..')
+# 
+# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0, directOutput = T)
+# 
+# setwd('..')
+#  
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput = F)
+#  
+# setwd('..')
+#  
+# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 15, directOutput = F)
