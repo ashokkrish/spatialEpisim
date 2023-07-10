@@ -213,7 +213,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 
   names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
   
-  # print(rasterStack)
+   print(rasterStack)
   
   returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = nrow(Susceptible), "nCols" = ncol(Susceptible), "nCells" = ncell(Susceptible))
   
