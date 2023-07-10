@@ -6,6 +6,7 @@ library(shinyjs)
 library(shinyWidgets)
 
 population <- read_excel("misc/population.xlsx", 1)
+
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
 source("R/rasterStack.R")
@@ -319,9 +320,7 @@ server <- function(input, output, session){
       seedDead <- c(0)
       seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
       frameCombine <- data.frame(seedCombine)
-      
-      #print(frameCombine)
-      
+
       frameCombine <- frameCombine[c("seedNames", "V3", "V2", "seedVaxx", "seedExpo", "seedInfect", "seedRec", "seedDead")]
       
       colnames(frameCombine) <- c("Location", "lat", "lon", "InitialVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
