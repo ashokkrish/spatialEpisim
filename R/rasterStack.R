@@ -1,56 +1,17 @@
-rm(list = ls())
 library(countrycode)
 library(raster, warn.conflicts=FALSE)
-#library(terra) 
+#library(terra, warn.conflicts = FALSE)
 
-# selectedCountry <- "Nigeria"
-# rasterAgg <- 10
-# isCropped <- T
-# level1Names <- c("Oyo", "Kwara")
+source("R/rasterWorldPop.R")
 
-# selectedCountry <- "Czech Republic"
-# rasterAgg <- 0
-# isCropped <- T
-# level1Names <- c("Zlínský","Prague") 
+createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
 
- createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
+  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
 
-  #----------------------------------------------------------------#
-  # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
-  #----------------------------------------------------------------#
+  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
   
-  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-  inputISOLower <- tolower(inputISO)
-  
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
-  
-  tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
-  
-  if (!file.exists(paste0(tifFolder, tifFileName)))
-  {
-    download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
-  }
-  
-  #print(paste0(tifFolder, tifFileName))
-  
-  WorldPop <- raster(paste0(tifFolder, tifFileName))
-  
-  WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # Delete this line for clear plot. Check!!!
-  
-  # print(WorldPop)
-  # print(nrow(WorldPop))
-  # print(ncol(WorldPop))
-  # print(ncell(WorldPop))
-  
-  if (rasterAgg == 0 || rasterAgg == 1) {
-    Susceptible <- WorldPop
-  } else {
-    Susceptible <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
-  }
-  
-  # print(Susceptible)
-  
+  #print(Susceptible)
+    
   #---------------------------------------#
   # Source 2: From GADM: Level1Identifier #
   #---------------------------------------#
@@ -68,9 +29,8 @@ library(raster, warn.conflicts=FALSE)
 
   if (isCropped)
   {
-
-    positions <- which(Level1Identifier$NAME_1 %in% level1Names)  # Determines the position of which indices are TRUE.
-    print(positions)
+    # positions <- which(Level1Identifier$NAME_1 %in% level1Names)  # Determines the position of which indices are TRUE.
+    # print(positions)
 
     Level1Identifier <- Level1Identifier[which(Level1Identifier$NAME_1 %in% level1Names), ]
     # print(Level1Identifier) # It is a SpatialPolygonsDataFrame
@@ -78,8 +38,8 @@ library(raster, warn.conflicts=FALSE)
     # Level1Identifier <- Level1Identifier[Level1Identifier$NAME_1 %in% level1Names, ]
     # print(Level1Identifier)
 
-    #print(which(Level1Identifier$NAME_1 %in% level1Names)) # Assigns 1, 2, ...
-    #print(table(Level1Identifier$NAME_1 %in% level1Names))
+    # print(which(Level1Identifier$NAME_1 %in% level1Names)) # Assigns 1, 2, ...
+    # print(table(Level1Identifier$NAME_1 %in% level1Names))
     
     Level1Raster <- crop(Level1Identifier, Susceptible)
     # print(Level1Raster) # It is still a SpatialPolygonsDataFrame
@@ -92,11 +52,11 @@ library(raster, warn.conflicts=FALSE)
     # print(Level1Raster) # It is now a RasterLayer
     # print(values(Level1Raster))
     
-    #print(extent(Level1Raster))
-    #Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
+    # print(extent(Level1Raster))
+    # Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
     
-    #print(table(values(Level1Raster)))
-    #(freq(Level1Raster))
+    # print(table(values(Level1Raster)))
+    # print(freq(Level1Raster))
     
     # Resampling methods
     # "ngb": Nearest-neighbor; assigns the value of the nearest cell
@@ -134,7 +94,7 @@ library(raster, warn.conflicts=FALSE)
     
     # inhabitableRows <- inhabitableCols <-
     # 
-    # #   print(Inhabitable[1][1])
+    # # print(Inhabitable[1][1])
     # #   
     # # for (i in seq_len(nrow(Inhabitable))) {
     # #   for (j in seq_len(ncol(Inhabitable))){
@@ -157,8 +117,8 @@ library(raster, warn.conflicts=FALSE)
     
     # print("isCropped selected")
     
-    #print(table(as.matrix(Inhabitable)))
-    #print(table(as.matrix(Vaccinated)))
+    # print(table(as.matrix(Inhabitable)))
+    # print(table(as.matrix(Vaccinated)))
     
     # print(freq(Level1Raster)) # Frequency table of the values of a RasterLayer.
     # print(freq(Inhabitable))
@@ -171,31 +131,19 @@ library(raster, warn.conflicts=FALSE)
     # print(extent(Susceptible))
     
     rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
-    
-    names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
-    
+
     rasterStack <- crop(rasterStack, inhabitableTrim)
-    
-    clippedSusceptible <- crop(Susceptible, inhabitableTrim)
-    
-    clippedIdentifier <- crop(Level1Raster, inhabitableTrim)
-    
-    writeRaster(clippedSusceptible, "DRCSusceptible", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
-    
-    writeRaster(clippedIdentifier, "DRCLvl1", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
-    
-    # print(rasterStack)
-    
-    returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
-    
-    
-    
-    return(returnList)
-    
+
+    # clippedSusceptible <- crop(Susceptible, inhabitableTrim)
+    # 
+    # clippedIdentifier <- crop(Level1Raster, inhabitableTrim)
+    #
+    # writeRaster(clippedSusceptible, "clippedSusceptible", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
+    # 
+    # writeRaster(clippedIdentifier, "clippedIdentifier", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
   }
   else
   {
-    
     Level1Raster <- crop(Level1Identifier, Susceptible)
     # print(Level1Raster) # It is still a SpatialPolygonsDataFrame
     
@@ -207,11 +155,11 @@ library(raster, warn.conflicts=FALSE)
     # print(Level1Raster) # It is now a RasterLayer
     # print(values(Level1Raster))
     
-    #print(extent(Level1Raster))
-    #Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
+    # print(extent(Level1Raster))
+    # Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
     
-    #print(table(values(Level1Raster)))
-    #(freq(Level1Raster))
+    # print(table(values(Level1Raster)))
+    # print(freq(Level1Raster))
     
     # Resampling methods
     # "ngb": Nearest-neighbor; assigns the value of the nearest cell
@@ -247,8 +195,8 @@ library(raster, warn.conflicts=FALSE)
 
     # print("isCropped not selected")
     
-    #print(table(as.matrix(Inhabitable)))
-    #print(table(as.matrix(Vaccinated)))
+    # print(table(as.matrix(Inhabitable)))
+    # print(table(as.matrix(Vaccinated)))
     
     # print(freq(Level1Raster)) # Frequency table of the values of a RasterLayer.
     # print(freq(Inhabitable))
@@ -261,42 +209,32 @@ library(raster, warn.conflicts=FALSE)
     # print(extent(Susceptible))
     
     rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
-    
-    names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
-    
-    #print(rasterStack)
-    
-    returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "WorldPopRows" = nrow(WorldPop), "WorldPopCols" = ncol(WorldPop), "WorldPopCells" = ncell(WorldPop))
-    
-    return(returnList)
-
   }
 
-
+  names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
+  
+  # print(rasterStack)
+  
+  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = nrow(Susceptible), "nCols" = ncol(Susceptible), "nCells" = ncell(Susceptible))
+  
+  return(returnList)
 }
 
 #------------------------#
 # Example Function Calls #
 #------------------------#
-# #set working directory to source file location if this function is to be tested standalone
-
-# createRasterStack("Nigeria", 0, isCropped = T, level1Names = "Oyo")
- 
-#createRasterStack("Czech Republic", 0, isCropped = T, level1Names = c("Prague","Zlínský"))
-#createRasterStack("Latvia", 0, isCropped = F, level1Names = NULL)
-#createRasterStack("Nigeria", 0, isCropped = F, level1Names = NULL)
-createRasterStack("Democratic Republic of Congo", 1, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
-#createRasterStack("Uganda", 0, level1Names = NULL)
- 
- 
+# To test this function set working directory to the root folder
+# 
+# createRasterStack("Nigeria", rasterAgg = 0, isCropped = T, level1Names = "Oyo")
+# createRasterStack("Czech Republic", rasterAgg = 0, isCropped = T, level1Names = c("Prague","Zlínský"))
+# createRasterStack("Democratic Republic of Congo", rasterAgg = 1, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
+# 
+# createRasterStack("Nigeria", rasterAgg = 25, isCropped = F, level1Names = NULL)
+# createRasterStack("Italy", rasterAgg = 30, isCropped = F, level1Names = NULL)
+# createRasterStack("Latvia", rasterAgg = 0, isCropped = F, level1Names = NULL)
+# createRasterStack("Uganda", rasterAgg = 0, isCropped = F, level1Names = NULL)
+#
 # rs <- createRasterStack("Czech Republic", 10, isCropped = F, level1Names = NULL)
 # rs
 # names(rs)
-# 
 # rs$rasterStack$Susceptible
-#
-#createRasterStack("Nigeria", 25, isCropped = F, level1Names = NULL)
-# 
-# createRasterStack("Italy", 30, isCropped = F, level1Names = NULL)
-# 
-# createRasterStack("Latvia", 10, isCropped = F, level1Names = NULL)
