@@ -3,17 +3,17 @@ shhh <- suppressPackageStartupMessages # It's a library, so shhh!
 shhh(library(av))
 shhh(library(countrycode))
 shhh(library(cptcity))
+shhh(library(fasterize))
 shhh(library(lattice))
 shhh(library(magick))
-shhh(library(sp))
-shhh(library(sf))     # classes and functions for vector data
 options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(raster, warn.conflicts=FALSE))
 shhh(library(rasterVis))
-shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(rstudioapi))
-shhh(library(fasterize))
+shhh(library(sp))
+shhh(library(sf))     # classes and functions for vector data
+shhh(library(terra, warn.conflicts=FALSE))
 
 #------------------------------------------------------------------------------#
 # R Script Variables                                                           #
@@ -159,7 +159,6 @@ getPalette <- function(png) {
 # Imports the GeoTIFF file into tif folder using FTP #
 #----------------------------------------------------#
 importGeoTiff <- function() {
-  # URL format: "https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/NGA/nga_ppp_2020_1km_Aggregated_UNadj.tif"
   url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_", resKm, "km_UNadj/", 
                year, "/", toupper(isoCode), "/", tolower(isoCode), "_ppp_", year, "_", resKm,
                "km_Aggregated_UNadj.tif")
