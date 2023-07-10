@@ -1,13 +1,14 @@
+library(dplyr)
+library(DT)
+library(readxl)
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-library(readxl)
-library(DT)
-library(dplyr)
 
 population <- read_excel("misc/population.xlsx", 1)
 source("R/rasterBasePlot.R")
 source("R/clippingBaseRasterHaxby.R")
+source("R/rasterStack.R")
 
 ui <- fluidPage(
   
@@ -54,11 +55,11 @@ ui <- fluidPage(
                         
                         mainPanel(
                           tabsetPanel(id = 'tabSet',
-                                      tabPanel(id = "main", title ="Population Map", imageOutput("outputImage"),
+                                      tabPanel(id = "main", title ="Population Count Map", imageOutput("outputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
                                                ),
                                       tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
-                                               #downloadButton('downloadPlot', 'Save Image')
+
                                                ),
                                       tabPanel(title ="Population Count by State/Province",
                                                DT::dataTableOutput("aggTable")
@@ -78,7 +79,7 @@ server <- function(input, output, session){
       label = strong("Country"),
       choices = population$Country,
       multiple = FALSE,
-      select = "Democratic Republic of Congo", #NULL,
+      select = NULL, #"Democratic Republic of Congo", #
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country"),
@@ -98,7 +99,7 @@ server <- function(input, output, session){
   })
 
   #output$aggSlider <- renderUI({
-  # validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+  #validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
   
   #if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
   # sliderInput(inputId = "agg",
@@ -116,6 +117,7 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
       
       createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
+      
       png(outfile, width = 800, height = 600)
       #png(outfile, width = 1024, height = 768)
       createBasePlot(input$selectedCountry, 1, TRUE)   # print the susceptible plot direct to UI
@@ -163,8 +165,8 @@ server <- function(input, output, session){
     {
       isCropped <- FALSE
     }
-    source("R/rasterStack.R")
-    rs <- createRasterStack(input$selectedCountry, 0, isCropped = F)
+
+    rs <- createRasterStack(input$selectedCountry, 0, isCropped)
     sus <- rs$rasterStack$Susceptible
     lvOne <- rs$rasterStack$Level1Raster
     names <- rs$Level1Identifier$NAME_1
@@ -172,7 +174,6 @@ server <- function(input, output, session){
     #print(sus)
     #print(lvOne)
     #print(names)
-    
     #popCount <- crosstab(sus,lvOne)
     #print(popCount)
     
@@ -247,23 +248,27 @@ server <- function(input, output, session){
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
      if(input$clipLev1 == TRUE){
-       
-       if(!is.null(input$level1List) && input$level1List != "" ){
-        output$croppedOutputImage <- renderImage({
+
+       if(!is.null(input$level1List) || input$level1List != "" ){
+          output$croppedOutputImage <- renderImage({
   
-          outfile <- tempfile(fileext = '.png')
-          
-          #png(outfile, width = 800, height = 600)
-          #png(outfile, width = 1024, height = 768)
-          
-          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
-          png(outfile, width = 800, height = 600)
-          createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE)
-          dev.off()
-          
-          list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
-        }, deleteFile = TRUE)
-      }
+            outfile <- tempfile(fileext = '.png')
+            
+            #png(outfile, width = 800, height = 600)
+            #png(outfile, width = 1024, height = 768)
+            print(input$level1List)
+            
+            if(!is.null(input$level1List)){
+              #createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
+              png(outfile, width = 800, height = 600)
+              createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE) # Why is rasterAgg set to 0?
+              dev.off()
+            }
+            
+            list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Select at least one state/province to plot")
+  
+          }, deleteFile = TRUE)
+        }
      }
     }
   })
@@ -290,13 +295,9 @@ server <- function(input, output, session){
       inputISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
       
       gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file
-      
-      #print(gadmFileName)
-      
+
       gadmFolder <- "gadm/" # .rds files should be stored in local gadm/ folder
-      
-      #print(paste0(gadmFolder, gadmFileName))
-      
+
       # if (file.exists(paste0(gadmFolder, gadmFileName)))
       # {
           Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
@@ -310,7 +311,7 @@ server <- function(input, output, session){
       
       seedNames <- Level1Identifier$NAME_1
       seedCoords <- coordinates(Level1Identifier)
-      print(seedCoords)
+      #print(seedCoords)
       seedVaxx <- c(0)
       seedExpo <- c(0)
       seedInfect <- c(0)
@@ -327,7 +328,7 @@ server <- function(input, output, session){
       #print(frameCombine)
       
       isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-      sheetName = sprintf("%s_initialSeedData", isoCode)
+      sheetName <- sprintf("%s_initialSeedData", isoCode)
       
       output$downloadData <- downloadHandler(
         filename = function() {
