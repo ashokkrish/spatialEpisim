@@ -4,18 +4,18 @@ shhh(library(av))
 shhh(library(countrycode))
 shhh(library(cptcity))
 shhh(library(lattice))
+shhh(library(lubridate))
 shhh(library(magick))
-shhh(library(sp))
-shhh(library(sf))     # classes and functions for vector data
 options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(raster, warn.conflicts=FALSE))
 shhh(library(rasterVis))
-shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(rstudioapi))
 shhh(library(readxl))
+shhh(library(sp))
+shhh(library(sf))     # classes and functions for vector data
+shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(writexl))
-library(lubridate)
 
 source("R/rasterStack.R") # This code generates the base RasterStack
 source("R/rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
@@ -432,17 +432,12 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   #print(tail(summary))
   
   return(summary)
-  
 } # End of function
 
 # SpatialCompartmentalModel(model = "SVEIRD", startDate = "2020-06-01", selectedCountry = "Czech Republic", directOutput = FALSE, rasterAgg = 10, alpha = 0.00015, beta = 0.030, gamma = 0.010, sigma = 0.065, delta = 0.002, radius = 1, lambda = 15, timestep = 30, deterministic = T)
 # 
 # SpatialCompartmentalModel(model = "SVEIRD", startDate = "2020-01-01", selectedCountry = "Nigeria", directOutput = FALSE, rasterAgg = 25, alpha = 0.00015, beta = 0.030, gamma = 0.010, sigma = 0.065, delta = 0.002, radius = 1, lambda = 30, timestep = 25, deterministic = T)
 
- #-------------#
- # END OF CODE #
- #-------------#
- 
  #----------------------------#
  # Set your working directory #
  #----------------------------#
