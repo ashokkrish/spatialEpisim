@@ -1,53 +1,27 @@
 library(countrycode)
-library(terra, warn.conflicts=FALSE)
-library(raster, warn.conflicts=FALSE)
+library(raster, warn.conflicts = FALSE)
+library(terra, warn.conflicts = FALSE)
 
-# getPal <- function(f) {
-#   x <- rast(f)
-#   u <- unique(values(x))
-#   hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
-#   colorRampPalette(hex)
-# }
+source("R/rasterWorldPop.R")
 
-# palettePng <- "misc/seminf_haxby.png"  # default colour palette found in misc folder
+createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
- createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
-
-  #----------------------------------------------------------------#
-  # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
-  #----------------------------------------------------------------#
-  
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
-  
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", toupper(inputISO), "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
-  
-  tifFileName <- basename(url)    # name of the .tif file
-  tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
-  
-  if (!file.exists(paste0(tifFolder, tifFileName)))
-  {
-    download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
-  }
 
+  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names = NULL)$Susceptible
+  #print(Susceptible)
+  
+  Susceptible <- terra::rast(Susceptible) # Only a terra::rast() object can use the classify() function
+  
   fname <- paste0(inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
   
   if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
+
+  x <- classify(Susceptible, c(0, 10, 25, 50, 100, 250, 1000, 100000))
   
-  WorldPop <- terra::rast(paste0(tifFolder, tifFileName))
-
-  print(res(WorldPop))
-  
-  print(ext(WorldPop))
-
-  print(ncell(WorldPop))
-
-  # WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # TODO: delete this line for clear plot @Gurs why???
-
-  x <- classify(WorldPop, c(0, 10, 25, 50, 100, 250, 1000, 100000))
-  
-  #plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
+  # plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
   levs <- levels(x)[[1]]
   #levs[7] <- "> 1000"
@@ -83,7 +57,7 @@ library(raster, warn.conflicts=FALSE)
                                " (1 sq. km resolution)")  
   }
 
-  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend="bottom", mar=c(8.5, 3.5, 2.5, 2.5))
+  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title = expression(bold("Persons")), title.cex = 1, horiz = TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend = "bottom", mar = c(8.5, 3.5, 2.5, 2.5))
   terra::north(type = 2, xy = "bottomleft", cex = 1)
 
   # if (selectedCountry == "Czech Republic"){
@@ -96,16 +70,10 @@ library(raster, warn.conflicts=FALSE)
   #     sbar(300, type="bar", below="km", cex=0.9, xy="bottomright")
   # }
 
-  #plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
+  # plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
   
-  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
+  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab = 1.20)
 
-  if (rasterAgg == 0 || rasterAgg == 1) {
-    Susceptible <- WorldPop
-  } else {
-    Susceptible <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
-  }
-  
   #---------------------------------------#
   # Source 2: From GADM: Level1Identifier #
   #---------------------------------------#
@@ -120,21 +88,15 @@ library(raster, warn.conflicts=FALSE)
 
   plot(Level1Identifier, add = TRUE)
   
-  if(!directOutput){dev.off()}  
-  }# closes the file opened with png(PNGFileName)
-
-
-# NOTE:
-# During the first run an error message may appear which can be safely ignored.
-# See details here: https://github.com/rspatial/terra/issues/30
-# In fact, in the second call of the above function the error disappears.
+  if(!directOutput){dev.off()} # closes the file opened with png(PNGFileName)
+} 
 
 #------------------------#
 # Example Function Calls #
 #------------------------#
 # # Set working directory to the root directory /spatialEpisim otherwise the below examples will not run
 #
-#createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T)
+# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T) 
 # createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
 #
 # createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
