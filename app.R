@@ -804,7 +804,7 @@ server <- function(input, output, session){
    
    selectizeInput(inputId = "selectedCompartments", "Select observable compartment(s)",
                   choices = c("V", "E", "I", "R", "D"),
-                  selected = "", multiple = TRUE,
+                  selected = c("I", "D"), multiple = TRUE,
                   options = list(placeholder = ""))
    })
    
