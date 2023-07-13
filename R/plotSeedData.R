@@ -57,8 +57,8 @@ createBubblePlot <- function(countryName, level1Names = NULL, displayCountryName
 # Example Function Calls #
 #------------------------#
 
-createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = c("Ituri", "Nord-Kivu"), displayCountryName = "the DRC", seedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
-
-createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = NULL, displayCountryName = "the DRC", seedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
-
-createBubblePlot(countryName = "Nigeria", level1Names=NULL, displayCountryName = "Nigeria", seedData = "NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")
+# createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = c("Ituri", "Nord-Kivu"), displayCountryName = "the DRC", seedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
+# 
+# createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = NULL, displayCountryName = "the DRC", seedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
+# 
+# createBubblePlot(countryName = "Nigeria", level1Names=NULL, displayCountryName = "Nigeria", seedData = "NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")

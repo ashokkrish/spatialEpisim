@@ -11,7 +11,7 @@ sigma <- 0.8
 
 Locations <- read.csv("Ebola_Health_Zones_LatLon_SitRpt54.csv", header = T)
 Locations <- Locations[order(Locations$Hposition),]
-q <- as.numeric(dim(Locations)[1]) # Number of health zones in North Kivu and Ituri provinces of DRC
+q <- dim(Locations)[1] # Number of health zones in North Kivu and Ituri provinces of DRC
 
 # rs <- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
 # rasterStack <- rs$rasterStack
@@ -33,13 +33,10 @@ q <- as.numeric(dim(Locations)[1]) # Number of health zones in North Kivu and It
 QHt = matrix(0,p,q)
 
 for (n in 1:q){
-  n <- as.numeric(n)
-  HZRow <- as.numeric(Locations[n,5])
-  HZCol <- as.numeric(Locations[n,6])
+  HZRow <- Locations[n,5]
+  HZCol <- Locations[n,6]
   for (i in 1:nrows){
     for (j in 1:ncols){
-      i <- as.numeric(i)
-      j <- as.numeric(j)
       pos <- ((i-1)*ncols)+j
       d <- sqrt((HZRow - i)^2 + (HZCol - j)^2)
       QHt[pos,n] <- (sigma^2)*(1+(d/rho))*exp(-d/rho)
