@@ -242,7 +242,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 # 
 # createRasterStack("Nigeria", rasterAgg = 0, isCropped = T, level1Names = "Oyo")
 # createRasterStack("Czech Republic", rasterAgg = 0, isCropped = T, level1Names = c("Prague","Zlínský"))
- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
+#createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
 # 
 # createRasterStack("Nigeria", rasterAgg = 25, isCropped = F, level1Names = NULL)
 # createRasterStack("Italy", rasterAgg = 30, isCropped = F, level1Names = NULL)
