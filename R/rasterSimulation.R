@@ -414,6 +414,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     Recovered <- raster(Recovered)
     Dead <- raster(Dead)
     
+    #print(as.vector(Infected))
+    
     extent(Susceptible) <- extent(Vaccinated) <- extent(Exposed) <- extent(Infected) <- extent(Recovered) <- extent(Dead) <- extent(rs$rasterStack)
     
     # print(extent(infectedRaster))

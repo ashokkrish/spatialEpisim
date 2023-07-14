@@ -19,59 +19,13 @@ shhh(library(writexl))
 
 source("R/rasterStack.R") # This code generates the base RasterStack
 source("R/rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
-
-avg_euclidean_distance <- function(p, q, lambda)
-{
-  exp(-sqrt(sum((p - q)^2))/lambda)
-}
-
-wtd_nbrs_sum <- function(input_matrix, radius, lambda)
-{
-  temp_1 <- matrix(data = 0, nrow = nrow(x = input_matrix), ncol = radius)
-  
-  temp_2 <- matrix(data = 0, nrow = radius, ncol = ((2 * radius) + ncol(x = input_matrix)))
-  
-  input_matrix_modified <- rbind(temp_2, cbind(temp_1, input_matrix, temp_1), temp_2)
-  
-  #print(input_matrix_modified)
-  #print(dim(input_matrix_modified))
-  
-  output_matrix <- matrix(nrow = nrow(x = input_matrix), ncol = ncol(x = input_matrix))
-  
-  #Generating the weight matrix
-  weight_matrix <- matrix(0, nrow = 1 + 2*radius, ncol = 1 + 2*radius)
-  
-  for(i in seq_len(1 + 2*radius))
-  {
-    for(j in seq_len(1 + 2*radius))
-    {
-      weight_matrix[i,j] <- avg_euclidean_distance(c(i,j), c(radius+1, radius+1), lambda)
-    }
-  }
-  
-  #print(weight_matrix)
-  
-  for(i in seq_len(length.out = nrow(x = input_matrix)))
-  {
-    for(j in seq_len(length.out = ncol(x = input_matrix))) 
-    {
-      row_min <- (radius + (i - radius))
-      row_max <- (radius + (i + radius))
-      column_min <- (radius + (j - radius))
-      column_max <- (radius + (j + radius))
-      neighbours <- input_matrix_modified[(row_min:row_max), (column_min:column_max)]
-      weighted_sum <- sum(neighbours * weight_matrix) # casewise multiplication
-      output_matrix[i, j] <- weighted_sum
-    }
-  }
-  return(output_matrix)
-}
+source("R/distAndWeight.R")
 
 #---------------------------------------#
 # Compartmental model simulation begins #
 #---------------------------------------#
 
- SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F)
+ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, dataI, dataD, QMatType)
  {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
@@ -247,7 +201,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
 
   print(paste("Susceptible Count after removing initial seed values: ", sumS)) #sum(values(Susceptible)<0)
   
-  datarow <- 0
+  datarow <- 0 #pre-allocating the row from which we read the data to assimilate each week
   cumVaccinated <- round(sumV)
   cumExposed <- round(sumE)
   cumInfected <- round(sumI)
@@ -266,22 +220,24 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     # Import the Ebola Incidence and Death Data #
     #-------------------------------------------#
     
-    incidence_data <- read.csv("Ebola_Incidence_Data_SitRpt54.csv", header = T)
-    death_data <- read.csv("Ebola_Death_Data_SitRpt54.csv", header = T)
+    incidence_data <- read_excel("Ebola_Incidence_Data.xlsx")
+    death_data <- read_excel("Ebola_Death_Data.xslx")
     
     #dim(incidence_data); dim(death_data)
-    
+    source('H_matrix.R') # ## read in H matrix code
     # ## read in Q matrix code
-    #source('Q_matrix_ver2.R')
-    source('Q_matrix_ver1.R')
+    if (QMatType == "DBD"){
+      source('Q_matrix_ver1.R') #source('Q_matrix_ver2.R')
+     
+      QHt  <- Qf.OSI%*%t(Hmat) # Calculate this only once
+      HQHt <- Hmat%*%QHt  
+    }
     
-    # ## read in H matrix code
-    source('H_matrix.R')
-    
-    QHt  <- Qf.OSI%*%t(Hmat) # Calculate this only once
-    HQHt <- Hmat%*%QHt       # Calculate this only once
-    
-    #'%!in%' <- function(x,y)!('%in%'(x,y))
+    else if (QMatType == "Balgovind"){
+      source('Q_matrix_ver3.R')
+      HQHt <- Hmat%*%QHt # Calculate this only once
+      }
+       #'%!in%' <- function(x,y)!('%in%'(x,y))
   }
   
   ################# DA Ends ##################
@@ -473,16 +429,225 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
     
     #print(sumS)
-
+    ########## DA Begins ##########
+    
+    #setwd(outputDir) # Change working directory to output folder
+    
+    if (DA == T)
+    {                     # DA T/F
+      #NewoutputDir <- paste(outputDir, "/DA", sep="") # The directory for output files
+      #if (!(file.exists(NewoutputDir))){
+        #dir.create("DA") # Folder to store output .nc files
+      }
+      #setwd(NewoutputDir) # Change working directory to output folder
+      
+      if (t %% 7 == 0)
+      {                   # elapsed week
+        datarow <- datarow + 1
+        
+        if (datarow < 75)
+        {                 # datarow cap
+          #-----------------------------------------------#
+          # Write forecast (prior) state to a NetCDF file #
+          #-----------------------------------------------#
+          
+          #print(paste("Xf is printed on day", t))
+          
+          #---------------------#
+          # OSI: forecast state #
+          #---------------------#
+          
+          # We track "Infectious" and "Dead" epidemic states only
+          
+          Xf.OSI <- cbind(as.vector(Infected, byrow=TRUE), as.vector(Dead, byrow=TRUE))
+          
+          #print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
+          
+          #print(sum(Xf.OSI))
+          #table(Xf.OSI)
+          
+          HXf <- Hmat%*%Xf.OSI
+          #print(dim(HXf))
+          #print(sum(HXf))
+          
+          #----------------------------------------------#
+          # Importing DRC Ebola Incidence and Death Data #
+          #----------------------------------------------#
+          
+          incidence <- as.vector(incidence_data[datarow, 3:29]) # Pick a row every 7 days, select third column through to the last column
+          death <- as.vector(death_data[datarow, 3:29])         # Pick a row every 7 days, select third column through to the last column
+          
+          # if (datarow > 1)
+          # {                 # datarow > 1
+          #    prevWHOIncidence <- sum(as.vector(incidence_data[1:(datarow-1), 3:29]))
+          #    currWHOIncidence <- sum(as.vector(incidence_data[1:datarow, 3:29]))
+          # 
+          #    currSIMIncidence <- 
+          #    prevSIMIncidence <- 
+          #   
+          #    slopeWHO <- (currWHOIncidence - prevWHOIncidence)/nDaysPerUnit
+          #    slopeSIM <- (currSIMIncidence - prevSIMIncidence)/nDaysPerUnit
+          #    
+          #    phi <- slopeWHO/slopeSIM
+          #   
+          #   #beta = phi*beta
+          #   
+          # }                 # datarow > 1
+          
+          Dvector <- rbind(t(incidence), t(death))
+          
+          #print(dim(Dvector))
+          sum(incidence)
+          sum(death)
+          
+          #-------------------------------------#
+          # Measurement error covariance matrix #
+          #-------------------------------------#
+          
+          sum(Dvector < 1)
+          Dvector_revised <- ifelse(Dvector < 1, 1, Dvector) # If a diagonal entry is zero change it to 1.
+          sum(Dvector_revised < 1)
+          
+          M <- diag(as.vector(Dvector_revised)) # check if D vector needs to be really revised
+          
+          #levelplot(M, col.regions= colorRampPalette(c("white", "red", "blue")))
+          # table(M)
+          # diag(M)
+          # det(M)
+          #print(M)
+          
+          #---------------------#
+          # Optimal Kalman Gain #
+          #---------------------#
+          
+          # QHt  <- Qf.OSI%*%t(Hmat) # Calculate this only once
+          # HQHt <- Hmat%*%QHt       # Calculate this only once
+          
+          # sum(QHt < 0)
+          # sum(HQHt < 0)
+          
+          # dim(HQHt)
+          
+          # levelplot(as.matrix(HQHt), col.regions= colorRampPalette(c("white", "red", "blue")))
+          
+          # diag(HQHt)
+          # det(HQHt)
+          # eigen(HQHt)$values # HQHt is positive definite since all of its eigenvalues are strictly positive.
+          # sum(eigen(HQHt)$values)
+          # 
+          # log10(max(eigen(HQHt)$values)/min(eigen(HQHt)$values))
+          # 
+          # det(solve(HQHt))
+          # eigen(solve(HQHt))$values # Inverse of HQHt is also positive definite since all of its eigenvalues are strictly positive.
+          # sum(eigen(solve(HQHt))$values)
+          
+          # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
+          
+          Ke.OSI <- QHt%*%solve(HQHt + M)  #solve((HQHt + M), t(QHt))
+          
+          #print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
+          
+          # Questions
+          # Can the Kalman gain matrix have negative values?
+          # Can the innovation or measurement residual have negative values?
+          
+          #------------------------------------#
+          # Innovation or measurement residual #
+          #------------------------------------#
+          
+          Y <- Dvector - HXf
+          
+          #---------------------------------#
+          # OSI update step: analysis state #
+          #---------------------------------#
+          
+          Xa.OSI <- Xf.OSI + Ke.OSI%*%Y
+          
+          #Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero
+          
+          #Xa.OSI <- abs(Xf.OSI + Ke.OSI%*%Y)
+          
+          # max(Ke.OSI%*%Y)
+          # min(Ke.OSI%*%Y)
+          # 
+          # sum(round(Ke.OSI%*%Y))
+          # 
+          # print(sum(Xa.OSI))
+          # print(tail(sort(Xa.OSI), 30))
+          # print(sum(Xf.OSI))
+          
+          ###########################
+          
+          # sum(Xf.OSI < 0)         # Number of negative values in Xf.OSI.
+          # 
+          # sum(QHt < 0)            # Number of negative values in QHt.
+          # 
+          # sum(HQHt < 0)           # Number of negative values in HQHt.
+          # 
+          # sum(Y < 0)              # Number of negative values in Y.
+          # 
+          # sum(Ke.OSI < 0)         # Number of negative values in Ke.OSI.
+          # 
+          # sum(Ke.OSI%*%Y < 0)     # Number of negative values in Ke.OSI*Y.
+          # 
+          # sum(Xa.OSI < 0)         # Number of negative values in Xa.OSI.
+          
+          ###########################
+          
+          # HXf <- Hmat%*%Xf.OSI
+          # print(dim(HXf))
+          # print(sum(HXf))
+          # 
+          # print(dim(Dvector))
+          # sum(incidence)
+          # sum(death)
+          # 
+          # HXa <- Hmat%*%Xa.OSI
+          # print(dim(HXa))
+          # print(sum(HXa))
+          
+          # 42.10018 with Q_matrix_ver1
+          # 43.00399 with Q_matrix_ver2
+          
+          #cbind(HXf, round(HXa), HXa)
+          
+          #print(cbind(Dvector, Hmat%*%Xf.OSI, Y, round(Hmat%*%Xa.OSI)))
+          
+          # NOTE: when restacking make sure byrow = T.
+          
+          I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T)
+          
+          I[I < 0] <- 0 # Prevent negative values for the number of infectious
+          
+          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T)
+          
+          D[D < 0] <- 0 # Prevent negative values for the number of dead
+          
+          dim(Xa.OSI); dim(I); dim(D); min(I); min(D); max(I); max(D)
+          
+          # For all uninhabitable cells set the number of infected and dead = 0. THIS IS VERY CRITICAL!!!
+          
+          for(i in 1:nrows)
+          { 								# nrows
+            for(j in 1:ncols)
+            {							  # ncols
+              if (currInhabitable[i,j] == 0)
+              {						  # Inhabitable
+                I[i,j] <- D[i,j] <- 0
+              }
+            }
+          }
+        }                  # datarow cap
+      }                   # elapsed week
+    }   # DA T/F
+    ########## DA Ends ##########
     allRasters[[t]] <- rs;
      # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
-     ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-     pal <- colorRampPalette(ramp)
     
     # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
     # 
     # plot(Level1Identifier, add = TRUE)
-  }		      	# time increments
+  		      	# time increments
 
   ########## DA Begins ##########
   
@@ -694,10 +859,10 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
         }
       }                  # datarow cap
     }                   # elapsed week
-  }   # DA T/F
+     # DA T/F
   ########## DA Ends ##########
   
-  else
+  }else
   {
     NewoutputDir <- paste(outputDir, "/No_DA", sep="") # The directory for output files
     if (!(file.exists(NewoutputDir))){
@@ -714,6 +879,9 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   for (t in 1:timestep){
     maxRasterLayerVal <- max(maxRasterLayerVal, max(maxValue(allRasters[[t]]$rasterStack[[rasterLayer]])))
   }
+  
+  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  pal <- colorRampPalette(ramp)
   
   for (t in 1:timestep){
     fname = paste0("MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")

@@ -13,8 +13,8 @@ getwd()
 #setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # Avoid "magic constants"
-nrows <- 48 # 125
-ncols <- 34 # 72
+nrows <- 71 # 125
+ncols <- 50 # 72
 states_total <- 6                # Total number of states: S, V, E, I, R, D
 states_observable <- 2           # Number of observable states: I and D
 p <- ncols*nrows                 # Dimensionality of the state space

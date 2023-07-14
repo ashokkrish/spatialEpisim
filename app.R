@@ -129,8 +129,10 @@ ui <- fluidPage(
                             uiOutput("dataAssimCheckbox"),
 
                             conditionalPanel(condition = "input.dataAssim == '1'",  
-                                             uiOutput("dataAssimFile"),
                                              uiOutput("dataAssimCmpts"),
+                                             uiOutput("dataAssimFileI"),
+                                             uiOutput("dataAssimFileD"),
+                                             uiOutput("covarianceRadio"),
                                              actionButton("goDA","Run Simulation with DA",
                                                            style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
                           ),
@@ -410,8 +412,8 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
-      }
+      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = TRUE
+      )}
   })
    
    ############################################################################     
@@ -421,7 +423,7 @@ server <- function(input, output, session){
      validate(need(!is.null(input$selectedCountry), ""))
 
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
+       checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = TRUE)
      }
    })
    
@@ -441,7 +443,7 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   selected = "", multiple = TRUE,
+                   selected = c("Ituri", "Nord-Kivu"), multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
     
   })
@@ -726,7 +728,8 @@ server <- function(input, output, session){
                     "text/comma-separated-values,text/plain",
                     ".csv",
                     ".xls",
-                    ".xlsx"),   )
+                    ".xlsx"),
+                  )
 
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
       
@@ -788,26 +791,48 @@ server <- function(input, output, session){
    ############################################################################     
    # Data Assimilation settings                                               #
    ############################################################################
-   output$dataAssimFile <- renderUI({
+
+   output$dataAssimCmpts <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-     
-     fileInput(inputId = "assimData", labelMandatory ("Upload data to be assimilated with the model (.csv or .xls or .xlsx)"),
+   
+   checkboxGroupInput(inputId = "selectedCompartments", 
+                      "Select observable compartment(s)",
+                      choices = c("V", "E", "I", "R", "D"),
+                      selected = c("I", "D"), 
+                      inline = TRUE,
+                      )
+   })
+   showI <- reactive({
+     "I" %in% input$selectedCompartments
+   })
+   
+   showD <- reactive({
+     "D" %in% input$selectedCompartments
+   })
+   output$dataAssimFileI <- renderUI({
+     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+     if (showI()) {
+     fileInput(inputId = "assimData", labelMandatory ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
                accept = c(
                  "text/csv",
                  "text/comma-separated-values,text/plain",
                  ".csv",
                  ".xls",
-                 ".xlsx"),   )
+                 ".xlsx"), )
+     }
    })
-   output$dataAssimCmpts <- renderUI({
+   output$dataAssimFileD <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-   
-   selectizeInput(inputId = "selectedCompartments", "Select observable compartment(s)",
-                  choices = c("V", "E", "I", "R", "D"),
-                  selected = c("I", "D"), multiple = TRUE,
-                  options = list(placeholder = ""))
+     if (showD()) {
+       fileInput(inputId = "assimData", labelMandatory ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
+                 accept = c(
+                   "text/csv",
+                   "text/comma-separated-values,text/plain",
+                   ".csv",
+                   ".xls",
+                   ".xlsx"),   )
+     }
    })
-   
    # output$dataAssimCmpts <- renderUI({
    #   validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
    #   
@@ -816,6 +841,23 @@ server <- function(input, output, session){
    #                  selected = "", multiple = TRUE,
    #                  options = list(placeholder = ""))
    #})
+   ############################################################################    
+   # Change the function which generates the Q matrix     #
+   ############################################################################  
+   output$covarianceRadio <- renderUI({
+     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+       radioButtons(inputId = "covarianceSelect",
+                    label = strong("Model Error Covariance Matrix Formulation"),
+                    choiceValues = list("DBD", "Balgovind"),
+                    choiceNames = list("Distance-Based Decay", "Balgovind"),
+                    selected = "Distance-Based Decay", #character(0), #
+                    inline = TRUE,
+                    width = "1000px")
+     }
+   })
+   
    
    ############################################################################    
    # Change the recommended aggregation factor for slider dynamically         #
@@ -1054,7 +1096,7 @@ server <- function(input, output, session){
     } else {
       population <- population#[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
     }
-    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country)
+    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Democratic Republic of Congo")
   })
   
   ##########################

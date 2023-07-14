@@ -19,7 +19,7 @@ nHealthZones <-  dim(Locations)[1] # Number of health zones in North Kivu and It
   # names(Ebola_Incidence_Data)
   # dim(Ebola_Incidence_Data)
 
-  Ebola_Death_Data <- read.csv("Ebola_Death_Data_SitRpt54.csv", header = T)
+  Ebola_Death_Data <- read_excel("Ebola_Death_Data.xlsx")
 
   names(Ebola_Death_Data)
   dim(Ebola_Death_Data)

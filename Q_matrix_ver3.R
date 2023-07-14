@@ -6,8 +6,8 @@ states_total <- 6                # Total number of states: S, V, E, I, R, D
 states_observable <- 2           # Number of observable states: I and D
 p <- ncols*nrows                 # Dimentionality of the state space
 
-rho <- 1
-sigma <- 0.8
+rho <- 0.8
+sigma <- 1
 
 Locations <- read.csv("Ebola_Health_Zones_LatLon_SitRpt54.csv", header = T)
 Locations <- Locations[order(Locations$Hposition),]
@@ -46,4 +46,5 @@ for (n in 1:q){
   }
 }
 
-QFull = cbind(rbind(QHt, matrix(0,p,q)),rbind(matrix(0,p,q),QHt))
+QFull <- cbind(rbind(QHt, matrix(0,p,q)),rbind(matrix(0,p,q),QHt))
+QHt <- QFull
