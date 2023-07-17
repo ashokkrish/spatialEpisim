@@ -707,9 +707,9 @@ SpatialSVEIRD <- function(last = 730, radius = 1, spaceKm = 10, mergeNCDF = T, D
 # SpatialSVEIRD(last = 440, radius = 1, spaceKm = 20, mergeNCDF = F, DA = F)
 #  
 # SpatialSVEIRD(last = 440, radius = 1, spaceKm = 30, mergeNCDF = F, DA = F)
-
-SpatialSVEIRD(last = 440, radius = 2, spaceKm = 10, mergeNCDF = T, DA = T)
-
+#
+# SpatialSVEIRD(last = 440, radius = 2, spaceKm = 10, mergeNCDF = T, DA = T)
+#
 # SpatialSVEIRD(last = 440, radius = 2, spaceKm = 20, mergeNCDF = F, DA = F)
 # 
 # SpatialSVEIRD(last = 440, radius = 2, spaceKm = 30, mergeNCDF = F, DA = F)

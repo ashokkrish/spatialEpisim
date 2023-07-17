@@ -17,9 +17,9 @@ shhh(library(sf))     # classes and functions for vector data
 shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(writexl))
 
-source("R/rasterStack.R") # This code generates the base RasterStack
-source("R/rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
-source("R/distwtRaster.R")
+source("R/rasterStack.R")  # This code generates the base RasterStack
+source("R/rasterPlot.R")   # This code generates the .png and .mp4 files for RasterStack
+source("R/distwtRaster.R") # This code sets the Euclidean distance and the weight matrix
 
 #---------------------------------------#
 # Compartmental model simulation begins #
@@ -498,12 +498,11 @@ source("R/distwtRaster.R")
           #   
           # }                 # datarow > 1
           
-          
           Dvector <- t(cbind(t(incidence), t(death)))
           
-         # print(Dvector)
+          # print(Dvector)
           
-          #print(dim(Dvector))
+          # print(dim(Dvector))
           # sum(incidence)
           # sum(death)
           
@@ -517,13 +516,13 @@ source("R/distwtRaster.R")
           
           M <- diag(as.vector(Dvector_revised)) 
           
-          #print(M)# check if D vector needs to be really revised
+          # print(M)# check if D vector needs to be really revised
           
-          #levelplot(M, col.regions= colorRampPalette(c("white", "red", "blue")))
+          # levelplot(M, col.regions= colorRampPalette(c("white", "red", "blue")))
           # table(M)
           # diag(M)
           # det(M)
-          #print(M)
+          # print(M)
           
           #---------------------#
           # Optimal Kalman Gain #
@@ -934,7 +933,7 @@ source("R/distwtRaster.R")
  # setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
  # getwd() # Path to your working directory
  
-  timestep <- 10 #3650
+  timestep <- 10 #440
   lambda <- 15
   rasterAgg <- 10
   radius <- 1 # apply formula as discussed
@@ -947,10 +946,10 @@ source("R/distwtRaster.R")
   level1Names <- c("Ituri", "Nord-Kivu")
   isCropped <- T
  
- # #------------#
- # # Parameters #
- # #------------#
- # 
+  #------------#
+  # Parameters #
+  #------------#
+  
   alpha <- 0.00015  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
   beta  <- 0.030    # Daily fraction that move out of the susceptible compartment to the exposed compartment
   gamma <- 0.010    # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios

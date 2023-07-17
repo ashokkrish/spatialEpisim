@@ -8,7 +8,7 @@ library(Matrix)
 # library(lattice)
 # library(ggplot2)
 
-getwd() 
+#getwd() 
 
 #setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 

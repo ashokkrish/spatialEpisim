@@ -7,7 +7,6 @@ states_total <- 6                # Total number of states: S, V, E, I, R, D
 states_observable <- 2           # Number of observable states: I and D
 p <- ncols*nrows                 # Dimentionality of the state space
 
-
 Locations <- read.csv("observeddata/Ebola_Health_Zones_LatLon.csv", header = T)
 nHealthZones <-  dim(Locations)[1] # Number of health zones in North Kivu and Ituri provinces of DRC
 
