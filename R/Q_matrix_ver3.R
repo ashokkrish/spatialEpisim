@@ -9,26 +9,26 @@ p <- ncols*nrows                 # Dimentionality of the state space
 rho <- 0.8
 sigma <- 1
 
-Locations <- read.csv("Ebola_Health_Zones_LatLon_SitRpt54.csv", header = T)
+Locations <- read.csv("observeddata/Ebola_Health_Zones_LatLon.csv", header = T)
 Locations <- Locations[order(Locations$Hposition),]
 q <- dim(Locations)[1] # Number of health zones in North Kivu and Ituri provinces of DRC
 
-# rs <- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
-# rasterStack <- rs$rasterStack
-
-# indices <- 1:p
-# cellCenterLat <- matrix(0,p,1)
-# cellCenterLong <- cellCenterLat
+# # rs <- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
+# # rasterStack <- rs$rasterStack
 # 
-# for (i in 1:nrows){
-#   for (j in 1:ncols){
-#     pos = ((i-1)*ncols) + j
-#     cellCenterLat[pos] <- ymax(rasterStack) - (i-0.5)*yres(rasterStack) 
-#     cellCenterLong[pos] <- xmin(rasterStack) + (j-0.5)*xres(rasterStack)
-#   }
-# }
-# 
-# centers <- data.frame(Index = indices, CenterLatitude = cellCenterLat, CenterLongitude = cellCenterLong)
+# # indices <- 1:p
+# # cellCenterLat <- matrix(0,p,1)
+# # cellCenterLong <- cellCenterLat
+# #
+# # for (i in 1:nrows){
+# #   for (j in 1:ncols){
+# #     pos = ((i-1)*ncols) + j
+# #     cellCenterLat[pos] <- ymax(rasterStack) - (i-0.5)*yres(rasterStack)
+# #     cellCenterLong[pos] <- xmin(rasterStack) + (j-0.5)*xres(rasterStack)
+# #   }
+# # }
+# #
+# # centers <- data.frame(Index = indices, CenterLatitude = cellCenterLat, CenterLongitude = cellCenterLong)
 
 QHt = matrix(0,p,q)
 
