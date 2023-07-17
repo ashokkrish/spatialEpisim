@@ -19,7 +19,7 @@ shhh(library(writexl))
 
 source("R/rasterStack.R") # This code generates the base RasterStack
 source("R/rasterPlot.R")  # This code generates the .png and .mp4 files for RasterStack
-source("R/distAndWeight.R")
+source("R/distwtRaster.R")
 
 #---------------------------------------#
 # Compartmental model simulation begins #
@@ -224,17 +224,17 @@ source("R/distAndWeight.R")
     death_data <- read_excel("Ebola_Death_Data.xslx")
     
     #dim(incidence_data); dim(death_data)
-    source('H_matrix.R') # ## read in H matrix code
+    source('R/H_matrix.R') # ## read in H matrix code
     # ## read in Q matrix code
     if (QMatType == "DBD"){
-      source('Q_matrix_ver1.R') #source('Q_matrix_ver2.R')
+      source('R/Q_matrix_ver1.R') #source('Q_matrix_ver2.R')
      
       QHt  <- Qf.OSI%*%t(Hmat) # Calculate this only once
       HQHt <- Hmat%*%QHt  
     }
     
     else if (QMatType == "Balgovind"){
-      source('Q_matrix_ver3.R')
+      source('R/Q_matrix_ver3.R')
       HQHt <- Hmat%*%QHt # Calculate this only once
       }
        #'%!in%' <- function(x,y)!('%in%'(x,y))
