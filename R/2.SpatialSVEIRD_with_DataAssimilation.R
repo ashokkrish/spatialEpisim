@@ -24,11 +24,11 @@ library(writexl)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
-baseDir <- getwd()
-outputDir <- paste(baseDir, "/Output", sep="") # The directory for output files
-if (!(file.exists(outputDir))){
-  dir.create("Output") # Folder to store output .nc files
-}
+# baseDir <- getwd()
+# outputDir <- paste(baseDir, "/Output", sep="") # The directory for output files
+# if (!(file.exists(outputDir))){
+#   dir.create("Output") # Folder to store output .nc files
+# }
 #setwd(outputDir) # Change working directory to output folder
 
 #source('1.ClippingProvinces_DRC.R')

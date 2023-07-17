@@ -94,8 +94,6 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
   is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
   pal <- getPalette(palettePng)
   
-  
-  
   if (!directOutput){
     png(PNGFileName) # output the plot to the www/ image folder
   }
