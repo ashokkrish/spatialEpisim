@@ -213,8 +213,9 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 
   names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
   
-  print(rasterStack)
-  #This code can be used later in a function that finds cell indices from coords and agg factor####
+  # print(rasterStack)
+  
+  # #This code can be used later in a function that finds cell indices from coords and agg factor####
   # locations <- read.csv("Ebola_Health_Zones_LatLon_SitRpt54.csv", header = T)
   # lats <- locations[3]
   # longs <- locations[4]
@@ -230,6 +231,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
   # print(rindex)
   # print(cindex)
   ##########################################################################################
+  
   returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = nrow(Susceptible), "nCols" = ncol(Susceptible), "nCells" = ncell(Susceptible))
   
   return(returnList)
@@ -242,7 +244,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 # 
 # createRasterStack("Nigeria", rasterAgg = 0, isCropped = T, level1Names = "Oyo")
 # createRasterStack("Czech Republic", rasterAgg = 0, isCropped = T, level1Names = c("Prague","Zlínský"))
-#createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
+# createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
 # 
 # createRasterStack("Nigeria", rasterAgg = 25, isCropped = F, level1Names = NULL)
 # createRasterStack("Italy", rasterAgg = 30, isCropped = F, level1Names = NULL)

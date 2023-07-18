@@ -46,9 +46,17 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
   Level1Identifier <- rs$Level1Identifier
   
-  print(rs$rasterStack)
-  print(Level1Identifier$NAME_1)
- # List of all states/provinces/regions
+  # print(rs$rasterStack)
+  # print(Level1Identifier$NAME_1)  # List of states/provinces/regions
+  
+  plot(Level1Raster)
+  plot(Level1Identifier, add = TRUE)
+  
+  # print(Susceptible);  print(Vaccinated); print(Exposed); print(Infected); print(Recovered); print(Dead)
+  
+  # dim(Susceptible); dim(Vaccinated); dim(Exposed); dim(Infected); dim(Recovered); dim(Dead); dim(Inhabitable); dim(Level1Raster)
+  
+  # print(table(values(Inhabitable)))
 
   names <- c("Date", "N", "S", "V", "E", "I", "R", "D", 
              "newV", "newE", "newI", "newR","newD", "cumE", "cumI", "Alpha", "Beta", "Gamma", "Sigma", "Delta",
@@ -73,37 +81,10 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   LLCornerLongitude <- xmin(rs$rasterStack)
   LLCornerLatitude <- ymin(rs$rasterStack)
   
-  #print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
+  print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
   
   hcellSize <- res(rs$rasterStack)[1]
   vcellSize <- res(rs$rasterStack)[2]
-
-  Susceptible
-  Vaccinated
-  Exposed
-  Infected
-  Recovered
-  Dead
-
-  # m <- raster::as.matrix(Inhabitable)
-  #
-  # Vaccinated <- raster(m) # Coerce matrix to a RasterLayer object
-  #
-  # Vaccinated
-  #
-  # crs(Vaccinated) <- crs(Inhabitable)
-  # extent(Vaccinated) <- extent(Inhabitable)
-  #
-  # Vaccinated
-  #
-  # origin(Vaccinated)
-  # origin(Inhabitable)
-
-  # raster::as.matrix(Inhabitable)
-
-  # dim(Susceptible); dim(Vaccinated); dim(Exposed); dim(Infected); dim(Recovered); dim(Dead); dim(Inhabitable); dim(Level1Raster)
-
-  # print(table(values(Inhabitable)))
 
   #------------------------#
   # Initial seed locations #
@@ -112,32 +93,31 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   if (missing(seedFile)){
     seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
     seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
-    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
+    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header = T)
   } else {
     seedData <<- read.csv(seedFile)
   }
 
-  # print(seedFile)
   # print(seedData)
 
-  numLocations <- dim(seedData)[1] #nrow(data())
+  numLocations <- dim(seedData)[1]
+  # print(numLocations)
 
-  midLongitude <-(LLCornerLongitude + ULCornerLongitude)/2
+  midLongitude <- (LLCornerLongitude + ULCornerLongitude)/2
   midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
-  #print(numLocations)
 
   for (ff in 1:numLocations)
   {
-    #print(paste("Region Identifier = ", seedData[ff,9]))
+    #print(paste("Seed location = ", seedData[ff,1]))
 
     row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
     col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
-    #print(paste("row = ", row, "col = ", col))
+    # print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
-    numCellsPerRegion    <- (2*radius + 1)^2
+    numCellsPerRegion    <- (2*radius + 1)^2 # Seed the initial infections equitably in a Moore Neighborhood of cells
     newVaccinatedPerCell <- seedData[ff,4]/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
     newExpPerCell        <- seedData[ff,5]/numCellsPerRegion    #round(seedData[ff,5]/numCellsPerRegion)
     newInfPerCell        <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
@@ -160,8 +140,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
 
-  # writeRaster(Infected, "seed.tif", overwrite=TRUE)
-
   # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   # pal <- colorRampPalette(ramp)
   #
@@ -169,7 +147,12 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   #
   # plot(Level1Identifier, add = TRUE)
   #
-  #print(Exposed)
+  # plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # 
+  # plot(Level1Identifier, add = TRUE)
+  
+  # writeRaster(Infected, "seed.tif", overwrite = TRUE)
+  
   sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
   sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
   sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
@@ -187,8 +170,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   propRecovered <- sumR/sumS
   propDead <- sumD/sumS
 
-  # print("Check")
-  #
   # print(propVaccinated)
   # print(propExposed)
   # print(propInfected)
@@ -203,14 +184,12 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
   print(paste("Susceptible Count after removing initial seed values: ", sumS)) #sum(values(Susceptible)<0)
 
-  datarow <- 0 #pre-allocating the row from which we read the data to assimilate each week
+  datarow <- 0 # pre-allocating the row from which we read the data to assimilate each week
   cumVaccinated <- round(sumV)
   cumExposed <- round(sumE)
   cumInfected <- round(sumI)
   cumRecovered <- round(sumR)
   cumDead <- round(sumD)
-
-  #print(raster::as.matrix(Infected))
 
   cumIncidence <- round(sumI)
 
@@ -229,7 +208,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     
     print(paste("Dimension of Death Matrix: ", dim(death_data)[1], dim(death_data)[2]))
 
-    source('R/H_matrix.R') # ## read in H matrix code
+    source('R/H_matrix.R') # read in H matrix code
     
     #-----------------------#
     # Read in Q matrix code #
@@ -243,6 +222,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     }
     else if (QMatType == "Balgovind"){
       source('R/Q_matrix_ver3.R')
+      
       HQHt <- Hmat%*%QHt # Calculate this only once
       }
        #'%!in%' <- function(x,y)!('%in%'(x,y))
@@ -269,8 +249,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
     summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
 
-
-
     summary[t, 14]  <- cumExposed
     summary[t, 15]  <- cumInfected
     summary[t, 16]  <- alpha
@@ -282,8 +260,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     summary[t, 21]  <- radius
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
-
-
 
     nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
 
@@ -944,11 +920,14 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   model <- "SVEIRD" #"SEIRD"
   selectedCountry <- "Democratic Republic of Congo"
   t <- 1
-  startDate <- "2018-08-01" #today()
+  startDate <- "2018-08-01" # today()
   deterministic <- T
   directOutput <- F
   level1Names <- c("Ituri", "Nord-Kivu")
   isCropped <- T
+  # seedFile <- "seeddata/COD_InitialSeedData.csv"
+  # DA <- T
+  # QMatType <- "DBD"
  
   #------------#
   # Parameters #
@@ -984,6 +963,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
  #     
  #     #print(paste("Susceptible = ", sum(values(Susceptible))))
  # }
+  
  #################An Example Call###################################################
  
  SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "DBD")
