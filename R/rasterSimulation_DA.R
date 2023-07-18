@@ -539,7 +539,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
           # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
           Ke.OSI <- QHt%*%solve(HQHt + M)
-          write.matrix(Ke.OSI, file = 'Kal_Gain.csv')#solve((HQHt + M), t(QHt))
+          #write.matrix(Ke.OSI, file = 'Kal_Gain.csv')#solve((HQHt + M), t(QHt))
 
           #print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
 
@@ -612,14 +612,14 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # NOTE: when restacking make sure byrow = T.
 
           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F)
-          write.matrix(I, file = 'infected.csv')
+          #write.matrix(I, file = 'infected.csv')
 
           # I <- raster(I)
           # print(I)
           # extent(I) <- extent(rs$rasterStack)
           # print(I)
 
-          I[I < 1] <- 0 # Prevent tiny values for the number of infectious
+          I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
 
           D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F)
 
@@ -629,16 +629,16 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
           # For all uninhabitable cells set the number of infected and dead = 0. THIS IS VERY CRITICAL!!!
 
-          for(i in 1:nrows)
-          { 								# nrows
-            for(j in 1:ncols)
-            {							  # ncols
-              if (rs$rasterStack$Inhabitable[i,j] == 0)
-              {						  # Inhabitable
-                I[i,j] <- D[i,j] <- 0
-              }
-            }
-          }
+          # for(i in 1:nrows)
+          # { 								# nrows
+          #   for(j in 1:ncols)
+          #   {							  # ncols
+          #     if (rs$rasterStack$Inhabitable[i,j] == 0)
+          #     {						  # Inhabitable
+          #       I[i,j] <- D[i,j] <- 0
+          #     }
+          #   }
+          # }
           values(rs$rasterStack$Infected) <- I
           values(rs$rasterStack$Dead) <- D
           Infected <- rs$rasterStack$Infected
@@ -921,10 +921,10 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
  # setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
  # getwd() # Path to your working directory
  
-  timestep <- 440 #440
+  timestep <- 150 #440
   lambda <- 15
   rasterAgg <- 10
-  radius <- 0 # apply formula as discussed
+  radius <- 1 # apply formula as discussed
   model <- "SVEIRD" #"SEIRD"
   selectedCountry <- "Democratic Republic of Congo"
   t <- 1
@@ -974,4 +974,4 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
  #################An Example Call###################################################
  
- SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "DBD")
+ SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "DBD")
