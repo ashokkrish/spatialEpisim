@@ -6,6 +6,7 @@ shhh(library(cptcity))
 shhh(library(lattice))
 shhh(library(lubridate))
 shhh(library(magick))
+shhh(library(Matrix))
 options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(raster, warn.conflicts=FALSE))
@@ -219,6 +220,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
       QHt  <- Qf.OSI%*%t(Hmat) # Calculate this only once
       HQHt <- Hmat%*%QHt
+      #write.matrix(HQHt, file = 'HQHt.csv')
     }
     else if (QMatType == "Balgovind"){
       source('R/Q_matrix_ver3.R')
@@ -499,6 +501,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # sum(Dvector_revised < 1)
 
           M <- diag(as.vector(Dvector_revised))
+          
+          #write.matrix(M, file = 'mes_err.csv')
 
           # print(M)# check if D vector needs to be really revised
 
@@ -534,7 +538,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # sum(eigen(solve(HQHt))$values)
 
           # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
-          Ke.OSI <- QHt%*%solve(HQHt + M)  #solve((HQHt + M), t(QHt))
+          Ke.OSI <- QHt%*%solve(HQHt + M)
+          write.matrix(Ke.OSI, file = 'Kal_Gain.csv')#solve((HQHt + M), t(QHt))
 
           #print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
 
@@ -607,17 +612,18 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # NOTE: when restacking make sure byrow = T.
 
           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F)
+          write.matrix(I, file = 'infected.csv')
 
           # I <- raster(I)
           # print(I)
           # extent(I) <- extent(rs$rasterStack)
           # print(I)
 
-          I[I < 0] <- 0 # Prevent negative values for the number of infectious
+          I[I < 1] <- 0 # Prevent tiny values for the number of infectious
 
           D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F)
 
-          D[D < 0] <- 0 # Prevent negative values for the number of dead
+          D[D < 1] <- 0 # Prevent tiny values for the number of dead
 
           dim(Xa.OSI); dim(I); dim(D); min(I); min(D); max(I); max(D)
 
@@ -635,6 +641,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           }
           values(rs$rasterStack$Infected) <- I
           values(rs$rasterStack$Dead) <- D
+          Infected <- rs$rasterStack$Infected
+          Dead <- rs$rasterStack$Dead
          } # datarow cap
         } # If t is divisible by 7
       }
@@ -913,10 +921,10 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
  # setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
  # getwd() # Path to your working directory
  
-  timestep <- 10 #440
+  timestep <- 440 #440
   lambda <- 15
   rasterAgg <- 10
-  radius <- 1 # apply formula as discussed
+  radius <- 0 # apply formula as discussed
   model <- "SVEIRD" #"SEIRD"
   selectedCountry <- "Democratic Republic of Congo"
   t <- 1
@@ -933,11 +941,11 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   # Parameters #
   #------------#
   
-  alpha <- 0.00015  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-  beta  <- 0.030    # Daily fraction that move out of the susceptible compartment to the exposed compartment
-  gamma <- 0.010    # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
-  sigma <- 0.065    # Daily fraction that move out of the infectious compartment to the recovered compartment
-  delta <- 0.002    # Daily fraction that move out of the infectious compartment to the dead compartment
+  alpha <- 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+  beta  <- 0.0055    # Daily fraction that move out of the susceptible compartment to the exposed compartment
+  gamma <- 0.0055    # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
+  sigma <- 0.01    # Daily fraction that move out of the infectious compartment to the recovered compartment
+  delta <- 0.02    # Daily fraction that move out of the infectious compartment to the dead compartment
  
  # for (ff in 1:numLocations)
  # {
@@ -966,4 +974,4 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
  #################An Example Call###################################################
  
- SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "DBD")
+ SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "DBD")
