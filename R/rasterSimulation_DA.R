@@ -450,7 +450,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
           Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
-          #print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
+          print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
 
           #print(sum(Xf.OSI))
           #table(Xf.OSI)
@@ -921,7 +921,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
  # setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
  # getwd() # Path to your working directory
  
-  timestep <- 150 #440
+  timestep <- 10 #440
   lambda <- 15
   rasterAgg <- 10
   radius <- 1 # apply formula as discussed
@@ -974,4 +974,4 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
  #################An Example Call###################################################
  
- SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "DBD")
+ SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "Balgovind")

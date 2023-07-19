@@ -1,14 +1,30 @@
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # Avoid "magic constants"
-nrows <- 71 # 48
-ncols <- 50  # 34
-states_total <- 6                # Total number of states: S, V, E, I, R, D
-states_observable <- 2           # Number of observable states: I and D
+source('R/rasterStack.R')
+
+rasterStack <- createRasterStack("Democratic Republic of Congo", 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack
+sitRepData = 'observeddata/Ebola_Health_Zones_LatLon.csv'
+states_observable <- 2  
+
+generateLIO <- function(rasterStack, sitRepData, states_observable = 2)
+
+nrows <- nrow(rasterStack) # 48
+ncols <- ncol(rasterStack)  # 34
+# states_total <- 6               
 p <- ncols*nrows                 # Dimentionality of the state space
 
-Locations <- read.csv("observeddata/Ebola_Health_Zones_LatLon.csv", header = T)
+Locations <- read.csv(sitRepData, header = T)
 nHealthZones <-  dim(Locations)[1] # Number of health zones in North Kivu and Ituri provinces of DRC
+
+for (i in 1:nHealthZones) {
+  rindex(i) <- floor((ymax(rasterStack) - locations[3,i])/yres(rasterStack))
+  cindex(i) <- floor((locations[4,i] - xmin(rasterStack))/xres(rasterStack))
+  Hposition(i) <- nrows*cindex + rindex 
+}
+
+Locations <- cbind(Locations, rindex, cindex, HPosition)
+
 
   #-------------------#
   # Import Ebola Data #
@@ -18,18 +34,16 @@ nHealthZones <-  dim(Locations)[1] # Number of health zones in North Kivu and It
   # names(Ebola_Incidence_Data)
   # dim(Ebola_Incidence_Data)
 
-  Ebola_Death_Data <- read_excel("observeddata/Ebola_Death_Data.xlsx")
-
-  names(Ebola_Death_Data)
-  dim(Ebola_Death_Data)
+  # Ebola_Death_Data <- read_excel("observeddata/Ebola_Death_Data.xlsx")
+  # 
+  # names(Ebola_Death_Data)
+  # dim(Ebola_Death_Data)
   
   #----------------------------------------------------------------------------#
   # Compute H matrix, the linear operator of dimension d x states_observable*p #
   #----------------------------------------------------------------------------#
   
   H <- H0 <- matrix(0, nHealthZones, p)
-  
-  Hposition <- Locations[, 7]
   
   for(k in 1:nHealthZones)
   {
