@@ -26,7 +26,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation begins #
 #---------------------------------------#
 
- SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, dataI, dataD, QMatType)
+ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, QMatType, QVar, QCorrLength)
  {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
@@ -69,6 +69,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
   nrows <- nrow(rs$rasterStack)
   ncols <- ncol(rs$rasterStack)
+  
+  p <- nrows * ncols
 
   # ULCornerLongitude <- extent(rs$rasterStack)[1] + res(rs$rasterStack)[1]/2 # 27.165417 for COD
   # ULCornerLatitude <- extent(rs$rasterStack)[4] - res(rs$rasterStack)[1]/2  # 3.682917 for COD
@@ -211,25 +213,21 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
     source('R/H_matrix.R') # read in H matrix code
     
+    Hlist <- generateLIO(rs$rasterStack, sitRepData, 2)
+    Hmat <- Hlist$Hmat
+    Locations <- Hlist$Locations
+    nHealthZones <- as.numeric(dim(Locations)[1])
+    
     #-----------------------#
     # Read in Q matrix code #
     #-----------------------#
     
-    if (QMatType == "DBD"){
-      source('R/Q_matrix_ver1.R')
-
-      QHt  <- Qf.OSI%*%t(Hmat) # Calculate this only once
-      HQHt <- Hmat%*%QHt
-      #write.matrix(HQHt, file = 'HQHt.csv')
-    }
-    else if (QMatType == "Balgovind"){
-      source('R/Q_matrix_ver3.R')
-      
-      HQHt <- Hmat%*%QHt # Calculate this only once
-      }
-       #'%!in%' <- function(x,y)!('%in%'(x,y))
+    source('R/Q_matrix_ver4.R')
+    QHt <- generateQHt(Hlist, QMatType, QVar, QCorrLength, makeQ = F)
+    
+    HQHt <- Hmat%*%QHt
+    
   }
-
   ################# DA Ends ##################
 
   #-------------------------------#
@@ -450,7 +448,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
           Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
-          print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
+          #print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
 
           #print(sum(Xf.OSI))
           #table(Xf.OSI)
@@ -645,8 +643,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           Dead <- rs$rasterStack$Dead
          } # datarow cap
         } # If t is divisible by 7
+      allRasters[[t]] <- rs;# elapsed week
       }
-        allRasters[[t]] <- rs;# elapsed week
     }   # DA T/F
     ########## DA Ends ##########
 
@@ -974,4 +972,4 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
  #################An Example Call###################################################
  
- SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "Balgovind")
+ SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "Gaussian", QVar = 1, QCorrLength = 0.8)
