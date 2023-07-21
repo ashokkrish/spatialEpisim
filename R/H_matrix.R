@@ -10,13 +10,16 @@ source('R/rasterStack.R')
 
  generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
 
-nrows <- nrow(rasterStack) # 48
-ncols <- ncol(rasterStack)  # 34
+   print(rasterStack)
+nrows <- nrow(rasterStack) 
+ncols <- ncol(rasterStack)  
 # states_total <- 6               
 p <- ncols*nrows                 # Dimentionality of the state space
+print(p)
 
 Locations <- read.csv(file = sitRepData, header = T)
-nHealthZones <-  dim(Locations)[1] # Number of health zones in North Kivu and Ituri provinces of DRC
+nHealthZones <-  dim(Locations)[1]
+print(nHealthZones)# Number of health zones in North Kivu and Ituri provinces of DRC
 rindex <- cindex <- Hposition <- numeric(nHealthZones)
 
 #print(Locations[1,3])
@@ -24,14 +27,19 @@ rindex <- cindex <- Hposition <- numeric(nHealthZones)
 for (i in 1:nHealthZones) {
   rindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack))
   cindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack))
-  # print(rindex[i])
-  # print(cindex[i])
-  # print(nrows)
+  
+  print(ymax(rasterStack))
+  #print(as.numeric(Locations[i,3]))
+  
+  
+   print(rindex[i])
+   print(cindex[i])
+   print(nrows)
   Hposition[i] <- ncols*(rindex[i]-1) + cindex[i] 
 }
 
 Locations <- cbind(Locations, rindex, cindex, Hposition)
-
+print(Locations)
   #-------------------#
   # Import Ebola Data #
   #-------------------#
@@ -70,10 +78,10 @@ Locations <- cbind(Locations, rindex, cindex, Hposition)
   Hmat <- H
  #print(list(rep(H,states_observable)))
 
-if (states_observable > 1){   
-  for (n in seq(from = 1, to = states_observable-1, by = 1)){  
+if (states_observable > 1){
+  for (n in seq(from = 1, to = states_observable-1, by = 1)){
   Hmat <- cbind(Hmat,H0)
-} 
+}
  for (n in seq(from = 1, to = states_observable-1, by = 1)){
    Htop <- matrix(0, nHealthZones, n*p)
    if ((n+1 - states_observable) !=  0){
@@ -84,7 +92,7 @@ if (states_observable > 1){
     Hmat <- rbind(Hmat, cbind(Htop, H, Hbottom))
    }
    else {
-     
+
      # print(dim(H))
      # print(dim(Htop))
      Hmat <- rbind(Hmat, cbind(Htop, H))
@@ -92,7 +100,10 @@ if (states_observable > 1){
   }
  }
  
- #print(Hmat)
+ print(dim(Hmat))
+ print(table(Hmat))
+ print(rowSums(Hmat))
+ #print(Locations)
  
  return(list("Hmat" = Hmat,"Locations" = Locations, "rasterStack" = rasterStack, "states_observable" = states_observable))
  
@@ -106,7 +117,10 @@ if (states_observable > 1){
 
 #------------------------------Example Call---------------------------------------------
 
-#test <- generateLIO(createRasterStack("Democratic Republic of Congo", rasterAgg=10, isCropped=T, c("Ituri", "Nord-Kivu"))$rasterStack, "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)	
+#test <- generateLIO(createRasterStack("Democratic Republic of Congo", rasterAgg=10, isCropped=T, c("Ituri", "Nord-Kivu"))$rasterStack, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", states_observable = 2)	
 # print(test)
 # print(dim(test$Hmat))
 #print(test$Locations)
+ # H <- test$Hmat 
+ # HHt <- H%*%t(H)
+ # rowSums(HHt)

@@ -204,8 +204,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     # Import the Ebola Incidence and Death Data #
     #-------------------------------------------#
 
-    incidence_data <- read_excel("observeddata/Ebola_Incidence_Data.xlsx")
-    death_data <- read_excel("observeddata/Ebola_Death_Data.xlsx")
+    incidence_data <- read_excel(dataI)
+    death_data <- read_excel(dataD)
 
     print(paste("Dimension of Incidence Matrix: ", dim(incidence_data)[1], dim(incidence_data)[2]))
     
@@ -617,7 +617,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # extent(I) <- extent(rs$rasterStack)
           # print(I)
 
-          I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
+          #I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
 
           D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F)
 
@@ -643,9 +643,11 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           Dead <- rs$rasterStack$Dead
          } # datarow cap
         } # If t is divisible by 7
-      allRasters[[t]] <- rs;# elapsed week
-      }
-    }   # DA T/F
+      # elapsed week
+    }
+    allRasters[[t]] <- rs
+  }
+# DA T/F
     ########## DA Ends ##########
 
      # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
@@ -919,7 +921,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
  # setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
  # getwd() # Path to your working directory
  
-  timestep <- 10 #440
+  timestep <- 36 #440
   lambda <- 15
   rasterAgg <- 10
   radius <- 1 # apply formula as discussed
@@ -939,10 +941,10 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   # Parameters #
   #------------#
   
-  alpha <- 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-  beta  <- 0.0055    # Daily fraction that move out of the susceptible compartment to the exposed compartment
+  alpha <- 0#.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+  beta  <- 0.0055*3    # Daily fraction that move out of the susceptible compartment to the exposed compartment
   gamma <- 0.0055    # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
-  sigma <- 0.01    # Daily fraction that move out of the infectious compartment to the recovered compartment
+  sigma <- 0#.01    # Daily fraction that move out of the infectious compartment to the recovered compartment
   delta <- 0.02    # Daily fraction that move out of the infectious compartment to the dead compartment
  
  # for (ff in 1:numLocations)
@@ -972,4 +974,5 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   
  #################An Example Call###################################################
  
- SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", QMatType = "Gaussian", QVar = 1, QCorrLength = 0.8)
+  #SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", "observeddata/Ebola_Incidence_Data_4zones.xlsx", "observeddata/Ebola_Death_Data_4zones.xlsx", QMatType = "DBD", QVar = 1, QCorrLength = 0.8)
+ SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", QMatType = "DBD", QVar = 1, QCorrLength = 0.8)
