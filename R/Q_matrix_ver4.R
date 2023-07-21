@@ -102,8 +102,15 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ){
             else if (varCovarFunc == 'Gaussian'){
               val <- exp(-(d^2)/2*(QCorrLength^2))
             }
+            else if (varCovarFunc == 'Spherical') { #Note that "QCorrLength" actually refers to the radius for the spherical variance-covariance function.
+              if (d < QCorrLength) {
+                val <- (3*d)/(2*QCorrLength) - (d^3)/(2*(QCorrLength^3))
+              }
+              else{
+                val <- 0
+              }
             else {
-              stop('Invalid variance-covariance function selected. Currently supported functions are: "DBD", "Balgovind", "Exponential" and "Gaussian".') 
+              stop('Invalid variance-covariance function selected. Currently supported functions are: "DBD", "Balgovind", "Exponential", "Gaussian" and "Spherical".') 
             #Error if selected variance-covariance function is invalid
             }
             Q[a+1, b+1] <- Qvar*val
@@ -119,5 +126,5 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ){
 }
 
 #Example Call:
-#test <- generateQHt(generateLIO(createRasterStack("Democratic Republic of Congo", rasterAgg=10, isCropped=T, c("Ituri", "Nord-Kivu"))$rasterStack, "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 3), "Gaussian", Qvar = 1, QCorrLength = 0.8, makeQ = F)	
+test <- generateQHt(generateLIO(createRasterStack("Democratic Republic of Congo", rasterAgg=10, isCropped=T, c("Ituri", "Nord-Kivu"))$rasterStack, "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 3), "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = T)	
 # print(test)
