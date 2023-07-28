@@ -9,7 +9,10 @@ makePlot <- function (compartments, input, plotTitle, xTitle, yTitle, lineThickn
     for (comp in compartments){
       plotData[comp] <- df[,comp]
     }
-    p = ggplot(plotData, mapping = aes_string("Date", compartments[1], group = 1)) +
+    
+    # , mapping = aes_string("Date", compartments[1], group = 1)
+    
+    p = ggplot(plotData) +
       labs(title = plotTitle, x = xTitle, y = yTitle) +
       scale_x_date(date_labels = "%d %b %Y")
     for (comp in compartments) {

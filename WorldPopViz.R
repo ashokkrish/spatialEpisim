@@ -31,15 +31,15 @@ ui <- fluidPage(
 
                             conditionalPanel(id = "listCheck", condition = "input.level1List != null", uiOutput("clippedPlotButton")),
                             
-                            # br(),
-                            # 
-                            # uiOutput("seedDataButton"),  
-                            # 
-                            # br(),
+                            br(),
+
+                            uiOutput("seedDataButton"),
+
+                            br(),
                             # 
                             # uiOutput("tableButton"),
                           
-                            #uiOutput("downloadTableButton")
+                            # uiOutput("downloadTableButton")
                            
                             # , radioButtons(
                             #      inputId = "qValue",

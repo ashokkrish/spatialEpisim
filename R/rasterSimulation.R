@@ -77,7 +77,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
   
-  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   rs <- createRasterStack(selectedCountry, rasterAgg, isCropped, level1Names)
   
   Susceptible <- rs$rasterStack$Susceptible
@@ -153,7 +153,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   if (missing(seedFile)){
     seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
     seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
-    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header=T)
+    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header = T)
   } else {
     seedData <<- seedFile
   }
@@ -167,8 +167,6 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
   #print(numLocations)
 
-  #print(numLocations)
-  
   for (ff in 1:numLocations)
   {
     #print(paste("Region Identifier = ", seedData[ff,9]))
@@ -176,7 +174,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
     col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
     
-    #print(paste("row = ", row, "col = ", col))
+    # print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
@@ -199,9 +197,9 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
     Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
 
-    #print(Exposed)
+    # print(Exposed)
     
-    #print(paste("Susceptible = ", sum(values(Susceptible))))
+    # print(paste("Susceptible = ", sum(values(Susceptible))))
   }
   
   # writeRaster(Infected, "seed.tif", overwrite=TRUE)
@@ -213,7 +211,8 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   # 
   # plot(Level1Identifier, add = TRUE)
   # 
-  print(Exposed)
+  # print(Exposed)
+  
   sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
   sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
   sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
@@ -254,12 +253,13 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
   cumRecovered <- round(sumR)
   cumDead <- round(sumD)
   
-#print(raster::as.matrix(Infected))
+  # print(raster::as.matrix(Infected))
+  
   #-------------------------------#
   # MAIN LOOP FOR TIME INCREMENTS #
   #-------------------------------#
 
-  allRasters <- vector(mode ="list", length = timestep)
+  allRasters <- vector(mode = "list", length = timestep)
   
   for (t in 1:timestep)
   {						# time increments
@@ -273,9 +273,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     summary[t, 6]  <- round(sumI)            # This is the prevalence (active infectious cases) at time t, NOT the cumulative sum
     summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
     summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
-    
 
-    
     summary[t, 14]  <- cumExposed
     summary[t, 15]  <- cumInfected
     summary[t, 16]  <- alpha
@@ -287,9 +285,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     summary[t, 21]  <- radius
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
-    
-    
-    
+
     nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
     
     dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
@@ -422,8 +418,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     # print(extent(rs$rasterStack))
     # 
     # writeRaster(infectedRaster, file = "infectedRaster.tif", overwrite = TRUE)
-    # 
-    
+
     rs$rasterStack$Susceptible <- Susceptible
     rs$rasterStack$Vaccinated <- Vaccinated
     rs$rasterStack$Exposed <- Exposed
@@ -431,7 +426,7 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     rs$rasterStack$Recovered <- Recovered
     rs$rasterStack$Dead <- Dead
     
-    # print('check')
+    print('check')
     
     summary[t, 9]   <- dailyVaccinated
     summary[t, 10]  <- dailyExposed
@@ -443,12 +438,13 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
     sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
     sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
     
-    #print(sumS)
+    # print(sumS)
 
     allRasters[[t]] <- rs;
-     # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
-     ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-     pal <- colorRampPalette(ramp)
+    
+    # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
+    # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+    # pal <- colorRampPalette(ramp)
     
     # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
     # 

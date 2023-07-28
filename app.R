@@ -114,7 +114,10 @@ ui <- fluidPage(
                               uiOutput("lambdaInput"),
                               
                               uiOutput("seedUpload"),
-                              
+
+                              uiOutput("seedDataButton"),
+                              br(),
+
                               uiOutput("startDateInput"),
                               
                               uiOutput("timestepInput")),
@@ -268,8 +271,8 @@ server <- function(input, output, session){
   
   iv$enable()
   
-   values <- reactiveValues()
-   values$allow_simulation_run <- TRUE
+  values <- reactiveValues()
+  values$allow_simulation_run <- TRUE
   # values$df <- data.frame(Variable = character(), Value = character()) 
   # output$table <- renderTable(values$df)
   
@@ -395,10 +398,10 @@ server <- function(input, output, session){
   output$countryDropdown <- renderUI( {
     pickerInput(
       inputId = "selectedCountry",
-      labelMandatory ("Country"), 
+      labelMandatory (strong("Country")), 
       choices = population$Country,
       multiple = FALSE,
-      selected = "Democratic Republic of Congo", #NULL,
+      selected = NULL, # "Democratic Republic of Congo", #
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country")
@@ -510,13 +513,11 @@ server <- function(input, output, session){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
-      
     }
     
     numericInput(inputId = "alpha",
                 label = "Daily Vaccination Rate (\\( \\alpha\\)):",
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
-    
     }
   })
   
@@ -548,7 +549,6 @@ server <- function(input, output, session){
         betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
-      
     }
     
     numericInput(inputId = "beta",
@@ -703,7 +703,6 @@ server <- function(input, output, session){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
         lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
-      
     }
     
     numericInput(inputId = "lambda",
@@ -732,7 +731,6 @@ server <- function(input, output, session){
                   )
 
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
-      
     }
   })
   
@@ -812,7 +810,7 @@ server <- function(input, output, session){
    output$dataAssimFileI <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
      if (showI()) {
-     fileInput(inputId = "assimData", labelMandatory ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
+     fileInput(inputId = "assimIData", labelMandatory ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
                accept = c(
                  "text/csv",
                  "text/comma-separated-values,text/plain",
@@ -824,13 +822,14 @@ server <- function(input, output, session){
    output$dataAssimFileD <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
      if (showD()) {
-       fileInput(inputId = "assimData", labelMandatory ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
+       fileInput(inputId = "assimDData", labelMandatory ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
                  accept = c(
                    "text/csv",
                    "text/comma-separated-values,text/plain",
                    ".csv",
                    ".xls",
-                   ".xlsx"),   )
+                   ".xlsx"),
+                 )
      }
    })
    # output$dataAssimCmpts <- renderUI({
@@ -841,6 +840,7 @@ server <- function(input, output, session){
    #                  selected = "", multiple = TRUE,
    #                  options = list(placeholder = ""))
    #})
+   
    ############################################################################    
    # Change the function which generates the Q matrix     #
    ############################################################################  
@@ -852,12 +852,11 @@ server <- function(input, output, session){
                     label = strong("Model Error Covariance Matrix Formulation"),
                     choiceValues = list("DBD", "Balgovind"),
                     choiceNames = list("Distance-Based Decay", "Balgovind"),
-                    selected = "Distance-Based Decay", #character(0), #
+                    selected = "DBD", #character(0), #
                     inline = TRUE,
                     width = "1000px")
      }
    })
-   
    
    ############################################################################    
    # Change the recommended aggregation factor for slider dynamically         #
@@ -939,6 +938,72 @@ server <- function(input, output, session){
   # observeEvent(input$go, {
   #   # TODO: implement downloading of files
   # })
+  
+  ############################################################################    
+  # Generate seed data and have an option to download the file locally       #
+  ############################################################################ 
+  
+  output$seedDataButton <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      downloadButton('downloadData', "Generate Seed Data", 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                     style = "length:800px")
+    }
+  })
+  
+  observeEvent(input$selectedCountry, {
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      
+      inputISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
+      
+      gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file
+      
+      gadmFolder <- "gadm/" # .rds files should be stored in local gadm/ folder
+      
+      # if (file.exists(paste0(gadmFolder, gadmFileName)))
+      # {
+      Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
+      # }
+      # else
+      # {
+      #   Level1Identifier <- getData("GADM", level = 1, country = inputISOLower)
+      # }
+      #print(coordinates(Level1Identifier)) # coords of the region
+      #print(Level1Identifier$NAME_1) # List of all states/provinces/regions
+      
+      seedNames <- Level1Identifier$NAME_1
+      seedCoords <- coordinates(Level1Identifier)
+      #print(seedCoords)
+      seedVaxx <- c(0)
+      seedExpo <- c(0)
+      seedInfect <- c(0)
+      seedRec <- c(0)
+      seedDead <- c(0)
+      seedCombine <- cbind(seedNames, seedCoords, seedVaxx, seedExpo, seedInfect, seedRec, seedDead)
+      frameCombine <- data.frame(seedCombine)
+      
+      frameCombine <- frameCombine[c("seedNames", "V3", "V2", "seedVaxx", "seedExpo", "seedInfect", "seedRec", "seedDead")]
+      
+      colnames(frameCombine) <- c("Location", "lat", "lon", "InitialVaccinated", "InitialExposed", "InitialInfections", "InitialRecovered", "InitialDead")
+      #print(frameCombine)
+      
+      isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
+      sheetName <- sprintf("%s_initialSeedData", isoCode)
+      
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          paste(sheetName, Sys.Date(), ".csv",  sep = "")
+        },
+        content = function(sheetName) {
+          write.csv(frameCombine, sheetName, row.names = FALSE)
+        }
+      )
+    }
+  })
   
   ############################################################################    
   # Multiple functionality when 'Run Simulation' is pressed                  #

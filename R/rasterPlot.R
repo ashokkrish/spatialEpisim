@@ -19,14 +19,14 @@ shhh(library(terra, warn.conflicts=FALSE))
 # R Script Variables                                                           #
 #------------------------------------------------------------------------------#
 
-modelSelect <- "SEIRD"                            # select model from SEIR, SEIRD, SVEIRD
-isoCode <- "CZE"                                  # user should pass ISO code as parameter
-year <- 2020                                      # default year (2020)
-resKm <- 1                                        # default resolution (1Km)
-rasterAgg <- 10                                   # default aggregation factor (10x10)
+# modelSelect <- "SVEIRD"                          # select model from SEIR, SEIRD, SVEIRD
+ isoCode <- "COD"                                # user should pass ISO code as parameter
+ year <- 2020                                    # default year (2020)
+ resKm <- 1                                      # default resolution (1Km)
+# rasterAgg <- 10                                 # default aggregation factor (10x10)
 PNGFileName <- "susceptible.png"                  # default output file name
 MP4FileName <- "susceptible_MP4.mp4"              # default MP4 file name
-stackLayerFileName <- "susceptible.png"           # default name for arbitrary raster stack PNG TODO: change format to ISR_Susceptible_0001.png
+stackLayerFileName <- "susceptible.png"           # default name for arbitrary raster stack PNG TODO: change format to ISO3_Susceptible_0001.png
 palettePng <- "misc/seminf_haxby.png"             # default colour palette found in misc folder
 layerName <- "Susceptible"                        # used to title raster layer plot
 basePopBreaks <- c(0, 10, 25, 50, 100, 250, 1000, 100000) # TODO: dynamically set for each individual country

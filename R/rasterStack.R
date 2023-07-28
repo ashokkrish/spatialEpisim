@@ -2,15 +2,15 @@ library(countrycode)
 library(raster, warn.conflicts=FALSE)
 #library(terra, warn.conflicts = FALSE)
 
-source("R/rasterWorldPop.R")
-
 createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
 
+  source("R/rasterWorldPop.R")
+  
   Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
   
-  #print(Susceptible)
+  # print(Susceptible)
     
   #---------------------------------------#
   # Source 2: From GADM: Level1Identifier #
@@ -129,7 +129,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     
     # print(extent(Level1Raster))
     # print(extent(Susceptible))
-    
+
     rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
 
     rasterStack <- crop(rasterStack, inhabitableTrim)
@@ -213,26 +213,9 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 
   names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
   
-  # print(rasterStack)
-  
-  # #This code can be used later in a function that finds cell indices from coords and agg factor####
-  # locations <- read.csv("Ebola_Health_Zones_LatLon_SitRpt54.csv", header = T)
-  # lats <- locations[3]
-  # longs <- locations[4]
-  # numLocations <- dim(locations)[1]
-  # 
-  # rindex <- matrix(0, numLocations, 1)
-  # cindex <- rindex
-  # 
-  # for (i in 1:numLocations){
-  #   cindex[i] <- floor((longs[,][i] - xmin(rasterStack))/xres(rasterStack)) + 1
-  #   rindex[i] <- floor((ymax(rasterStack) - lats[,][i])/yres(rasterStack)) + 1}
-  # 
-  # print(rindex)
-  # print(cindex)
-  ##########################################################################################
-  
-  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = nrow(Susceptible), "nCols" = ncol(Susceptible), "nCells" = ncell(Susceptible))
+  #print(rasterStack)
+
+  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = nrow(rasterStack$Susceptible), "nCols" = ncol(rasterStack$Susceptible), "nCells" = ncell(rasterStack$Susceptible))
   
   return(returnList)
 }
@@ -242,9 +225,9 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 #------------------------#
 # To test this function set working directory to the root folder
 # 
+# createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
 # createRasterStack("Nigeria", rasterAgg = 0, isCropped = T, level1Names = "Oyo")
 # createRasterStack("Czech Republic", rasterAgg = 0, isCropped = T, level1Names = c("Prague","Zlínský"))
-# createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
 # 
 # createRasterStack("Nigeria", rasterAgg = 25, isCropped = F, level1Names = NULL)
 # createRasterStack("Italy", rasterAgg = 30, isCropped = F, level1Names = NULL)

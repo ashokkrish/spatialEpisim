@@ -112,10 +112,12 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     
     names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
     
+    print("rasterStack before cropping")
     print(rasterStack)
     
     rasterStack <- crop(rasterStack, inhabitableTrim)
     
+    print("rasterStack after cropping")
     print(rasterStack)
     
     clippedInfected <- rasterStack[["Infected"]] 
@@ -152,7 +154,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     { 
       # print(my_df[ff,3])
       # print((ULCornerLongitude - hcellSize/2))
-      #print(paste("Region Identifier = ", seedData[ff,9]))
+      # print(paste("Region Identifier = ", seedData[ff,9]))
       
       row <- trunc(abs((my_df[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
       col <- trunc(abs((my_df[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
@@ -179,8 +181,8 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
     pal <- colorRampPalette(ramp)
     
-    plot(clippedInfected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-    
+    plot(clippedInfected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+    # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), 
     plot(Level1Identifier, add = TRUE)
     }
     else
@@ -198,8 +200,8 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       # print(Level1Raster) # It is now a RasterLayer
       # print(values(Level1Raster))
       
-      #print(extent(Level1Raster))
-      #Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
+      # print(extent(Level1Raster))
+      # Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
       
       # print(table(values(Level1Raster)))
       # print(freq(Level1Raster))
@@ -316,8 +318,8 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
       pal <- colorRampPalette(ramp)
       
-      plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = TRUE, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-      
+      plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = TRUE, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+      # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), 
       plot(Level1Identifier, add = TRUE)
     }
 }
