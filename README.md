@@ -15,51 +15,6 @@ Alternatively you can send a pull request to download all the files in this repo
 - Generate Spatiotemporal disease prevalence maps: either for an entire country or a smaller area (state(s)/province(s)) within a country.
 - Context: Data and examples focus on mathematical modelling of infectious disease epidemics
 
-## Packages you'll need
-
-```R
-# The absolute minimum
-install.packages("av")
-install.packages("bslib")
-install.packages("countrycode")
-install.packages("cptcity")
-install.packages("dplyr")
-install.packages("fasterize")
-install.packages("ggplot2")
-install.packages("ggspatial")
-install.packages("lattice")
-install.packages("latticeExtra")
-install.packages("lubridate")
-install.packages("magick")
-install.packages("maps")
-install.packages("markdown")
-install.packages("plyr")
-install.packages("prettymapr")
-install.packages("purrr")
-install.packages("raster")
-install.packages("rasterVis")
-install.packages("Rcpp")
-install.packages("readxl")
-install.packages("rgdal")
-install.packages("rjson")
-install.packages("rosm")
-install.packages("rsconnect")
-install.packages("rstudioapi")
-install.packages("shiny")
-install.packages("shinyalert")
-install.packages("shinyFeedback")
-install.packages("shinyhelper")
-install.packages("shinyjs")
-install.packages("shinyvalidate")
-install.packages("shinyWidgets")
-install.packages("sf")
-install.packages("sp")
-install.packages("stringr")
-install.packages("terra")
-install.packages("tinytex")
-install.packages("writexl")
-```
-
 ## Compartmental Models
 
 <!-- ![SEIRD](https://github.com/ashokkrish/spatialEpisim/blob/main/www/SEIRD.png)
@@ -87,9 +42,10 @@ install.packages("writexl")
 ## Directory structure
 
     /
-    |---R/
     |---gadm/
     |---misc/
+    |---observeddata/
+    |---R/
     |---seeddata/
     |---tif/
     |   |---cropped/
@@ -97,9 +53,10 @@ install.packages("writexl")
     |   |---MP4/
     |
 
-- `R/` folder with R scripts sourced in app.R.
+
 - `gadm/` folder with .RDS files with a database of Global Administrative Areas.
 - `misc/` folder with spreadsheets for default epidemic parameters and ISO3 Alpha codes.
+- `R/` folder with R scripts sourced in app.R.
 - `seeddata/` folder with seed data for selected countries.
 - `tif/` folder with the 2020 UN-Adjusted Population Count rasters downloaded from [WorldPop](https://www.worldpop.org/) .
 - `www/` is for static compartmental model flowcharts.
