@@ -1,13 +1,12 @@
-#rm(list = ls())
 source("R/H_Matrix.R")
 
-# HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
-# varCovarFunc <- "DBD" # "Balgovind" # 
-# Qvar <- 1
-# QCorrLength <- 0.8 # 1 # 
-# makeQ <- T
-
 generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
+  
+  # HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
+  # varCovarFunc <- "DBD" # "Balgovind" # 
+  # Qvar <- 1
+  # QCorrLength <- 0.8 # 1 # 
+  # makeQ <- T
   
   rasterStack <- HList$rasterStack
   #print(rasterStack)
@@ -18,12 +17,12 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
   # print(ncols)
   
   p <- nrows * ncols # Get p from H_Matrix.R
-  #print(p)
+  # print(p)
   
   observableStates <- HList$states_observable
   
   Locations <- HList$Locations # Row/column/position indices are sourced from H_Matrix.R
-  #print(Locations)
+  # print(Locations)
   
   nHealthZones <- as.numeric(dim(Locations)[1]) 
   

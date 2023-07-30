@@ -129,6 +129,7 @@ ui <- fluidPage(
                             
                             br(),
                             br(),
+                            
                             uiOutput("dataAssimCheckbox"),
 
                             conditionalPanel(condition = "input.dataAssim == '1'",  
@@ -138,6 +139,9 @@ ui <- fluidPage(
                                              uiOutput("covarianceRadio"),
                                              actionButton("goDA","Run Simulation with DA",
                                                            style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
+                                             br(),
+                                             actionButton("resetAllDA","Reset Values", 
+                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                           ),
                         ), 
                         
@@ -730,7 +734,7 @@ server <- function(input, output, session){
                     ".xlsx"),
                   )
 
-      #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
+      p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
     }
   })
   
@@ -947,7 +951,7 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      downloadButton('downloadData', "Generate Seed Data", 
+      downloadButton('downloadData', "Generate Seed Data Template", 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      style = "length:800px")
     }
