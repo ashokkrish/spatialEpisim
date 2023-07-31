@@ -19,10 +19,10 @@ shhh(library(terra, warn.conflicts=FALSE))
 # R Script Variables                                                           #
 #------------------------------------------------------------------------------#
 
-# modelSelect <- "SVEIRD"                          # select model from SEIR, SEIRD, SVEIRD
- isoCode <- "COD"                                # user should pass ISO code as parameter
- year <- 2020                                    # default year (2020)
- resKm <- 1                                      # default resolution (1Km)
+# modelSelect <- "SVEIRD"                         # select model from SEIR, SEIRD, SVEIRD
+isoCode <- "COD"                                  # user should pass ISO code as parameter
+year <- 2020                                      # default year (2020)
+resKm <- 1                                        # default resolution (1Km)
 # rasterAgg <- 10                                 # default aggregation factor (10x10)
 PNGFileName <- "susceptible.png"                  # default output file name
 MP4FileName <- "susceptible_MP4.mp4"              # default MP4 file name
@@ -76,7 +76,6 @@ setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
   resKm <<- resKm
   rasterAgg <<- rasterAgg
   PNGFileName <<- paste0("www/", fname)
-  
   #print(PNGFileName)
   
   #setDirectory()
@@ -100,6 +99,7 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
   
   if (rasterAgg == 0 || rasterAgg == 1){
     basePlotTitle <- ""
+    
     if(includeLabels){
       basePlotTitle <- paste0(year, 
                              " UN-Adjusted ", layerName, " Count \n for ", 
@@ -111,6 +111,7 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
     plot(rasterToPrint, col=pal(8)[-1], main = basePlotTitle, interpolate = FALSE, axes = includeLabels, zlim=c(0,maxVal))
   } else {
     aggrPlotTitle <- ""
+    
     if (includeLabels){
       aggrPlotTitle <- paste0(year, 
                              " UN-Adjusted Aggregated ", layerName, " Count \n for ", 
@@ -141,15 +142,15 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
 # Sets the working directory for R file #
 #---------------------------------------#
 setDirectory <- function() {
-  setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE preferred
-  getwd() # Path to your working directory
+  setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE required
+  getwd() # Path to the working directory
 }
 
 #-----------------------------------------------#
 # Extracts a palette from a formatted .png file #
 #-----------------------------------------------#
 getPalette <- function(png) {
-  raster <- rast(png)
+  raster <- terra::rast(png)
   u <- unique(values(raster))
   hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
   colorRampPalette(hex)
@@ -164,7 +165,8 @@ importGeoTiff <- function() {
                "km_Aggregated_UNadj.tif")
   
   tifFileName <- basename(url)  # name of the .tif file
-  foldName <- "tif/"         # .tif files should be stored in local tif/ folder
+  foldName <- "tif/"            # .tif files should be stored in local tif/ folder
+  
   if (!file.exists(paste0(foldName, tifFileName))){
     download.file(url, paste0(foldName, tifFileName), mode = "wb")
   } 
@@ -191,7 +193,7 @@ setPopulationBreaks <- function() {
 # # Aggregate the WorldPop raster by specified aggregation factor #
 # #---------------------------------------------------------------#
 # aggregateWorldPop <- function() {
-#   WorldPop_aggr_count <<- terra :: aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
+#   WorldPop_aggr_count <<- terra::aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
 #   is.na(WorldPop_aggr_count) <<- !WorldPop_aggr_count # sets cells which are 0 as NA, allows for 0 lower bound in plot
 # }
 

@@ -27,7 +27,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # model, startDate, selectedCountry, directOutput, rasterAgg,
 # alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile,
 # deterministic, isCropped, level1Names, DA = F,
-# sitRepData, dataI, dataD, QMatType, QVar, QCorrLength
+# sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength
 
 model <- "SVEIRD" # "SEIRD"
 startDate <- "2018-08-01" # today()
@@ -63,15 +63,15 @@ sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
 dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
 dataD <- "observeddata/Ebola_Death_Data.xlsx"
 
-QMatType <- "DBD"
+varCovarFunc <- "DBD" # "Balgovind" #
 QVar <- 1
-QCorrLength <- 0.8
+QCorrLength <- 0.8 # 1 #
 
 #---------------------------------------#
 # Compartmental model simulation begins #
 #---------------------------------------#
 
- # SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, QMatType, QVar, QCorrLength)
+ # SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength)
  # {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
@@ -156,7 +156,7 @@ QCorrLength <- 0.8
 
   for (ff in 1:numLocations)
   {
-    #print(paste("Seed location = ", seedData[ff,1]))
+    print(paste("Seed location = ", seedData[ff,1]))
 
     row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
     col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
@@ -166,11 +166,11 @@ QCorrLength <- 0.8
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
     numCellsPerRegion    <- (2*radius + 1)^2 # Seed the initial infections equitably in a Moore Neighborhood of cells
-    newVaccinatedPerCell <- seedData[ff,4]/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
+    newVaccinatedPerCell <- seedData[ff,4]#/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
     newExpPerCell        <- seedData[ff,5]/numCellsPerRegion    #round(seedData[ff,5]/numCellsPerRegion)
     newInfPerCell        <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
-    newRecoveredPerCell  <- seedData[ff,7]/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
-    newDeadPerCell       <- seedData[ff,8]/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
+    newRecoveredPerCell  <- seedData[ff,7]#/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
+    newDeadPerCell       <- seedData[ff,8]#/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
 
     # print(newVaccinatedPerCell)
     # print(newExpPerCell)
@@ -182,7 +182,8 @@ QCorrLength <- 0.8
     Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] <- Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] + newExpPerCell
     Infected[(row-radius):(row+radius),(col-radius):(col+radius)] <- Infected[(row-radius):(row+radius),(col-radius):(col+radius)] + newInfPerCell
     Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
-    Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
+    #Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
+    Dead[row,col] <- Dead[row,col] + newDeadPerCell
 
     #print(Exposed)
     #print(paste("Susceptible = ", sum(values(Susceptible))))
@@ -199,7 +200,7 @@ QCorrLength <- 0.8
   #
   # plot(Level1Identifier, add = TRUE)
 
-  #writeRaster(Infected, "seed.tif", overwrite = TRUE)
+  # writeRaster(Infected, "seed.tif", overwrite = TRUE)
 
   sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
   sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
@@ -256,24 +257,51 @@ QCorrLength <- 0.8
 
     print(paste("Dimension of Death Matrix: ", dim(death_data)[1], dim(death_data)[2]))
 
+    #-------------------#
+    # Read in Ht matrix #
+    #-------------------#
+
     source("R/H_matrix.R") # read in H matrix code
 
     Hlist <- generateLIO(rs$rasterStack, sitRepData, states_observable =  2)
     Hmat <- Hlist$Hmat
+    print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
+
     Locations <- Hlist$Locations
     nHealthZones <- as.numeric(dim(Locations)[1])
 
-    #--------------------#
-    # Read in QHt matrix #
-    #--------------------#
+    #------------------#
+    # Read in Q matrix #
+    #------------------#
 
-    source("R/Q_matrix_ver4.R")
+    source("R/Q_matrix_ver5.R")
 
-    QHt <- generateQHt(Hlist, QMatType, QVar, QCorrLength, makeQ = F)
+    QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, Qplot = F)
 
-    HQHt <- Hmat%*%QHt$QHt
+    Q <- QMat$Q
+    print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
 
-    print(HQHt[1:5, 1:5])
+    QFull <- QMat$QFull
+    print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
+
+    HQHt <- Hmat%*%QFull%*%t(Hmat)
+    print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
+
+    HQHt[1:8, 1:8]
+
+    #det(HQHt)
+    
+    # #--------------------#
+    # # Read in QHt matrix #
+    # #--------------------#
+    #
+    # source("R/Q_matrix_ver4.R")
+    #
+    # QHt <- generateQHt(Hlist, varCovarFunc, QVar, QCorrLength, makeQ = F)
+    #
+    # HQHt <- Hmat%*%QHt$QHt
+    #
+    # print(HQHt[1:5, 1:5])
   }
   ################# DA Ends ##################
 
@@ -281,7 +309,7 @@ QCorrLength <- 0.8
   # MAIN LOOP FOR TIME INCREMENTS #
   #-------------------------------#
 
-  allRasters <- vector(mode ="list", length = timestep)
+  allRasters <- vector(mode = "list", length = timestep)
 
   for (t in 1:timestep)
   {					# time increments
@@ -465,7 +493,7 @@ QCorrLength <- 0.8
 
     #setwd(outputDir) # Change working directory to output folder
 
-    if (DA == T)
+    if (DA == F)
     {                     # DA T/F
       #NewoutputDir <- paste(outputDir, "/DA", sep="") # The directory for output files
       #if (!(file.exists(NewoutputDir))){
@@ -694,10 +722,11 @@ QCorrLength <- 0.8
     }
     allRasters[[t]] <- rs
   }
+  
 # DA T/F
-    ########## DA Ends ##########
+   ########## DA Ends ##########
 
-     # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
+    # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
 
     # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
     #
@@ -940,7 +969,7 @@ QCorrLength <- 0.8
 
   for (t in 1:timestep){
     fname = paste0("MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
-    printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = T)
+    printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry = selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = T)
 
     # fname = paste0("MP4/", "paper/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), "_paper", ".png")
     # printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = F)
@@ -965,5 +994,5 @@ QCorrLength <- 0.8
 # Example Call #
 #--------------#
 
-# SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", "observeddata/Ebola_Incidence_Data_4zones.xlsx", "observeddata/Ebola_Death_Data_4zones.xlsx", QMatType = "DBD", QVar = 1, QCorrLength = 0.8)
-# SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", QMatType = "DBD", QVar = 1, QCorrLength = 0.8)
+# SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", "observeddata/Ebola_Incidence_Data_4zones.xlsx", "observeddata/Ebola_Death_Data_4zones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+# SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)

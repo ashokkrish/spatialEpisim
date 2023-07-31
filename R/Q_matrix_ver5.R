@@ -1,11 +1,11 @@
-generateQ <- function(varCovarFunc, Qvar, QCorrLength) {
+generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, Qplot = F) {
   
   # varCovarFunc <- "DBD" # "Balgovind" # 
   # Qvar <- 1
   # QCorrLength <- 0.8 # 1 # 
 
-  nrows <- 71 
-  ncols <- 50
+  # nrows <- 71 
+  # ncols <- 50
   # print(nrows)
   # print(ncols)
   
@@ -51,7 +51,7 @@ generateQ <- function(varCovarFunc, Qvar, QCorrLength) {
     
     print(varCovarFunc)
     
-    print(Q[1:10, 1:10])
+    print(Q[1:5, 1:5])
     
     #print(det(Q)) # Takes a long time to calculate. The determinant is zero meaning Q is non-invertible.
     
@@ -72,35 +72,19 @@ generateQ <- function(varCovarFunc, Qvar, QCorrLength) {
 
     print(dim(QFull))
     
-    print(QFull[1:10, 1:10])
-    
-    print(QFull[3545:3550, 3545:3550])
+    print(QFull[1:5, 1:5])
 
-    # x <- 1:ncol(Q)
-    # y <- 1:nrow(Q)
-
-    # # Create a grid of x and y values
-    # X <- matrix(x, nrow = nrow(Q), ncol = ncol(Q), byrow = TRUE)
-    # Y <- matrix(y, nrow = nrow(Q), ncol = ncol(Q), byrow = FALSE)
-
-    # #Plot the 3D surface
-    # library(rgl)
-    # library(plot3D)
-    # persp3D(X, Y, Q, scale = FALSE, theta = 90, expand = 0.2)
-    # persp3D(X, Y, Q, col = "lightpink", xlab = "Columns", ylab = "Rows", zlab = "Values",
-    # facets = FALSE, main = "3D Surface Plot of Q")
-
-  return(list("Q" = Q))
+    return(list("Q" = Q, "QFull" = QFull))
 }
 
 #--------------#
 # Example Call #
 #--------------#
 #
-# generateQ(varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, Qplot = F)
 #
-# generateQ(varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8, Qplot = F)
 # 
-# generateQ(varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8, Qplot = F)
 # 
-# generateQ(varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8, Qplot = F)

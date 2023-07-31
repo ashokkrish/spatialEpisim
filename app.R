@@ -1109,6 +1109,7 @@ server <- function(input, output, session){
     delta <- input$delta # ifelse(input$modelSelect == "SEIR", 0, input$delta) # DO NOT DELETE
     
     source("R/rasterSimulation.R")
+    source("R/rasterSimulation_DA.R")
     
     eps <- 0.0000000000000001
     
