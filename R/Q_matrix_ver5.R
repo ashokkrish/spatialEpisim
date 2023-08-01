@@ -4,8 +4,8 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, Qplot = F) 
   # Qvar <- 1
   # QCorrLength <- 0.8 # 1 # 
 
-  # nrows <- 71 
-  # ncols <- 50
+  # nrows <- 59 #71 
+  # ncols <- 42 #50
   # print(nrows)
   # print(ncols)
   
@@ -47,11 +47,11 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, Qplot = F) 
     
     Q <- Qvar*val
     
-    print(dim(Q))
+    #print(dim(Q))
     
     print(varCovarFunc)
     
-    print(Q[1:5, 1:5])
+    #print(Q[1:5, 1:5])
     
     #print(det(Q)) # Takes a long time to calculate. The determinant is zero meaning Q is non-invertible.
     
@@ -72,7 +72,7 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, Qplot = F) 
 
     print(dim(QFull))
     
-    print(QFull[1:5, 1:5])
+    #print(QFull[1:5, 1:5])
 
     return(list("Q" = Q, "QFull" = QFull))
 }

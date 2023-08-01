@@ -65,7 +65,7 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
     }
   }
   
-  print(dim(QHt))
+  #print(dim(QHt))
 
   # Block diagonalization if there are multiple observable states
   QFull <- QHt
@@ -100,8 +100,8 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
     }
   }
   
-  print(dim(QFull))
-  print(dim(HList$Hmat))
+  # print(dim(QFull))
+  # print(dim(HList$Hmat))
   
   # print(QFull[1:5, 1:5])
   
@@ -147,9 +147,9 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
     
     #print(dim(Q))
     
-    print(varCovarFunc)
-    
-    print(Q[1:5, 1:5])
+    # print(varCovarFunc)
+    # 
+    # print(Q[1:5, 1:5])
     
     #print(det(Q))
 
