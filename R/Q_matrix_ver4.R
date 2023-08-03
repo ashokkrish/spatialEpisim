@@ -68,20 +68,20 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
   #print(dim(QHt))
 
   # Block diagonalization if there are multiple observable states
-  QFull <- QHt
+  QHtFull <- QHt
   
   # print(dim(Q0))
   # print(dim(QHt))
-  # print(dim(QFull))
-  # print(head(QFull))
+  # print(dim(QHtFull))
+  # print(head(QHtFull))
   
   if (observableStates > 1){
     for (n in seq(from = 1, to = observableStates-1, by = 1)){
-      QFull <- rbind(QFull, Q0)
+      QHtFull <- rbind(QHtFull, Q0)
     }
     
-    # print(fivenum(QFull))
-    # print(table(QFull))
+    # print(fivenum(QHtFull))
+    # print(table(QHtFull))
     
     for (n in seq(from = 1, to = observableStates-1, by = 1)){
       Qtop <- matrix(0, n*p, nHealthZones)
@@ -90,18 +90,18 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
         print(dim(Qtop))
         print(dim(QHt))
         print(dim(Qbottom))
-        QFull <- cbind(QFull, rbind(Qtop, QHt, Qbottom))
+        QHtFull <- cbind(QHtFull, rbind(Qtop, QHt, Qbottom))
       }
       else {
         # print(dim(QHt))
         # print(dim(Qtop))
-        QFull <- cbind(QFull, rbind(Qtop, QHt))
+        QHtFull <- cbind(QHtFull, rbind(Qtop, QHt))
       }
     }
   }
   
-  # print(dim(QFull))  
-  # print(QFull[1:5, 1:5])
+  # print(dim(QHtFull))  
+  # print(QHtFull[1:5, 1:5])
   # print(dim(HList$Hmat))
 
   # Generating the full Q matrix if desired. Warning: doing this increases the computation time significantly
@@ -145,9 +145,9 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
     #
     # print(det(Q))
     
-    return(list("QHt" = QFull, "Q" = Q))
+    return(list("QHt" = QHtFull, "Q" = Q))
   } else {  
-    return(list("QHt" = QFull))
+    return(list("QHt" = QHtFull))
     }
 }
 
@@ -155,9 +155,9 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
 # Example Call #
 #--------------#
 
-# HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
-# 
-# generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = F)
+HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
+
+generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = F)
 #
 # generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = T)
 #

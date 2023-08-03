@@ -118,7 +118,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
     col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
-    # print(paste("row = ", row, "col = ", col))
+    print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
@@ -215,7 +215,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     source("R/H_matrix.R") # read in H matrix code
 
-    Hlist <- generateLIO(rs$rasterStack, sitRepData, states_observable =  2)
+    Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
     Hmat <- Hlist$Hmat
     print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
 
@@ -235,45 +235,47 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     QFull <- QMat$QFull
     print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
+    
+    QHt <- QFull%*%t(Hmat)
 
-    HQHt <- Hmat%*%QFull%*%t(Hmat)
+    HQHt <- Hmat%*%QHt
     print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
 
     HQHt[1:8, 1:8]
 
     ## HQHt is a square-symmetric matrix
-    # rowSums(HQHt)
-    # colSums(HQHt)
+     print(rowSums(HQHt))
+     print(colSums(HQHt))
     # table(rowSums(HQHt))
     # table(colSums(HQHt))
-    # diag(HQHt)
+     print(diag(HQHt))
     # det(HQHt)
     # eigen(HQHt)$values
-    # sum(eigen(HQHt)$values) # Sum of eigenvalues is equal to 56. What does this mean?
+     print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to 56. What does this mean?
 
     #--------------------#
     # Read in QHt matrix #
     #--------------------#
 
-    source("R/Q_matrix_ver4.R")
-
-    QHt <- generateQHt(Hlist, varCovarFunc, QVar, QCorrLength, makeQ = F)
-
-    HQHt_easy <- Hmat%*%QHt$QHt
-
-    print(paste("Dimension of HQHt_easy Matrix: ", dim(HQHt_easy)[1], dim(HQHt_easy)[2]))
-
-    print(HQHt_easy[1:8, 1:8])
-    
-    # HQHt_easy is NOT a square-symmetric matrix. This is concerning to me. TBW to investigate this ASAP.
-    # rowSums(HQHt_easy)
-    # colSums(HQHt_easy)
-    # table(rowSums(HQHt_easy))
-    # table(colSums(HQHt_easy))
-    # diag(HQHt_easy)
-    # det(HQHt_easy)
-    # eigen(HQHt_easy)$values
-    # sum(eigen(HQHt_easy)$values) # Sum of eigenvalues is equal to 48. What does this mean?
+    # source("R/Q_matrix_ver4.R")
+    # 
+    # QHt <- generateQHt(Hlist, varCovarFunc, QVar, QCorrLength, makeQ = F)
+    # 
+    # HQHt_easy <- Hmat%*%QHt$QHt
+    # 
+    # print(paste("Dimension of HQHt_easy Matrix: ", dim(HQHt_easy)[1], dim(HQHt_easy)[2]))
+    # 
+    # print(HQHt_easy[1:8, 1:8])
+    # 
+    # # HQHt_easy is NOT a square-symmetric matrix. This is concerning to me. TBW to investigate this ASAP.
+    #  print(rowSums(HQHt_easy))
+    #  print(colSums(HQHt_easy))
+    # # table(rowSums(HQHt_easy))
+    # # table(colSums(HQHt_easy))
+    #  print(diag(HQHt_easy))
+    # # det(HQHt_easy)
+    # # eigen(HQHt_easy)$values
+    #  print(sum(eigen(HQHt_easy)$values)) # Sum of eigenvalues is equal to 48. What does this mean?
 
     #--------------------------------------#
     # Plot the HQHt and HQHt_easy matrices #
@@ -282,7 +284,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     source("R/plotHQHt.R")
 
     plotHQHt(HQHt)
-    plotHQHt(HQHt_easy)
+    # plotHQHt(HQHt_easy)
   }
   ################# DA Ends ##################
 
@@ -587,7 +589,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # sum(eigen(solve(HQHt))$values)
 
           # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
-          Ke.OSI <- QHt$QHt%*%solve(HQHt + M)
+          Ke.OSI <- QHt%*%solve(HQHt + M)
           #write.matrix(Ke.OSI, file = 'Kal_Gain.csv') #solve((HQHt + M), t(QHt))
 
           print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
@@ -657,8 +659,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           # NOTE: when restacking make sure byrow = T.
           
-          # I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
-           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
+           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
+          #I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
 
           # write.matrix(I, file = 'infected.csv')
 
@@ -669,10 +671,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           #I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
 
-          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
-          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
+          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
+          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
 
-          D[D < 1] <- 0 # Prevent tiny values for the number of dead
+          #D[D < 1] <- 0 # Prevent tiny values for the number of dead
 
           dim(Xa.OSI); dim(I); dim(D); min(I); min(D); max(I); max(D)
 
@@ -795,7 +797,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", "observeddata/Ebola_Incidence_Data_4zones.xlsx", "observeddata/Ebola_Death_Data_4zones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", "observeddata/Ebola_Incidence_Data_4zones.xlsx", "observeddata/Ebola_Death_Data_4zones.xlsx", varCovarFunc = "Balgovind", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #

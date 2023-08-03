@@ -3,21 +3,28 @@
 library(Matrix)
 
 # Avoid "magic constants"
+source('R/rasterStack.R')
 # rasterStack <- createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack
-# sitRepData = 'observeddata/Ebola_Health_Zones_LatLon.csv'
+# sitRepData = 'observeddata/Ebola_Health_Zones_LatLon_4zones.csv'
 # states_observable <- 2
 # states_total <- 6
 
 generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
-
-  source('R/rasterStack.R')
   
   print(rasterStack)
   print(xmax(rasterStack));  print(ymax(rasterStack));   print(xmin(rasterStack));  print(ymin(rasterStack))
   
+  ULCornerLongitude <- xmax(rasterStack)
+  ULCornerLatitude <- ymax(rasterStack)
+  
+  LLCornerLongitude <- xmin(rasterStack)
+  LLCornerLatitude <- ymin(rasterStack)
+  
+  hcellSize <- res(rasterStack)[1]
+  vcellSize <- res(rasterStack)[2]
+  
   nrows <- nrow(rasterStack)
   ncols <- ncol(rasterStack)
-  
   p <- ncols*nrows                    # Dimentionality of the state space
   #print(p)
   
@@ -31,10 +38,15 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
     # rindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack)) # TBW
     # cindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack)) # TBW
     
-    rindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack)) # AK
-    cindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack)) # AK
-  
-    Hposition[i] <- ncols*(rindex[i]-1) + cindex[i] # TBW Check this line closely
+    # rindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack)) # AK
+    # cindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack)) # AK
+    # 
+    # Hposition[i] <- nrows*(rindex[i]-1) + cindex[i] # TBW Check this line closely
+    
+    rindex[i] <- trunc(abs((Locations[i,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
+    cindex[i] <- trunc(abs((Locations[i,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
+    
+    Hposition[i] <- ncols*(rindex[i]-1) + cindex[i] # Indexing by row
     
     print(c(rindex[i],  cindex[i], Hposition[i]))
   }
@@ -53,15 +65,15 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
     H[k, Hposition[k]] <- 1 
   }
   
-  # print(rasterStack[23,33])
-  # print(rasterStack[22,36])
-  # print(rasterStack[21,33])
-  # print(rasterStack[19,24])
+  print(rasterStack[40,22])
+  print(rasterStack[44,23])
+  print(rasterStack[40,25])
+  print(rasterStack[29,27])
   
-  # print(rasterStack[33,23])
-  # print(rasterStack[36,22])
-  # print(rasterStack[33,21])
-  # print(rasterStack[24,19])
+  print(H[1,1972])
+  print(H[2,2173])
+  print(H[3,1975])
+  print(H[4,1427])
   
   print(paste("Number of Health Zones:", sum(H)))
   # print(dim(H))

@@ -1,7 +1,7 @@
 #rm(list = ls())
 
-nrows <- 10
-ncols <- 10
+nrows <- 5
+ncols <- 5
 states_total <- 6
 states_observable <- 2
 p <- nrows * ncols
@@ -15,7 +15,8 @@ II <- floor((alpha - JJ) / ncols) + 1
 LL <- t(JJ)
 KK <- t(II)
 d <- sqrt((LL - JJ)^2 + (KK - II)^2)
-Q <- Qvariance * (Qrho^d)
+# Q <- Qvariance * (Qrho^d)
+Q <- Qvariance*(1 + (d/Qrho))*exp(-d/Qrho)
 
 print(dim(Q))
 Q[1:5, 1:5]
@@ -48,7 +49,7 @@ Qtop <- cbind(QFull, Q0)
 Qbottom <- cbind(Q0, QFull)
 #print(dim(Qbottom))
 
-QFull <- rbind(Qtop, Qbottom)
+#QFull <- rbind(Qtop, Qbottom)
 
 print(dim(QFull))
 
@@ -64,7 +65,7 @@ persp3D(x = X, y = Y, z = QFull, theta = 90, expand = 0.5,
         xlab = "Columns", ylab = "Rows", scale = FALSE,
         colkey = list(side = 1))
 
-# # Plot the 3D surface
-# library(rgl)
-# persp3d(X, Y, QFull, col = "lightgreen", xlab = "Columns", ylab = "Rows", zlab = "Values",
-#         ticktype = "detailed", main = "3D Surface Plot of QFull", xlim = c(0, 200), ylim = c(0, 200))
+# Plot the 3D surface
+library(rgl)
+persp3d(X, Y, QFull, col = "lightgreen", xlab = "Columns", ylab = "Rows", zlab = "Values",
+        ticktype = "detailed", main = "3D Surface Plot of QFull", xlim = c(0, 5), ylim = c(0, 5))
