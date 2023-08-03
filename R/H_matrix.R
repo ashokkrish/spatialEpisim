@@ -12,8 +12,8 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
 
   source('R/rasterStack.R')
   
-  # print(rasterStack)
-  # print(ymax(rasterStack))
+  print(rasterStack)
+  print(xmax(rasterStack));  print(ymax(rasterStack));   print(xmin(rasterStack));  print(ymin(rasterStack))
   
   nrows <- nrow(rasterStack)
   ncols <- ncol(rasterStack)
@@ -23,21 +23,24 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
   
   Locations <- read.csv(file = sitRepData, header = T)
   nHealthZones <-  dim(Locations)[1]    # Number of health zones in North Kivu and Ituri provinces of DRC
-  #print(nHealthZones)                  # Dimentionality of the data space
+  #print(nHealthZones)                   # Dimentionality of the data space
   
   rindex <- cindex <- Hposition <- numeric(nHealthZones)
   
   for (i in 1:nHealthZones) {
-    rindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack)) # Check this !
-    cindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack)) # Check this !
-  
-    Hposition[i] <- ncols*(rindex[i]-1) + cindex[i] # Check this !
+    # rindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack)) # TBW
+    # cindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack)) # TBW
     
-    #print(c(rindex[i],  cindex[i], Hposition[i]))
+    rindex[i] <- floor((as.numeric(Locations[i,3]) - xmin(rasterStack))/xres(rasterStack)) # AK
+    cindex[i] <- floor((ymax(rasterStack) - as.numeric(Locations[i,2]))/yres(rasterStack)) # AK
+  
+    Hposition[i] <- ncols*(rindex[i]-1) + cindex[i] # TBW Check this line closely
+    
+    print(c(rindex[i],  cindex[i], Hposition[i]))
   }
   
   Locations <- cbind(Locations, rindex, cindex, Hposition)
-  #print(Locations)
+  print(Locations)
   
   #------------------------------------------------------------------------#
   # Compute H matrix, the linear interpolation operator of dimension q x p #
@@ -50,7 +53,17 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
     H[k, Hposition[k]] <- 1 
   }
   
-  # print(paste("Number of Health Zones:", sum(H)))
+  # print(rasterStack[23,33])
+  # print(rasterStack[22,36])
+  # print(rasterStack[21,33])
+  # print(rasterStack[19,24])
+  
+  # print(rasterStack[33,23])
+  # print(rasterStack[36,22])
+  # print(rasterStack[33,21])
+  # print(rasterStack[24,19])
+  
+  print(paste("Number of Health Zones:", sum(H)))
   # print(dim(H))
   # print(sum(H))
   # print(table(H))
@@ -93,7 +106,8 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
   Htop <- cbind(H, H0)
   Hbottom <- cbind(H0, H)
     
-  Hmat <- rbind(Htop, Hbottom)
+  Hmat <- rbind(Htop, Hbottom)   
+  print(paste("Dimension of the linear interpolation operator, H:")); print(dim(Hmat))
    
   #print(dim(Hmat))
   #print(sum(Hmat))
@@ -103,23 +117,25 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
   #print(Locations)
    
   return(list("Hmat" = Hmat, "Locations" = Locations, "rasterStack" = rasterStack, "states_observable" = states_observable))
-   
-  print(paste("Dimension of the linear interpolation operator, H:")); print(dim(Hmat))
 }
 
 #--------------#
 # Example Call #
 #--------------#
 
-# test <- generateLIO(rasterStack = createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", states_observable = 2)
+# test <- generateLIO(rasterStack = createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
 # 
 # test
 # dim(test$Hmat)
 # test$Locations
 # H <- test$Hmat
+# rowSums(H)
+# table(colSums(H))
+# 
 # HHt <- H%*%t(H)
 # dim(HHt)
 # rowSums(HHt)
+# 
 # det(HHt)
 # eigen(HHt)$values
 # # When all eigenvalues of a square matrix are equal to 1,

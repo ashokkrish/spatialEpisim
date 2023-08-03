@@ -100,15 +100,9 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
     }
   }
   
-  # print(dim(QFull))
-  # print(dim(HList$Hmat))
-  
+  # print(dim(QFull))  
   # print(QFull[1:5, 1:5])
-  
-  # QHtH <- QFull%*%HList$Hmat
-  # 
-  # print(dim(QHtH))
-  # print(QHtH[1:5, 1:5])
+  # print(dim(HList$Hmat))
 
   # Generating the full Q matrix if desired. Warning: doing this increases the computation time significantly
   
@@ -145,30 +139,16 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
     
     Q <- Qvar*val
     
-    #print(dim(Q))
-    
-    # print(varCovarFunc)
-    # 
+    # print(dim(Q))
     # print(Q[1:5, 1:5])
+    # print(varCovarFunc)
+    #
+    # print(det(Q))
     
-    #print(det(Q))
-
-    # x <- 1:ncol(Q)
-    # y <- 1:nrow(Q)
-    
-    # # Create a grid of x and y values
-    # X <- matrix(x, nrow = nrow(Q), ncol = ncol(Q), byrow = TRUE)
-    # Y <- matrix(y, nrow = nrow(Q), ncol = ncol(Q), byrow = FALSE)
-    
-    # Plot the 3D surface
-    # library(rgl)
-    # library(plot3D)
-    # persp3D(X, Y, Q, scale = FALSE, theta = 90, expand = 0.2)
-    # persp3D(X, Y, Q, col = "lightpink", xlab = "Columns", ylab = "Rows", zlab = "Values", 
-            #facets = FALSE, main = "3D Surface Plot of Q")
-  }
-  
-  return(list("QHt" = QFull, "Q" = Q))
+    return(list("QHt" = QFull, "Q" = Q))
+  } else {  
+    return(list("QHt" = QFull))
+    }
 }
 
 #--------------#
@@ -177,10 +157,12 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
 
 # HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
 # 
+# generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = F)
+#
 # generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = T)
 #
-# generateQHt(HList, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8, makeQ = T)
+# generateQHt(HList, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8, makeQ = F)
 # 
-# generateQHt(HList, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8, makeQ = T)
+# generateQHt(HList, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8, makeQ = F)
 # 
-# generateQHt(HList, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8, makeQ = T)
+# generateQHt(HList, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8, makeQ = F)

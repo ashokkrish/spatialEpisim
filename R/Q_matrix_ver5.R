@@ -1,11 +1,11 @@
-generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, Qplot = F) {
+generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength) {
   
   # varCovarFunc <- "DBD" # "Balgovind" # 
   # Qvar <- 1
   # QCorrLength <- 0.8 # 1 # 
 
-  # nrows <- 59 #71 
-  # ncols <- 42 #50
+  # nrows <- 71 # 59 #
+  # ncols <- 50 # 42 #
   # print(nrows)
   # print(ncols)
   
@@ -81,10 +81,10 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, Qplot = F) 
 # Example Call #
 #--------------#
 #
-# generateQ(nrows = 71, ncols = 50, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, Qplot = F)
+# generateQ(nrows = 59, ncols = 42, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8)
 #
-# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8, Qplot = F)
+# generateQ(nrows = 59, ncols = 42, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8)
 # 
-# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8, Qplot = F)
+# generateQ(nrows = 59, ncols = 42, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8)
 # 
-# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8, Qplot = F)
+# generateQ(nrows = 59, ncols = 42, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8)
