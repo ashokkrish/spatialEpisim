@@ -80,16 +80,16 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # LLCornerLongitude <- extent(rs$rasterStack)[1] + res(rs$rasterStack)[1]/2 # 27.165417 for COD
   # LLCornerLatitude <- extent(rs$rasterStack)[3] + res(rs$rasterStack)[1]/2  # -2.150416 for COD
 
-  ULCornerLongitude <- xmax(rs$rasterStack)
-  ULCornerLatitude <- ymax(rs$rasterStack)
-
-  LLCornerLongitude <- xmin(rs$rasterStack)
-  LLCornerLatitude <- ymin(rs$rasterStack)
-
-  print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
-
-  hcellSize <- res(rs$rasterStack)[1]
-  vcellSize <- res(rs$rasterStack)[2]
+  # ULCornerLongitude <- xmax(rs$rasterStack)
+  # ULCornerLatitude <- ymax(rs$rasterStack)
+  # 
+  # LLCornerLongitude <- xmin(rs$rasterStack)
+  # LLCornerLatitude <- ymin(rs$rasterStack)
+  # 
+  # print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
+  # 
+  # hcellSize <- res(rs$rasterStack)[1]
+  # vcellSize <- res(rs$rasterStack)[2]
 
   #------------------------#
   # Initial seed locations #
@@ -107,16 +107,16 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   numLocations <- dim(seedData)[1]
   # print(numLocations)
-
-  midLongitude <- (LLCornerLongitude + ULCornerLongitude)/2
-  midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
+# 
+#   midLongitude <- (LLCornerLongitude + ULCornerLongitude)/2
+#   midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
   for (ff in 1:numLocations)
   {
     print(paste("Seed location = ", seedData[ff,1]))
 
-    row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
-    col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
+    row <- rowFromY(rs$rasterStack, seedData[ff,2])
+    col <- colFromX(rs$rasterStack, seedData[ff,3])
 
     print(paste("row = ", row, "col = ", col))
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
@@ -213,7 +213,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in H matrix #
     #------------------#
 
-    source("R/H_matrix.R") # read in H matrix code
+    #source("R/H_matrix.R") # read in H matrix code
+    source("R/H_matrix_ver2.R")
 
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
     Hmat <- Hlist$Hmat
@@ -241,7 +242,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     HQHt <- Hmat%*%QHt
     print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
 
-    HQHt[1:8, 1:8]
+    print(HQHt[1:8, 1:8])
 
     ## HQHt is a square-symmetric matrix
      print(rowSums(HQHt))
@@ -281,9 +282,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Plot the HQHt and HQHt_easy matrices #
     #--------------------------------------#
 
-    source("R/plotHQHt.R")
+    #source("R/plotHQHt.R")
 
-    plotHQHt(HQHt)
+    #plotHQHt(HQHt)
     # plotHQHt(HQHt_easy)
   }
   ################# DA Ends ##################
@@ -498,11 +499,19 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #---------------------#
           # We track the  "Infectious" and "Dead" epidemic compartments
           
-          Infected <- as.matrix(Infected)
-          Dead <- as.matrix(Dead)
+          # Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
+          # Dead <- as.matrix(Dead, byrow=T) #default is byrow = F
+          
+          Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
+          Dead <- as.matrix(Dead, byrow=T)#default is byrow = F
+          
+          # Infected <- as.matrix(1:9,3,3, byrow = T) #default is byrow = F
+          # Dead <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
 
           #print(Infected[21:40,])
 
+          #Xf.OSI <- rbind(t(t(as.vector(Infected))), t(t(as.vector(Dead))))
+          
           Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
           print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
@@ -540,7 +549,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # }                 # datarow > 1
 
           Dvector <- t(cbind(t(incidence), t(death)))
-
           # print(Dvector)
           # print(dim(Dvector))
           # sum(incidence)
@@ -659,8 +667,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           # NOTE: when restacking make sure byrow = T.
           
-           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
-          #I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
+          #I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
+          I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
 
           # write.matrix(I, file = 'infected.csv')
 
@@ -671,8 +679,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           #I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
 
-          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
-          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
+          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
+          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
 
           #D[D < 1] <- 0 # Prevent tiny values for the number of dead
 
@@ -785,9 +793,9 @@ level1Names <- c("Ituri", "Nord-Kivu")
 
 DA <- T
 
-sitRepData <- "observeddata/Ebola_Health_Zones_LatLon_4zones.csv"
-dataI <- "observeddata/Ebola_Incidence_Data_4zones.xlsx"
-dataD <- "observeddata/Ebola_Death_Data_4zones.xlsx"
+# sitRepData <- "observeddata/Ebola_Health_Zones_LatLon_4zones.csv"
+# dataI <- "observeddata/Ebola_Incidence_Data_4zones.xlsx"
+# dataD <- "observeddata/Ebola_Death_Data_4zones.xlsx"
 
 varCovarFunc <- "DBD" # "Balgovind" #
 QVar <- 1
@@ -797,7 +805,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon_4zones.csv", "observeddata/Ebola_Incidence_Data_4zones.xlsx", "observeddata/Ebola_Death_Data_4zones.xlsx", varCovarFunc = "Balgovind", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #

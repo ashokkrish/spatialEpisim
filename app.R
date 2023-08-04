@@ -137,6 +137,13 @@ ui <- fluidPage(
                                              uiOutput("dataAssimFileI"),
                                              uiOutput("dataAssimFileD"),
                                              uiOutput("covarianceRadio"),
+                                             
+                                             conditionalPanel(condition = ("input.covarianceSelect !== 'Spherical'"),
+                                                              uiOutput("selectRho")),
+                                             
+                                             conditionalPanel(condition = ("input.covarianceSelect == 'Spherical'"),
+                                                              uiOutput("selectPhi")),
+                                             
                                              actionButton("goDA","Run Simulation with DA",
                                                            style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
                                              br(),
@@ -211,7 +218,7 @@ ui <- fluidPage(
                       br(),
                       
                       p(span("Tom Bayliss White", style= "font-weight:bold" )),    
-                      p("Undergraduate Student, University of Exter, Exter, Devon, UK"),
+                      p("Undergraduate Student, University of Exeter, Exeter, Devon, UK"),
                       p("Mitacs Globalink Research Intern (2023)"),
                       
                       
@@ -854,11 +861,31 @@ server <- function(input, output, session){
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
        radioButtons(inputId = "covarianceSelect",
                     label = strong("Model Error Covariance Matrix Formulation"),
-                    choiceValues = list("DBD", "Balgovind"),
-                    choiceNames = list("Distance-Based Decay", "Balgovind"),
+                    choiceValues = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
+                    choiceNames = list("Distance-Based Decay", "Balgovind", "Exponential", "Gaussian", "Spherical"),
                     selected = "DBD", #character(0), #
-                    inline = TRUE,
+                    inline = FALSE,
                     width = "1000px")
+     }
+   })
+   
+   ############################################################################    
+   # Adjust parameter values for the variance=covariance function     #
+   ############################################################################  
+   
+   output$selectRho <- renderUI({
+     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+        print('test1')
+     }
+   })
+   
+   output$selectPhi <- renderUI({
+     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+       print('test2')
      }
    })
    

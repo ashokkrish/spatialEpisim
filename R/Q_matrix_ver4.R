@@ -155,9 +155,9 @@ generateQHt <- function(HList, varCovarFunc, Qvar, QCorrLength, makeQ = F) {
 # Example Call #
 #--------------#
 
-HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
+#HList <- generateLIO(createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
 
-generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = F)
+#generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = F)
 #
 # generateQHt(HList, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, makeQ = T)
 #
