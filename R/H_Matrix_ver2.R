@@ -59,7 +59,7 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   return(list("Hmat" = Hmat, "Locations" = Locations, "rasterStack" = rasterStack, "states_observable" = states_observable))
 }
 
-#test <- generateLIO2(rasterStack = createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
+#test <- generateLIO2(rasterStack = createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 12, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack, sitRepData = "observeddata/Ebola_Health_Zones_LatLon.csv", states_observable = 2)
 # 
 # # r <- raster(ncols=10, nrows=10)
 # # 
