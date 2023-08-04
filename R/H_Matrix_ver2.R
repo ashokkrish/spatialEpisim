@@ -1,10 +1,17 @@
+#rm(list = ls())
+
 options(conflicts.policy = list(warn = FALSE))
 shhh <- suppressPackageStartupMessages # It's a library, so shhh!
 shhh(library(Matrix))
 shhh(library(raster))
 
-generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
+source('R/rasterStack.R')
 
+rasterStack <- createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack
+sitRepData <- "observeddata/Ebola_Health_Zones_LatLon_4zones.csv"
+states_observable <- 2
+
+generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   nrows <- nrow(rasterStack)
   ncols <- ncol(rasterStack)
   p <- ncols*nrows 
@@ -12,16 +19,31 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   Locations <- read.csv(file = sitRepData, header = T)
   nHealthZones <-  dim(Locations)[1]
   
-  Hpos <- cellFromXY(rasterStack, as.matrix(Locations[,3:2]))
+  Hpos <- cellFromXY(rasterStack, as.matrix(Locations[ ,3:2]))
+  Hpos
+
+  H <- H0 <- matrix(0, nHealthZones, p)
   
-  H <- H0 <- matrix(0,nHealthZones,p)
   for (i in 1:nHealthZones){
-    H[i,Hpos[i]] <- 1
+    print(paste("Hposition:", Hpos[i]))
+
+    H[i, Hpos[i]] <- 1
   }
+  
+  print(paste("Number of Health Zones:", sum(H)))
+  rowSums(H)
+  table(colSums(H))
+  
   Htop <- cbind(H, H0)
   Hbottom <- cbind(H0, H)
   
-  Hmat <- rbind(Htop, Hbottom)  
+  Hmat <- rbind(Htop, Hbottom)
+  print(paste("Dimension of the linear interpolation operator, H:")); print(dim(Hmat))
+  
+  rowSums(Hmat)
+  table(colSums(Hmat))
+  #print(sum(Hmat))
+  #print(table(Hmat))
   
   return(list("Hmat" = Hmat, "Locations" = Locations, "rasterStack" = rasterStack, "states_observable" = states_observable))
 }

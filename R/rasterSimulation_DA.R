@@ -72,7 +72,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   nrows <- rs$nRows # nrow(rs$rasterStack) #
   ncols <- rs$nCols # ncol(rs$rasterStack) #
 
-  p <- nrows * ncols
+  p <- rs$nCells
 
   # ULCornerLongitude <- extent(rs$rasterStack)[1] + res(rs$rasterStack)[1]/2 # 27.165417 for COD
   # ULCornerLatitude <- extent(rs$rasterStack)[4] - res(rs$rasterStack)[1]/2  # 3.682917 for COD
@@ -785,9 +785,9 @@ level1Names <- c("Ituri", "Nord-Kivu")
 
 DA <- T
 
-sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
-dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
-dataD <- "observeddata/Ebola_Death_Data.xlsx"
+sitRepData <- "observeddata/Ebola_Health_Zones_LatLon_4zones.csv"
+dataI <- "observeddata/Ebola_Incidence_Data_4zones.xlsx"
+dataD <- "observeddata/Ebola_Death_Data_4zones.xlsx"
 
 varCovarFunc <- "DBD" # "Balgovind" #
 QVar <- 1

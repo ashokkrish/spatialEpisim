@@ -2,8 +2,10 @@
 
 library(Matrix)
 
-# Avoid "magic constants"
 source('R/rasterStack.R')
+
+# Avoid "magic constants"
+
 # rasterStack <- createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack
 # sitRepData = 'observeddata/Ebola_Health_Zones_LatLon_4zones.csv'
 # states_observable <- 2
@@ -120,12 +122,11 @@ generateLIO <- function(rasterStack, sitRepData, states_observable = 2) {
     
   Hmat <- rbind(Htop, Hbottom)   
   print(paste("Dimension of the linear interpolation operator, H:")); print(dim(Hmat))
-   
-  #print(dim(Hmat))
+
   #print(sum(Hmat))
   #print(table(Hmat))
   
-  #print(rowSums(Hmat))
+  print(paste("Row sums of H matrix:")); print(rowSums(Hmat))
   #print(Locations)
    
   return(list("Hmat" = Hmat, "Locations" = Locations, "rasterStack" = rasterStack, "states_observable" = states_observable))
