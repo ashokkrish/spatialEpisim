@@ -132,7 +132,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     LLCornerLongitude <- xmin(clippedInfected)
     LLCornerLatitude <- ymin(clippedInfected)
     
-    #print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
+    print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
     
     hcellSize <- res(clippedInfected)[1]
     vcellSize <- res(clippedInfected)[2]
@@ -140,24 +140,34 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     midLongitude <-(LLCornerLongitude + ULCornerLongitude)/2 
     midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
-    #print(seedData)
+    print("ABC")
     
-    my_df <- seedData
+    #------------------------#
+    # Initial seed locations #
+    #------------------------#
     
-    #print(my_df)
+    if (missing(seedFile)){
+      seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
+      seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
+      seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header = T)
+    } else {
+      seedData <<- read.csv(seedFile)
+    }
     
-    numLocations <- dim(my_df)[1] #nrow(data())
+    print(seedData)
+
+    numLocations <- dim(seedData)[1] #nrow(data())
     
-    #print(numLocations)
+    print(numLocations)
 
     for (ff in 1:numLocations)
     { 
-      # print(my_df[ff,3])
+      # print(seedData[ff,3])
       # print((ULCornerLongitude - hcellSize/2))
       # print(paste("Region Identifier = ", seedData[ff,9]))
       
-      row <- trunc(abs((my_df[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
-      col <- trunc(abs((my_df[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
+      row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
+      col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
       
       col <- midCol - (col - midCol) #reflecting along middle vertica line of plot so that data is in the right place.
       
@@ -166,7 +176,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       # print(sum(Inhabitable[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)]))
       
       numCellsPerRegion <- (2*seedNeighbourhood + 1)^2
-      newInfPerCell <- my_df[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
+      newInfPerCell <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
 
       clippedInfected[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)] <- newInfPerCell
 
@@ -274,13 +284,13 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       midLongitude <-(LLCornerLongitude + ULCornerLongitude)/2 
       midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
+      print(seedData)
+      
+      seedData <- seedData
+      
       #print(seedData)
       
-      my_df <- seedData
-      
-      #print(my_df)
-      
-      numLocations <- dim(my_df)[1] #nrow(data())
+      numLocations <- dim(seedData)[1] #nrow(data())
       
       #print(numLocations)
       
@@ -288,8 +298,8 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       {
         #print(paste("Region Identifier = ", seedData[ff,9]))
         
-        row <- trunc(abs((my_df[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
-        col <- trunc(abs((my_df[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
+        row <- trunc(abs((seedData[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
+        col <- trunc(abs((seedData[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
         
         col <- midCol - (col - midCol) 
         row <- row   # reflecting along middle vertical line of plot so that data is in the right place.
@@ -304,7 +314,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
         # print(sum(Inhabitable[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)]))
         
         numCellsPerRegion <- (2*seedNeighbourhood + 1)^2
-        newInfPerCell <- my_df[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
+        newInfPerCell <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
         
         rasterStack[["Infected"]][(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)] <- newInfPerCell
         #print(paste("Susceptible = ", sum(values(Susceptible))))
@@ -328,13 +338,15 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
 # Example Function Calls #
 #------------------------#
 
+#seedFile <- "seeddata/COD_InitialSeedData.csv"
+
 # Move the read.csv(paste0("seeddata/", seedData), header = T) in the example calls
 
-# createClippedSeedPlot("Democratic Republic of Congo", rasterAgg = 15, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 0)
+# createClippedSeedPlot("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 0)
 
-# createClippedSeedPlot("Democratic Republic of Congo", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 0)
+# createClippedSeedPlot("Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 0)
 
-# createClippedSeedPlot("Democratic Republic of Congo", rasterAgg = 15, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 1)
 
 # createClippedSeedPlot("Czech Republic", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "CZE_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 0)
 

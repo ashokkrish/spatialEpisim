@@ -18,7 +18,7 @@ shhh(library(sf))     # classes and functions for vector data
 shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(writexl))
 
-source("R/rasterStack.R")  # This code generates the base RasterStack
+source("R/rasterStack.R")  # This code generates the base RasterStack/RasterBrick
 source("R/rasterPlot.R")   # This code generates the .png and .mp4 files for RasterStack
 source("R/distwtRaster.R") # This code sets the Euclidean distance and the weight matrix
 
@@ -80,16 +80,16 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # LLCornerLongitude <- extent(rs$rasterStack)[1] + res(rs$rasterStack)[1]/2 # 27.165417 for COD
   # LLCornerLatitude <- extent(rs$rasterStack)[3] + res(rs$rasterStack)[1]/2  # -2.150416 for COD
 
-  # ULCornerLongitude <- xmax(rs$rasterStack)
-  # ULCornerLatitude <- ymax(rs$rasterStack)
+  # URCornerLongitude <- xmax(rs$rasterStack) # 31.29042 for COD
+  # URCornerLatitude <- ymax(rs$rasterStack) # 3.724584 for COD
   # 
-  # LLCornerLongitude <- xmin(rs$rasterStack)
-  # LLCornerLatitude <- ymin(rs$rasterStack)
+  # LLCornerLongitude <- xmin(rs$rasterStack) # 27.12375 for COD
+  # LLCornerLatitude <- ymin(rs$rasterStack) # -2.192083 for COD
   # 
-  # print(c(ULCornerLongitude, ULCornerLatitude, LLCornerLongitude, LLCornerLatitude))
+  # print(c(URCornerLongitude, URCornerLatitude, LLCornerLongitude, LLCornerLatitude))
   # 
-  # hcellSize <- res(rs$rasterStack)[1]
-  # vcellSize <- res(rs$rasterStack)[2]
+  # hcellSize <- res(rs$rasterStack)[1] # 0.08333333
+  # vcellSize <- res(rs$rasterStack)[2] # 0.08333333
 
   #------------------------#
   # Initial seed locations #
@@ -103,13 +103,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     seedData <<- read.csv(seedFile)
   }
 
-  # print(seedData)
+  print(seedData)
 
   numLocations <- dim(seedData)[1]
   # print(numLocations)
-# 
-#   midLongitude <- (LLCornerLongitude + ULCornerLongitude)/2
-#   midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
+
+  #   midLongitude <- (LLCornerLongitude + URCornerLongitude)/2
+  #   midCol <- trunc(abs((midLongitude - (URCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
   for (ff in 1:numLocations)
   {
@@ -146,10 +146,14 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
 
-  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  # pal <- colorRampPalette(ramp)
+  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+
+  plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+
+  plot(Level1Identifier, add = TRUE)
   # 
-  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Deaths", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # 
   # plot(Level1Identifier, add = TRUE)
   # 
@@ -213,8 +217,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in H matrix #
     #------------------#
 
-    #source("R/H_matrix.R") # read in H matrix code
-    source("R/H_matrix_ver2.R")
+    #source("R/H_matrix.R") 
+    source("R/H_matrix_ver2.R") # read in H matrix code
 
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
     Hmat <- Hlist$Hmat
@@ -229,7 +233,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     source("R/Q_matrix_ver5.R")
 
-    QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength)
+    QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
 
     Q <- QMat$Q
     print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
@@ -284,7 +288,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     #source("R/plotHQHt.R")
 
-    #plotHQHt(HQHt)
+    # plotHQHt(HQHt)
     # plotHQHt(HQHt_easy)
   }
   ################# DA Ends ##################
@@ -783,19 +787,19 @@ delta <- 0.02         # Daily fraction that move out of the infectious compartme
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 8  # 90 # 440 #
+timestep <- 42 # 440 #
 
-#seedFile <- "seeddata/COD_InitialSeedData.csv"
+seedFile <- "seeddata/COD_InitialSeedData.csv"
 
 deterministic <- T
 isCropped <- T
 level1Names <- c("Ituri", "Nord-Kivu")
 
-DA <- T
+DA <- F # T
 
-# sitRepData <- "observeddata/Ebola_Health_Zones_LatLon_4zones.csv"
-# dataI <- "observeddata/Ebola_Incidence_Data_4zones.xlsx"
-# dataD <- "observeddata/Ebola_Death_Data_4zones.xlsx"
+sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
+dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
+dataD <- "observeddata/Ebola_Death_Data.xlsx"
 
 varCovarFunc <- "DBD" # "Balgovind" #
 QVar <- 1
@@ -805,7 +809,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData_Test.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data_allempty.xlsx", "observeddata/Ebola_Death_Data_allempty.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = DA, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #
