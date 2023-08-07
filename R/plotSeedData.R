@@ -26,7 +26,7 @@ createBubblePlot <- function(countryName, level1Names = NULL, displayCountryName
     annotation_north_arrow() +
     annotation_scale(location = "tl") +
     labs(
-      title = paste0("Epidemic in ", displayCountryName), x = expression(bold("Longitude")), y = expression(bold("Latitude")),
+      title = paste0("Inital infections in ", displayCountryName), x = expression(bold("Longitude")), y = expression(bold("Latitude")),
       caption = source
     ) + theme(plot.title = element_text(hjust = 0.5))
   

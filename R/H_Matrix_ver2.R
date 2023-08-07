@@ -9,7 +9,7 @@ source('R/rasterStack.R')
 
 # rasterStack <- createRasterStack(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))$rasterStack
 # sitRepData <- "observeddata/Ebola_Health_Zones_LatLon_4zones.csv"
-# states_observable <- 1 #2
+# states_observable <- 2 # 1 #
 
 generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   nrows <- nrow(rasterStack)
@@ -53,9 +53,7 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   }
   
   print(paste("Number of Health Zones:", nHealthZones))
-  # rowSums(H)
-  # table(colSums(H))
-  
+
   Hmat <- H
   
   # if (states_observable == 2)

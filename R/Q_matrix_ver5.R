@@ -4,8 +4,8 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
   # Qvar <- 1
   # QCorrLength <- 0.8 # 1 # 
 
-  # nrows <- 71 # 59 #
-  # ncols <- 50 # 42 #
+  # nrows <- 71
+  # ncols <- 50
   # print(nrows)
   # print(ncols)
   
@@ -81,10 +81,10 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
 # Example Call #
 #--------------#
 #
-# generateQ(nrows = 59, ncols = 42, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "DBD", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
 #
-# generateQ(nrows = 59, ncols = 42, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Balgovind", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
 # 
-# generateQ(nrows = 59, ncols = 42, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Exponential", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
 # 
-# generateQ(nrows = 59, ncols = 42, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8, states_observable =  2)
+# generateQ(nrows = 71, ncols = 50, varCovarFunc = "Gaussian", Qvar = 1, QCorrLength = 0.8, states_observable =  2)

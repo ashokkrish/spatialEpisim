@@ -7,7 +7,7 @@
 # p <- nrows * ncols
 # 
 # Qvariance <- 1
-# Qrho <- 0.8
+# Qrho <- 0.6
 # 
 # alpha <- matrix(rep(1:p, p), nrow = p, ncol = p)
 # JJ <- (alpha - 1) %% nrows + 1
@@ -15,8 +15,9 @@
 # LL <- t(JJ)
 # KK <- t(II)
 # d <- sqrt((LL - JJ)^2 + (KK - II)^2)
-# # Q <- Qvariance * (Qrho^d)
-# Q <- Qvariance*(1 + (d/Qrho))*exp(-d/Qrho)
+# 
+# Q <- Qvariance * (Qrho^d) # DBD
+# # Q <- Qvariance*(1 + (d/Qrho))*exp(-d/Qrho) # Balgovind
 # 
 # print(dim(Q))
 # Q[1:5, 1:5]
@@ -30,7 +31,7 @@
 # 
 # library(plot3D)
 # persp3D(x = X, y = Y, z = Q, theta = 90, expand = 0.5,
-#         xlab = "Columns", ylab = "Rows", scale = FALSE, 
+#         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
 #         colkey = list(side = 1))
 # 
 # # # Plot the 3D surface
@@ -49,7 +50,7 @@
 # Qbottom <- cbind(Q0, QFull)
 # #print(dim(Qbottom))
 # 
-# #QFull <- rbind(Qtop, Qbottom)
+# QFull <- rbind(Qtop, Qbottom)
 # 
 # print(dim(QFull))
 # 
@@ -62,10 +63,10 @@
 # 
 # library(plot3D)
 # persp3D(x = X, y = Y, z = QFull, theta = 90, expand = 0.5,
-#         xlab = "Columns", ylab = "Rows", scale = FALSE,
+#         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
 #         colkey = list(side = 1))
 # 
-# # Plot the 3D surface
-# library(rgl)
-# persp3d(X, Y, QFull, col = "lightgreen", xlab = "Columns", ylab = "Rows", zlab = "Values",
-#         ticktype = "detailed", main = "3D Surface Plot of QFull", xlim = c(0, 5), ylim = c(0, 5))
+# # # Plot the 3D surface
+# # library(rgl)
+# # persp3d(X, Y, QFull, col = "lightgreen", xlab = "Columns", ylab = "Rows", zlab = "Values",
+# #         ticktype = "detailed", main = "3D Surface Plot of QFull", xlim = c(0, 5), ylim = c(0, 5))

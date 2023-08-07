@@ -26,8 +26,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength)
-{
+# SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength)
+# {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
@@ -74,23 +74,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   p <- rs$nCells
 
-  # ULCornerLongitude <- extent(rs$rasterStack)[1] + res(rs$rasterStack)[1]/2 # 27.165417 for COD
-  # ULCornerLatitude <- extent(rs$rasterStack)[4] - res(rs$rasterStack)[1]/2  # 3.682917 for COD
-  #
-  # LLCornerLongitude <- extent(rs$rasterStack)[1] + res(rs$rasterStack)[1]/2 # 27.165417 for COD
-  # LLCornerLatitude <- extent(rs$rasterStack)[3] + res(rs$rasterStack)[1]/2  # -2.150416 for COD
-
-  # URCornerLongitude <- xmax(rs$rasterStack) # 31.29042 for COD
-  # URCornerLatitude <- ymax(rs$rasterStack) # 3.724584 for COD
-  # 
-  # LLCornerLongitude <- xmin(rs$rasterStack) # 27.12375 for COD
-  # LLCornerLatitude <- ymin(rs$rasterStack) # -2.192083 for COD
-  # 
-  # print(c(URCornerLongitude, URCornerLatitude, LLCornerLongitude, LLCornerLatitude))
-  # 
-  # hcellSize <- res(rs$rasterStack)[1] # 0.08333333
-  # vcellSize <- res(rs$rasterStack)[2] # 0.08333333
-
   #------------------------#
   # Initial seed locations #
   #------------------------#
@@ -108,9 +91,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   numLocations <- dim(seedData)[1]
   # print(numLocations)
 
-  #   midLongitude <- (LLCornerLongitude + URCornerLongitude)/2
-  #   midCol <- trunc(abs((midLongitude - (URCornerLongitude-hcellSize/2))/hcellSize)) + 1
-
+  # Seed the initial infections equitably in a Moore Neighborhood of cells
+  numCellsPerRegion    <- (2*radius + 1)^2
+  
   for (ff in 1:numLocations)
   {
     print(paste("Seed location = ", seedData[ff,1]))
@@ -122,7 +105,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
     # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
 
-    numCellsPerRegion    <- (2*radius + 1)^2 # Seed the initial infections equitably in a Moore Neighborhood of cells
     newVaccinatedPerCell <- seedData[ff,4]#/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
     newExpPerCell        <- seedData[ff,5]/numCellsPerRegion    #round(seedData[ff,5]/numCellsPerRegion)
     newInfPerCell        <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
@@ -135,10 +117,12 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # print(newRecoveredPerCell)
     # print(newDeadPerCell)
 
-    Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] <- Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] + newVaccinatedPerCell
+    #Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] <- Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] + newVaccinatedPerCell
+    Vaccinated[row,col] <- Vaccinated[row,col] + newVaccinatedPerCell
     Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] <- Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] + newExpPerCell
     Infected[(row-radius):(row+radius),(col-radius):(col+radius)] <- Infected[(row-radius):(row+radius),(col-radius):(col+radius)] + newInfPerCell
-    Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
+    #Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
+    Recovered[row,col] <- Recovered[row,col] + newRecoveredPerCell
     #Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
     Dead[row,col] <- Dead[row,col] + newDeadPerCell
 
@@ -146,13 +130,19 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
 
-  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  pal <- colorRampPalette(ramp)
-
-  plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-
-  plot(Level1Identifier, add = TRUE)
+  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  # pal <- colorRampPalette(ramp)
   # 
+  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
+  #      main = "Location of Initial Infections", 
+  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")), 
+  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # 
+  # plot(Level1Identifier, add = TRUE)
+  # 
+  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # 
+  # plot(Level1Identifier, add = TRUE)
   # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Deaths", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # 
   # plot(Level1Identifier, add = TRUE)
@@ -181,13 +171,11 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # print(propRecovered)
   # print(propDead)
 
-  print(paste("Susceptible Count before removing initial seed values: ", sumS))
+  print(paste("Susceptible Count before removing initial seed values: ", sum(values(Susceptible))))
 
   Susceptible <- Susceptible - (Susceptible*propVaccinated) - (Susceptible*propExposed) - (Susceptible*propInfected) - (Susceptible*propRecovered) - (Susceptible*propDead)
 
-  sumS <- sum(values(Susceptible))
-
-  print(paste("Susceptible Count after removing initial seed values: ", sumS)) # sum(values(Susceptible)<0)
+  print(paste("Susceptible Count after removing initial seed values: ", sum(values(Susceptible))))
 
   datarow <- 1 # 0 # pre-allocating the row from which we read the data to assimilate each week
   cumVaccinated <- round(sumV)
@@ -217,7 +205,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in H matrix #
     #------------------#
 
-    #source("R/H_matrix.R") 
     source("R/H_matrix_ver2.R") # read in H matrix code
 
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
@@ -249,47 +236,21 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     print(HQHt[1:8, 1:8])
 
     ## HQHt is a square-symmetric matrix
-     print(rowSums(HQHt))
-     print(colSums(HQHt))
+    # print(rowSums(HQHt))
+    # print(colSums(HQHt))
     # table(rowSums(HQHt))
     # table(colSums(HQHt))
-     print(diag(HQHt))
+    # print(diag(HQHt))
     # det(HQHt)
     # eigen(HQHt)$values
-     print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to 56. What does this mean?
-
-    #--------------------#
-    # Read in QHt matrix #
-    #--------------------#
-
-    # source("R/Q_matrix_ver4.R")
-    # 
-    # QHt <- generateQHt(Hlist, varCovarFunc, QVar, QCorrLength, makeQ = F)
-    # 
-    # HQHt_easy <- Hmat%*%QHt$QHt
-    # 
-    # print(paste("Dimension of HQHt_easy Matrix: ", dim(HQHt_easy)[1], dim(HQHt_easy)[2]))
-    # 
-    # print(HQHt_easy[1:8, 1:8])
-    # 
-    # # HQHt_easy is NOT a square-symmetric matrix. This is concerning to me. TBW to investigate this ASAP.
-    #  print(rowSums(HQHt_easy))
-    #  print(colSums(HQHt_easy))
-    # # table(rowSums(HQHt_easy))
-    # # table(colSums(HQHt_easy))
-    #  print(diag(HQHt_easy))
-    # # det(HQHt_easy)
-    # # eigen(HQHt_easy)$values
-    #  print(sum(eigen(HQHt_easy)$values)) # Sum of eigenvalues is equal to 48. What does this mean?
-
-    #--------------------------------------#
-    # Plot the HQHt and HQHt_easy matrices #
-    #--------------------------------------#
-
+    print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
+     
+    #----------------------#
+    # Plot the HQHt matrix #
+    #----------------------#
+     
     #source("R/plotHQHt.R")
-
     # plotHQHt(HQHt)
-    # plotHQHt(HQHt_easy)
   }
   ################# DA Ends ##################
 
@@ -754,7 +715,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   #print(tail(summary))
 
   return(summary)
-} # End of function
+#} # End of function
 
 #--------------#
 # Example Call #
@@ -809,7 +770,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = DA, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = DA, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #
