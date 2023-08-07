@@ -26,8 +26,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-# SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength)
-# {
+SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength)
+{
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
@@ -394,12 +394,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     Recovered <- nextRecovered
     Dead <- nextDead
 
-    # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
-    # plot(Level1Identifier, add = TRUE)
-    # print(Infected)
-
-    # infectedRaster <- raster(Infected)
-
     Susceptible <- raster(Susceptible)
     Vaccinated <- raster(Vaccinated)
     Exposed <- raster(Exposed)
@@ -408,11 +402,20 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
     Dead <- raster(Dead)
 
     extent(Susceptible) <- extent(Vaccinated) <- extent(Exposed) <- extent(Infected) <- extent(Recovered) <- extent(Dead) <- extent(rs$rasterStack)
-
-    # print(extent(infectedRaster))
-    # print(extent(rs$rasterStack))
+    crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(rs$rasterStack)
+    
+    # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+    # pal <- colorRampPalette(ramp)
+    # 
+    # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
+    #      main = "Location of Infections after iteration t",
+    #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+    #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+    # 
+    # plot(Level1Identifier, add = TRUE)
+    # print(Infected)
     #
-    # writeRaster(infectedRaster, file = "infectedRaster.tif", overwrite = TRUE)
+    # writeRaster(Infected, file = "infectedRaster.tif", overwrite = TRUE)
 
     rs$rasterStack$Susceptible <- Susceptible
     rs$rasterStack$Vaccinated <- Vaccinated
@@ -467,13 +470,11 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
           # Dead <- as.matrix(Dead, byrow=T) #default is byrow = F
           
-          Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
-          Dead <- as.matrix(Dead, byrow=T)#default is byrow = F
+          Infected <- as.matrix(Infected, byrow = T) # default is byrow = F
+          Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
           
-          # Infected <- as.matrix(1:9,3,3, byrow = T) #default is byrow = F
-          # Dead <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
-
-          #print(Infected[21:40,])
+          # InfectedVec <- as.matrix(1:9,3,3, byrow = T) #default is byrow = F
+          # DeadVec <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
 
           Xf.OSI <- rbind(t(t(as.vector(Infected))), t(t(as.vector(Dead))))
           
@@ -715,7 +716,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   #print(tail(summary))
 
   return(summary)
-#} # End of function
+} # End of function
 
 #--------------#
 # Example Call #
@@ -740,15 +741,15 @@ rasterAgg <- 10
 # Parameters #
 #------------#
 
-alpha <- 0 # 0.0001   # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-beta  <- 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
-gamma <- 0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
+alpha <- 0.00005 # 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+beta  <- 0.0055*4 # 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
+gamma <- 0.01 # 0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
 sigma <- 0.01      # Daily fraction that move out of the infectious compartment to the recovered compartment
 delta <- 0.02         # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 42 # 440 #
+timestep <- 50 # 440 #
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 
@@ -756,7 +757,7 @@ deterministic <- T
 isCropped <- T
 level1Names <- c("Ituri", "Nord-Kivu")
 
-DA <- F # T
+DA <- T # F # 
 
 sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
 dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
@@ -770,10 +771,10 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = DA, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #
 #-------------#
 
-# SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
