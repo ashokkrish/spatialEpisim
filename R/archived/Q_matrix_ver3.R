@@ -1,7 +1,7 @@
 # # source("R/rasterStack.R")
 # 
-# nrows <- 71  # 48
-# ncols <- 50  # 34
+# nrows <- 71
+# ncols <- 50
 # states_total <- 6                # Total number of states: S, V, E, I, R, D
 # states_observable <- 2           # Number of observable states: I and D
 # p <- ncols*nrows                 # Dimentionality of the state space

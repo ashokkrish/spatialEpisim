@@ -514,29 +514,3 @@ wtd_nbrs_sum <- function(input_matrix, radius, lambda)
  # gamma <- 0.010    # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
  # sigma <- 0.065    # Daily fraction that move out of the infectious compartment to the recovered compartment
  # delta <- 0.002    # Daily fraction that move out of the infectious compartment to the dead compartment
- 
- # for (ff in 1:numLocations)
- # {
- #     row <- trunc(abs((data()[ff,2] - (ULCornerLatitude+vcellSize/2))/vcellSize)) + 1
- #     col <- trunc(abs((data()[ff,3] - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
- #     
- #     #print(paste("row = ", row, "col = ", col))
- #     #print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
- #     #print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
- #     
- #     numCellsPerRegion    <- (2*radius + 1)^2
- #     newVaccinatedPerCell <- data()[ff,4]/numCellsPerRegion    #round(data()[ff,8]/numCellsPerRegion)
- #     newExpPerCell        <- data()[ff,5]/numCellsPerRegion    #round(data()[ff,5]/numCellsPerRegion)
- #     newInfPerCell        <- data()[ff,6]/numCellsPerRegion    #round(data()[ff,4]/numCellsPerRegion)
- #     newRecoveredPerCell  <- data()[ff,7]/numCellsPerRegion    #round(data()[ff,6]/numCellsPerRegion)
- #     newDeadPerCell       <- data()[ff,8]/numCellsPerRegion    #round(data()[ff,7]/numCellsPerRegion)
- #     
- #     Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] <- Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] + newExpPerCell
- #     Infected[(row-radius):(row+radius),(col-radius):(col+radius)] <- Infected[(row-radius):(row+radius),(col-radius):(col+radius)] + newInfPerCell
- #     Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
- #     Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
- #     Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] <- Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] + newVaccinatedPerCell
- #     
- #     #print(paste("Susceptible = ", sum(values(Susceptible))))
- # }
- 

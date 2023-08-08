@@ -1,4 +1,4 @@
-generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_observable =  2) {
+generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_observable = 2) {
   
   # varCovarFunc <- "DBD" # "Balgovind" # 
   # Qvar <- 1
@@ -6,9 +6,7 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
 
   # nrows <- 71
   # ncols <- 50
-  # print(nrows)
-  # print(ncols)
-  
+
   p <- nrows * ncols
   # print(p)
   

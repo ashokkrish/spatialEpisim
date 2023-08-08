@@ -330,14 +330,14 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
 
 # createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 5, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData_28.csv", seedNeighbourhood = 0)
 
-# createClippedSeedPlot(selectedCountry = "Czech Republic", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "CZE_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot(selectedCountry = "Czech Republic", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 5, isCropped = T, level1Names = c("Kwara", "Oyo"), seedData = "NGA_InitialSeed_Oyo_Kwara.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 5, isCropped = T, level1Names = c("Kwara", "Oyo"), seedData = "seeddata/NGA_InitialSeed_Oyo_Kwara.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Korea", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "KOR_InitialSeedData2022-07-07.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot(selectedCountry = "Korea", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "seeddata/KOR_InitialSeedData2022-07-07.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "NGA_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
+# createClippedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)

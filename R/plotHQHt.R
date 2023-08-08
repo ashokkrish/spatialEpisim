@@ -12,7 +12,7 @@ plotHQHt <- function(HQHt) {
   library(plot3D)
   
   ## colour function
-  #mycols <- colorRampPalette(c("blue", "lightgreen", "green", "yellow","red"))
+  # mycols <- colorRampPalette(c("blue", "lightgreen", "green", "yellow","red"))
   
   persp3D(x = X, y = Y, z = HQHt, theta = 90, expand = 0.5,
           xlab = "Columns", ylab = "Rows", main = "Plot of HQHt", scale = FALSE, #col = mycols(256), clim=c(0, 1),
