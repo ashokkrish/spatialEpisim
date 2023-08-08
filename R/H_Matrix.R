@@ -25,7 +25,8 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   cellFromXY(rasterStack, cbind(31.29,-2.19)) # 3550. Note This is the bottom righ corner cell
   
   Hpos <- cellFromXY(rasterStack, as.matrix(Locations[ ,3:2]))
-  #print(Hpos)
+  print('Hpos is')
+  print(Hpos)
 
   ##########FOR DIAGNOSTICS##########################
   rows <- rowFromY(rasterStack, as.vector(Locations[,2]))

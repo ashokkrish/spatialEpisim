@@ -177,7 +177,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   print(paste("Susceptible Count after removing initial seed values: ", sum(values(Susceptible))))
 
-  datarow <- 1 # 0 # pre-allocating the row from which we read the data to assimilate each week
+  datarow <- 1 # pre-allocating the row from which we read the data to assimilate each week
   cumVaccinated <- round(sumV)
   cumExposed <- round(sumE)
   cumInfected <- round(sumI)
@@ -205,22 +205,25 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in H matrix #
     #------------------#
 
-    source("R/H_matrix_ver2.R") # read in H matrix code
+    source("R/H_matrix.R") # read in H matrix code
 
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
+    #Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  1)
     Hmat <- Hlist$Hmat
     print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
 
     Locations <- Hlist$Locations
     nHealthZones <- as.numeric(dim(Locations)[1])
+    print(Locations)
 
     #------------------#
     # Read in Q matrix #
     #------------------#
 
-    source("R/Q_matrix_ver5.R")
+    source("R/Q_matrix.R")
 
     QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
+    #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  1)
 
     Q <- QMat$Q
     print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
@@ -233,7 +236,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     HQHt <- Hmat%*%QHt
     print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
 
-    print(HQHt[1:8, 1:8])
+    #print(HQHt[1:8, 1:8])
 
     ## HQHt is a square-symmetric matrix
     # print(rowSums(HQHt))
@@ -470,13 +473,29 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
           # Dead <- as.matrix(Dead, byrow=T) #default is byrow = F
           
-          Infected <- as.matrix(Infected, byrow = T) # default is byrow = F
-          Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
+          infectedRast <- Infected
           
-          # InfectedVec <- as.matrix(1:9,3,3, byrow = T) #default is byrow = F
-          # DeadVec <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
+          Infected <- as.matrix(Infected, byrow = T)
+          
+          print(dim(Infected))# default is byrow = F
+          #Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
+          
+          InfectedVec <- matrix(1:9,3,3, byrow = T) #default is byrow = F
+          DeadVec <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
+          
+          #Xf.OSI <- t(t(as.vector(Infected)))
+          
+          # infectedTest <- matrix(Xf.OSI, nrow = nrows, ncol = ncols)
+          # 
+          # infectedTest <- raster(infectedTest)
+          # 
+          # print(infectedTest)
+          # 
+          # print(infectedRast)
+          # 
+          # print(setequal(infectedTest, infectedRast))
 
-          Xf.OSI <- rbind(t(t(as.vector(Infected))), t(t(as.vector(Dead))))
+          Xf.OSI <- rbind(t(t(as.vector(t(Infected)))), t(t(as.vector(t(Dead)))))
           
           #Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
@@ -493,6 +512,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #----------------------------------------------#
           # Importing DRC Ebola Incidence and Death Data #
           #----------------------------------------------#
+          
+          print(nHealthZones)
+          
+          
 
           incidence <- as.vector(incidence_data[datarow, 1:nHealthZones+2]) # Pick a row every 7 days, select third column through to the last column
           death <- as.vector(death_data[datarow, 1:nHealthZones+2])         # Pick a row every 7 days, select third column through to the last column
@@ -515,6 +538,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # }                 # datarow > 1
 
           Dvector <- t(cbind(t(incidence), t(death)))
+          #Dvector <- incidence
+          
           # print(Dvector)
           # print(dim(Dvector))
           # sum(incidence)
@@ -529,6 +554,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # sum(Dvector_revised < 1)
 
           M <- diag(as.vector(Dvector_revised))
+          
+          print(M)
 
           # library(MASS)
           # write.matrix(M, file = 'mes_err.csv')
@@ -583,6 +610,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #---------------------------------#
 
           Xa.OSI <- Xf.OSI + Ke.OSI%*%Y
+          
+          print(which.max(Xa.OSI))
 
           #Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero
 
@@ -633,8 +662,17 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           # NOTE: when restacking make sure byrow = T.
           
-          I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
-          #I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
+          #I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
+
+          I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
+
+           # I <- as.vector(t(I))
+           # I <- rev(I) 
+           # I <- matrix(I, nrow = nrows, ncol = ncols, byrow = F)
+          
+          print('max index is')
+          
+          print(which(I == max(I), arr.ind=TRUE))
 
           # write.matrix(I, file = 'infected.csv')
 
@@ -643,10 +681,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # extent(I) <- extent(rs$rasterStack)
           # print(I)
 
-          #I[I < 0.01] <- 0 # Prevent tiny values for the number of infectious
+          #I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
 
-          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
-          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
+          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
+          D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
 
           #D[D < 1] <- 0 # Prevent tiny values for the number of dead
 
@@ -654,20 +692,24 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           # For all uninhabitable cells set the number of infected and dead = 0. THIS IS VERY CRITICAL!!!
 
-          # for(i in 1:nrows)
-          # { 								# nrows
-          #   for(j in 1:ncols)
-          #   {							  # ncols
-          #     if (rs$rasterStack$Inhabitable[i,j] == 0)
-          #     {						  # Inhabitable
-          #       I[i,j] <- D[i,j] <- 0
-          #     }
-          #   }
-          # }
-          values(rs$rasterStack$Infected) <- (apply(I, c(1,2), rev)) #I
+          for(i in 1:nrows)
+          { 								# nrows
+            for(j in 1:ncols)
+            {							  # ncols
+              if (rs$rasterStack$Inhabitable[i,j] == 0)
+              {						  # Inhabitable
+                I[i,j] <- D[i,j] <- 0
+              }
+            }
+          }
+          values(rs$rasterStack$Infected) <- I #matrix(rev(t(I)), nrows, ncols) #(apply(I, c(1,2), rev)) #I
           values(rs$rasterStack$Dead) <- (apply(D, c(1,2), rev)) #D
           Infected <- rs$rasterStack$Infected
           Dead <- rs$rasterStack$Dead
+          
+          print('max index is')
+          
+          print(which.max(Infected))
          } # datarow cap
         } # If t is divisible by 7
       # elapsed week
@@ -741,15 +783,15 @@ rasterAgg <- 10
 # Parameters #
 #------------#
 
-alpha <- 0.00005 # 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-beta  <- 0.0055*4 # 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
-gamma <- 0.01 # 0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
-sigma <- 0.01      # Daily fraction that move out of the infectious compartment to the recovered compartment
+alpha <- 0 #0.00005 # 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+beta  <- 0.0055*10 # 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
+gamma <- 0.01*10 # 0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
+sigma <- 0 #0.01      # Daily fraction that move out of the infectious compartment to the recovered compartment
 delta <- 0.02         # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 50 # 440 #
+timestep <- 100 #
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 
@@ -771,10 +813,10 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #
 #-------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)

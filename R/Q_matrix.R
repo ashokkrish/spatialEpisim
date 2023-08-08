@@ -15,8 +15,8 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
   Q <- matrix(0, p, p) # Pre-allocating Q
 
     alpha <- matrix(rep(1:p, p), nrow = p, ncol = p)
-    JJ <- (alpha - 1) %% nrows + 1
-    II <- floor((alpha - JJ) / ncols) + 1
+    JJ <- (alpha - 1) %% ncols + 1
+    II <- floor((alpha - JJ) / nrows) + 1
     LL <- t(JJ)
     KK <- t(II)
     d <- sqrt((LL - JJ)^2 + (KK - II)^2)
@@ -56,22 +56,25 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
     # Generating the full Q matrix
     
     # Block diagonalization if there are multiple observable states
+    
+    
     QFull <- Q
     
-    Q0 <- matrix(0, p, p)
+    if (states_observable > 1) {
+      Q0 <- matrix(0, p, p)
     
-    Qtop <- cbind(QFull, Q0)
-    #print(dim(Qtop))
+      Qtop <- cbind(QFull, Q0)
+      #print(dim(Qtop))
     
-    Qbottom <- cbind(Q0, QFull)
-    #print(dim(Qbottom))
+      Qbottom <- cbind(Q0, QFull)
+      #print(dim(Qbottom))
     
-    QFull <- rbind(Qtop, Qbottom)
-
-    print(dim(QFull))
+      QFull <- rbind(Qtop, Qbottom)
     
-    #print(QFull[1:5, 1:5])
-
+      #print(dim(QFull))
+      
+      #print(QFull[1:5, 1:5]) 
+    }
     return(list("Q" = Q, "QFull" = QFull))
 }
 
