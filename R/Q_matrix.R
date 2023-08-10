@@ -12,10 +12,10 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
   
   observableStates <- 2
   
-  Q <- matrix(0, p, p) # Pre-allocating Q
+  Q <- Q0 <- matrix(0, p, p) # Pre-allocating Q
 
     alpha <- matrix(rep(1:p, p), nrow = p, ncol = p)
-    JJ <- (alpha - 1) %% ncols + 1
+    JJ <- (alpha %% ncols) + 1
     II <- floor((alpha - JJ) / nrows) + 1
     LL <- t(JJ)
     KK <- t(II)
@@ -43,11 +43,9 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
       # Error if selected variance-covariance function is invalid
     }
     
-    Q <- Qvar*val
-    
     #print(dim(Q))
     
-    print(varCovarFunc)
+    #print(varCovarFunc)
     
     #print(Q[1:5, 1:5])
     
@@ -57,23 +55,29 @@ generateQ <- function(nrows, ncols, varCovarFunc, Qvar, QCorrLength, states_obse
     
     # Block diagonalization if there are multiple observable states
     
-    
     QFull <- Q
     
-    if (states_observable > 1) {
-      Q0 <- matrix(0, p, p)
-    
-      Qtop <- cbind(QFull, Q0)
-      #print(dim(Qtop))
-    
-      Qbottom <- cbind(Q0, QFull)
-      #print(dim(Qbottom))
-    
-      QFull <- rbind(Qtop, Qbottom)
-    
-      #print(dim(QFull))
+    if (states_observable > 1)
+    {
+      for (n in seq(from = 1, to = states_observable-1, by = 1)){
+        QFull <- cbind(QFull, Q0)
+      }
       
-      #print(QFull[1:5, 1:5]) 
+      for (n in seq(from = 1, to = states_observable-1, by = 1)){
+        QTop <- matrix(0, nHealthZones, n*p)
+        if ((n+1 - states_observable) !=  0){
+          QBottom <- matrix(0, nHealthZones, (states_observable-n-1)*p)
+          # print(dim(Htop))
+          # print(dim(H))
+          # print(dim(Hbottom))
+          QFull <- rbind(QFull, cbind(QTop, Q, QBottom))
+        }
+        else {
+          # print(dim(H))
+          # print(dim(Htop))
+          Hmat <- rbind(Hmat, cbind(QTop, Q))
+        }
+      }
     }
     return(list("Q" = Q, "QFull" = QFull))
 }

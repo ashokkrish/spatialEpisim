@@ -209,6 +209,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
     #Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  1)
+    states_observable <- Hlist$states_observable
     Hmat <- Hlist$Hmat
     print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
 
@@ -220,33 +221,48 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in Q matrix #
     #------------------#
 
-    source("R/Q_matrix.R")
+    #source("R/Q_matrix.R")
+    source("R/Q_matrix_ver6.R")
 
-    QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
+    #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
     #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  1)
+    QMat <- genQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
+     
+    # print(nrows)
+    # print(ncols)
 
     Q <- QMat$Q
-    print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
+    # plot(Q[1:101,1])
+    # plot(Q[1,1:101])
+    # print(diag(Q)[1:200])
+    #print(det(Q))
+    
+    #print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
 
-    QFull <- QMat$QFull
-    print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
+    QFull <-QMat$QFull
+    #print(det(QFull))
+    #print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
     
     QHt <- QFull%*%t(Hmat)
 
     HQHt <- Hmat%*%QHt
-    print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
+    
+    #print(HQHt)
+    #print(HQHt)
+    #print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
 
     #print(HQHt[1:8, 1:8])
 
     ## HQHt is a square-symmetric matrix
-    # print(rowSums(HQHt))
-    # print(colSums(HQHt))
-    # table(rowSums(HQHt))
-    # table(colSums(HQHt))
-    # print(diag(HQHt))
-    # det(HQHt)
-    # eigen(HQHt)$values
-    print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
+    #  print(rowSums(HQHt))
+    #  print(colSums(HQHt))
+    #  # table(rowSums(HQHt))
+    #  # table(colSums(HQHt))
+    #  print(diag(HQHt))
+    #  print('det(HQHt) is:')
+    #  print(det(HQHt))
+    #  eigen(HQHt)$values
+    # print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
      
     #----------------------#
     # Plot the HQHt matrix #
@@ -473,15 +489,17 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
           # Dead <- as.matrix(Dead, byrow=T) #default is byrow = F
           
+          print('Running Data Assimilation...')
+          
           infectedRast <- Infected
           
           Infected <- as.matrix(Infected, byrow = T)
           
-          print(dim(Infected))# default is byrow = F
+          #print(dim(Infected))# default is byrow = F
           #Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
           
-          InfectedVec <- matrix(1:9,3,3, byrow = T) #default is byrow = F
-          DeadVec <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
+          # InfectedVec <- matrix(1:9,3,3, byrow = T) #default is byrow = F
+          # DeadVec <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
           
           #Xf.OSI <- t(t(as.vector(Infected)))
           
@@ -499,7 +517,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           
           #Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
-          print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
+          #print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
 
           #print(sum(Xf.OSI))
           #table(Xf.OSI)
@@ -513,7 +531,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # Importing DRC Ebola Incidence and Death Data #
           #----------------------------------------------#
           
-          print(nHealthZones)
+          #print(nHealthZones)
           
           
 
@@ -550,12 +568,16 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #-------------------------------------#
 
           # sum(Dvector < 1)
-          Dvector_revised <- ifelse(Dvector < 1, 1, Dvector) # If a diagonal entry is zero change it to 1.
+          Dvector_revised <- ifelse(Dvector < 1, 0.1, Dvector) # If a diagonal entry is zero change it to 0.1/1.
           # sum(Dvector_revised < 1)
+          
+          q = nHealthZones*states_observable
 
           M <- diag(as.vector(Dvector_revised))
           
-          print(M)
+          #print(M)
+          
+          #print(det(HQHt+M))
 
           # library(MASS)
           # write.matrix(M, file = 'mes_err.csv')
@@ -587,13 +609,40 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #
           # det(solve(HQHt))
           # eigen(solve(HQHt))$values # Inverse of HQHt is also positive definite since all of its eigenvalues are strictly positive.
-          # sum(eigen(solve(HQHt))$values)
-
+          # # sum(eigen(solve(HQHt))$values)
+          # thing <- Matrix::solve(HQHt + M, sparse = T, tol =  .Machine$double.eps.)
+          # 
+          # x <- 1:q
+          # y <- 1:q
+          # 
+          # # Create a grid of x and y values
+          # X <- matrix(x, nrow = q, ncol = q, byrow = TRUE)
+          # Y <- matrix(y, nrow = q, ncol = q, byrow = FALSE)
+          # 
+          # library(plot3D)
+          # persp3D(x = X, y = Y, z = thing, theta = 90, expand = 0.5,
+          #         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
+          #         colkey = list(side = 1))
+          # 
+          # print(thing[1,10])
+          # 
+          # ## HQHt is a square-symmetric matrix
+          # print(rowSums(thing))
+          # print(colSums(thing))
+          # # table(rowSums(HQHt))
+          # # table(colSums(HQHt))
+          # print(diag(thing))
+          # print('det(HQHt) is:')
+          # print(det(thing))
+          # print(sum(eigen(thing)$values))
           # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
-          Ke.OSI <- QHt%*%solve(HQHt + M)
+          Ke.OSI <- QHt%*%solve(HQHt + M) 
+          # print(QHt[2325,10])
+          # print(QHt[2326,10])
+          # print(QHt[2327,10])
           #write.matrix(Ke.OSI, file = 'Kal_Gain.csv') #solve((HQHt + M), t(QHt))
 
-          print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
+          #print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
 
           # Questions
           # Can the Kalman gain matrix have negative values?
@@ -603,7 +652,19 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # Innovation or measurement residual #
           #------------------------------------#
           #HXf <- t(t(as.numeric(Dvector)))
+          # print(dim(QFull))
+          # print(dim(Hmat))
+          # print(dim(t(Hmat)))
+          # print(rowSums(t(Hmat)%*%Hmat)[1:20])
+          # print(diag(t(Hmat)%*%Hmat)[1:20])
+          
           Y <- t(t(as.numeric(Dvector))) - HXf
+          
+          # print(dim(Ke.OSI))
+          # print(dim(HXf))
+          
+          #print((t(Hmat)%*%Hmat)[1920:1940,1920:1940])
+         
 
           #---------------------------------#
           # OSI update step: analysis state #
@@ -611,7 +672,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           Xa.OSI <- Xf.OSI + Ke.OSI%*%Y
           
-          print(which.max(Xa.OSI))
+          # print(which.max(Xa.OSI))
+          # 
+          # print(Xa.OSI[2626:2826])
 
           #Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero
 
@@ -670,9 +733,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
            # I <- rev(I) 
            # I <- matrix(I, nrow = nrows, ncol = ncols, byrow = F)
           
-          print('max index is')
-          
-          print(which(I == max(I), arr.ind=TRUE))
+          # print('max index is')
+          # 
+          # print(which(I == max(I), arr.ind=TRUE))
 
           # write.matrix(I, file = 'infected.csv')
 
@@ -707,9 +770,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           Infected <- rs$rasterStack$Infected
           Dead <- rs$rasterStack$Dead
           
-          print('max index is')
-          
-          print(which.max(Infected))
+          # print('max index is')
+          # 
+          # print(which.max(Infected))
          } # datarow cap
         } # If t is divisible by 7
       # elapsed week
@@ -791,7 +854,7 @@ delta <- 0.02         # Daily fraction that move out of the infectious compartme
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 100 #
+timestep <- 15 #440
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 
@@ -813,7 +876,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "Exponential", QVar = 1, QCorrLength = 0.8)
 
 #-------------#
 # DA is FALSE #

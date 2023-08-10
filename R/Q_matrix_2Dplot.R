@@ -67,6 +67,6 @@ persp3D(x = X, y = Y, z = QFull, theta = 90, expand = 0.5,
         colkey = list(side = 1))
 
 # # Plot the 3D surface
-# library(rgl)
-# persp3d(X, Y, QFull, col = "lightgreen", xlab = "Columns", ylab = "Rows", zlab = "Values",
-#         ticktype = "detailed", main = "3D Surface Plot of QFull", xlim = c(0, 5), ylim = c(0, 5))
+library(rgl)
+persp3d(X, Y, QFull, col = "lightgreen", xlab = "Columns", ylab = "Rows", zlab = "Values",
+        ticktype = "detailed", main = "3D Surface Plot of QFull", xlim = c(0, 5), ylim = c(0, 5))

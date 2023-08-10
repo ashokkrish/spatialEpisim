@@ -34,6 +34,11 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   cols <- colFromX(rasterStack, as.vector(Locations[,3]))
   cols
   
+  # print('A test:')
+  # print(Hpos[5])
+  # print(rows[5])
+  # print(cols[5])
+  
   # Hpos for Beni is obtained as = (rows - 1)*ncols + cols = (39-1)*50 + 29 = 1929
   ###################################################
   
