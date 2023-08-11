@@ -56,6 +56,17 @@ appCSS <- ".invisible {display:none;}"
 appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
 
 ui <- fluidPage(
+  tags$head(
+    tags$style(HTML("
+      .label-text {
+        font-size: 16px; /* Adjust label font size as needed */
+      }
+      
+      .option-text {
+        font-size: 12px; /* Adjust option font size as needed */
+      }
+    "))
+  ),
   theme = bs_theme(version = 4, bootswatch = "minty"),
   #theme = bs_theme(bootswatch = "slate"),
   div(
@@ -136,6 +147,9 @@ ui <- fluidPage(
                                              uiOutput("dataAssimCmpts"),
                                              uiOutput("dataAssimFileI"),
                                              uiOutput("dataAssimFileD"),
+                                             
+                                             h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
+                                             
                                              uiOutput("covarianceRadio"),
                                              
                                              conditionalPanel(condition = ("input.covarianceSelect !== 'Spherical'"),
@@ -860,9 +874,15 @@ server <- function(input, output, session){
      
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
        radioButtons(inputId = "covarianceSelect",
-                    label = strong("Model Error Covariance Matrix Formulation"),
+                    label = HTML("<span class='label-text'>Choose variance-covariance function:</span>"),
                     choiceValues = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
-                    choiceNames = list("Distance-Based Decay", "Balgovind", "Exponential", "Gaussian", "Spherical"),
+                    choiceNames = list(
+                      HTML("<span class='option-text'>Distance-Based Decay</span>"),
+                      HTML("<span class='option-text'>Balgovind</span>"),
+                      HTML("<span class='option-text'>Exponential</span>"),
+                      HTML("<span class='option-text'>Gaussian</span>"),
+                      HTML("<span class='option-text'>Spherical</span>")
+                    ),
                     selected = "DBD", #character(0), #
                     inline = FALSE,
                     width = "1000px")
@@ -877,7 +897,11 @@ server <- function(input, output, session){
      validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
      
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-        print('test1')
+        numericInput(inputId = "QCorrLength",
+                     label = strong("Choose Correlation Length Parameter for generating Q"),
+                     value = 0.8,
+                     step = 0.01,
+                     min = 0)
      }
    })
    

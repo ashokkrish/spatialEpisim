@@ -26,7 +26,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength)
+SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength, nbhd, psiDiag)
 {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
@@ -215,7 +215,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     Locations <- Hlist$Locations
     nHealthZones <- as.numeric(dim(Locations)[1])
-    print(Locations)
+    #print(Locations)
 
     #------------------#
     # Read in Q matrix #
@@ -226,7 +226,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
     #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  1)
-    QMat <- genQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
+    QMat <- genQ(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  2)
      
     # print(nrows)
     # print(ncols)
@@ -254,15 +254,15 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #print(HQHt[1:8, 1:8])
 
     ## HQHt is a square-symmetric matrix
-    #  print(rowSums(HQHt))
-    #  print(colSums(HQHt))
+      print(rowSums(HQHt))
+      print(colSums(HQHt))
     #  # table(rowSums(HQHt))
     #  # table(colSums(HQHt))
-    #  print(diag(HQHt))
-    #  print('det(HQHt) is:')
-    #  print(det(HQHt))
+      print(diag(HQHt))
+      print('det(HQHt) is:')
+      print(det(HQHt))
     #  eigen(HQHt)$values
-    # print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
+      print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
      
     #----------------------#
     # Plot the HQHt matrix #
@@ -568,12 +568,12 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #-------------------------------------#
 
           # sum(Dvector < 1)
-          Dvector_revised <- ifelse(Dvector < 1, 0.1, Dvector) # If a diagonal entry is zero change it to 0.1/1.
+          Dvector_revised <- ifelse(Dvector < 1, psiDiag, Dvector) # If a diagonal entry is zero change it to 0.1/1.
           # sum(Dvector_revised < 1)
           
           q = nHealthZones*states_observable
 
-          M <- diag(as.vector(Dvector_revised))
+          M <- 0.01*diag(as.vector(Dvector_revised))
           
           #print(M)
           
@@ -744,7 +744,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # extent(I) <- extent(rs$rasterStack)
           # print(I)
 
-          #I[I < 0.5] <- 0 # Prevent tiny values for the number of infectious
+          I[I < 1] <- 0 # Prevent tiny values for the number of infectious
 
           #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
           D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
@@ -846,15 +846,15 @@ rasterAgg <- 10
 # Parameters #
 #------------#
 
-alpha <- 0 #0.00005 # 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+alpha <- 0.00005 # 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
 beta  <- 0.0055*10 # 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
 gamma <- 0.01*10 # 0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
-sigma <- 0 #0.01      # Daily fraction that move out of the infectious compartment to the recovered compartment
+sigma <- 0.01      # Daily fraction that move out of the infectious compartment to the recovered compartment
 delta <- 0.02         # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 15 #440
+timestep <- 50 #440
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 
@@ -876,7 +876,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "Exponential", QVar = 1, QCorrLength = 0.8)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "Exponential", QVar = 100, QCorrLength = 0.08, nbhd = 3, psiDiag = 0.01)
 
 #-------------#
 # DA is FALSE #
