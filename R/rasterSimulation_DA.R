@@ -221,8 +221,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in Q matrix #
     #------------------#
 
-    #source("R/Q_matrix.R")
-    source("R/Q_matrix_ver6.R")
+    source("R/Q_matrix.R")
 
     #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
     #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  1)
@@ -294,15 +293,16 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     summary[t, 14]  <- cumExposed
     summary[t, 15]  <- cumInfected
-    summary[t, 16]  <- alpha
-    summary[t, 17]  <- beta
-    summary[t, 18]  <- gamma
-    summary[t, 19]  <- sigma
-    summary[t, 20]  <- delta
+    summary[t, 16]  <- sumE/sumI
+    summary[t, 17]  <- alpha
+    summary[t, 18]  <- beta
+    summary[t, 19]  <- gamma
+    summary[t, 20]  <- sigma
+    summary[t, 21]  <- delta
 
-    summary[t, 21]  <- radius
-    summary[t, 22]  <- lambda
-    summary[t, 23]  <- model
+    summary[t, 22]  <- radius
+    summary[t, 23]  <- lambda
+    summary[t, 24]  <- model
 
     nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
 
@@ -490,6 +490,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # Dead <- as.matrix(Dead, byrow=T) #default is byrow = F
           
           print('Running Data Assimilation...')
+          
+          preDASusceptible <- Susceptible
+          preDAVaccinated <- Vaccinated
+          preDAExposed <- Exposed
+          preDAInfected <- Infected
+          preDARecovered <- Recovered
+          preDADead <- Dead
           
           infectedRast <- Infected
           
@@ -765,10 +772,22 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
               }
             }
           }
+          
           values(rs$rasterStack$Infected) <- I #matrix(rev(t(I)), nrows, ncols) #(apply(I, c(1,2), rev)) #I
-          values(rs$rasterStack$Dead) <- (apply(D, c(1,2), rev)) #D
+          values(rs$rasterStack$Dead) <- D
           Infected <- rs$rasterStack$Infected
           Dead <- rs$rasterStack$Dead
+          
+          deadDiff <- preDADead - Dead
+          Recovered <- preDARecovered + deadDiff
+          Exposed <- 2*Infected
+          exposedDiff <- preDAExposed - Exposed
+          Susceptible <- preDASusceptible + exposedDiff
+          
+          rs$rasterStack$Recovered <- Recovered
+          rs$rasterStack$Exposed <- Exposed
+          rs$rasterStack$Susceptible <- Susceptible
+          
           
           # print('max index is')
           # 
