@@ -744,7 +744,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # extent(I) <- extent(rs$rasterStack)
           # print(I)
 
-          I[I < 1] <- 0 # Prevent tiny values for the number of infectious
+          #I[I < 1] <- 0 # Prevent tiny values for the number of infectious
 
           #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
           D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T) # AK
@@ -846,15 +846,15 @@ rasterAgg <- 10
 # Parameters #
 #------------#
 
-alpha <- 0.00005 # 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-beta  <- 0.0055*10 # 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
-gamma <- 0.01*10 # 0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
+alpha <- 0.0001  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+beta  <- 0.0055 # 0.0055*3     # Daily fraction that move out of the susceptible compartment to the exposed compartment
+gamma <-0.0055       # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
 sigma <- 0.01      # Daily fraction that move out of the infectious compartment to the recovered compartment
-delta <- 0.02         # Daily fraction that move out of the infectious compartment to the dead compartment
+delta <- 0.021         # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 50 #440
+timestep <- 10 #440
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 
@@ -876,7 +876,7 @@ QCorrLength <- 0.8 # 1 #
 # DA is TRUE #
 #------------#
 
-#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "Exponential", QVar = 100, QCorrLength = 0.08, nbhd = 3, psiDiag = 0.01)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 3, psiDiag = 0.1)
 
 #-------------#
 # DA is FALSE #

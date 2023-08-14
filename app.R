@@ -6,6 +6,7 @@ shhh(library(cptcity))
 shhh(library(countrycode))
 shhh(library(dplyr))
 shhh(library(ggplot2))
+shhh(library(latex2exp))
 shhh(library(lattice))
 shhh(library(latticeExtra))
 shhh(library(maps))
@@ -133,10 +134,10 @@ ui <- fluidPage(
                               
                               uiOutput("timestepInput")),
 
-                            actionButton("go","Run Simulation", 
-                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("resetAll","Reset Values", 
-                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            # actionButton("go","Run Simulation", 
+                            #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            # actionButton("resetAll","Reset Values", 
+                            #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             
                             br(),
                             br(),
@@ -145,24 +146,32 @@ ui <- fluidPage(
 
                             conditionalPanel(condition = "input.dataAssim == '1'",  
                                              uiOutput("dataAssimCmpts"),
+                                             uiOutput("dataAssimZones"),
                                              uiOutput("dataAssimFileI"),
                                              uiOutput("dataAssimFileD"),
                                              
                                              h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
                                              
-                                             uiOutput("covarianceRadio"),
+                                             uiOutput("varCovarFunc"),
+                                             uiOutput("selectRho"),
+                                             uiOutput("selectSigma"),
+                                             uiOutput("selectNbhd"),
                                              
-                                             conditionalPanel(condition = ("input.covarianceSelect !== 'Spherical'"),
-                                                              uiOutput("selectRho")),
+                                             h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
                                              
-                                             conditionalPanel(condition = ("input.covarianceSelect == 'Spherical'"),
-                                                              uiOutput("selectPhi")),
+                                             uiOutput("selectPsiDiag"),
                                              
-                                             actionButton("goDA","Run Simulation with DA",
-                                                           style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
-                                             br(),
-                                             actionButton("resetAllDA","Reset Values", 
-                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                             # actionButton("goDA","Run Simulation with DA",
+                                             #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                                             ),
+                                             # br(),
+                                             # actionButton("resetAllDA","Reset Values", 
+                                             #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            actionButton("go","Run Simulation", 
+                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            actionButton("resetAll","Reset Values", 
+                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            
                           ),
                         ), 
                         
@@ -541,7 +550,7 @@ server <- function(input, output, session){
     }
     
     numericInput(inputId = "alpha",
-                label = "Daily Vaccination Rate (\\( \\alpha\\)):",
+                label = HTML(paste("Daily Vaccination Rate ", TeX("&#945"))),
                 value = alphaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -577,7 +586,7 @@ server <- function(input, output, session){
     }
     
     numericInput(inputId = "beta",
-                label = "Daily Exposure Rate (\\( \\beta\\))", 
+                label = HTML(paste("Daily Exposure Rate ", TeX("&#946"))), 
                 value = betaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -615,8 +624,8 @@ server <- function(input, output, session){
     }
 
     numericInput(inputId = "gamma",
-                label = "Daily fraction that move out of the exposed compartment to the Infected compartment  (\\( \\gamma\\))", 
-                value = gammaValue, min = 0, max = 1, step = 0.00001)
+                 label = HTML(paste("Daily Vaccination Rate ", TeX("&#947"))), 
+                 value = gammaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -652,7 +661,7 @@ server <- function(input, output, session){
     }
     
     numericInput(inputId = "sigma",
-                label = "Daily fraction that move out of the Infected compartment to the recovered compartment (\\( \\sigma \\))", 
+                label = HTML(paste("Daily Recovery Rate ", TeX("&#963"))), 
                 value = sigmaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -688,8 +697,8 @@ server <- function(input, output, session){
     }
 
     numericInput(inputId = "delta",
-                "Daily fraction that move out of the Infected compartment to the dead compartment (\\(\\delta\\)):",
-                value = deltaValue, min = 0, max = 1, step = 0.00001)
+                 label = HTML(paste("Daily Death Rate ", TeX("&#948"))),
+                 value = deltaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -731,13 +740,13 @@ server <- function(input, output, session){
     }
     
     numericInput(inputId = "lambda",
-                "Distance parameter (\\( \\lambda\\), in km):",
+                 label = HTML(paste("Distance Parameter", TeX("&#955"))),
                 value = lambdaValue,min = 1, max = 50, step = 1)
     }
   })
   
   ############################################################################    
-  #                                                                          #
+  #                     Upload Seed Data                                     #
   ############################################################################ 
   
   output$seedUpload <- renderUI({
@@ -746,7 +755,7 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-        fileInput(inputId = "seedData", labelMandatory(""), placeholder = "Upload seed data (.csv or .xls or .xlsx)",
+        fileInput(inputId = "seedData", labelMandatory("Upload Seed Data:"), placeholder = "Upload seed data (.csv or .xls or .xlsx)",
                   accept = c(
                     "text/csv",
                     "text/comma-separated-values,text/plain",
@@ -755,7 +764,7 @@ server <- function(input, output, session){
                     ".xlsx"),
                   )
 
-      p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
+      #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
     }
   })
   
@@ -832,6 +841,24 @@ server <- function(input, output, session){
    showD <- reactive({
      "D" %in% input$selectedCompartments
    })
+   
+   output$dataAssimZones <- renderUI({
+     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+     if (!is.null(input$selectedCountry) && input$selectedCountry != "") {
+       fileInput(inputId = "dataAssimZones", labelMandatory ("Upload the lat/lon coordinates of reporting health zones (.csv or .xls or .xlsx)"),
+                 accept = c(
+                   "text/csv",
+                   "text/comma-separated-values,text/plain",
+                   ".csv",
+                   ".xls",
+                   ".xlsx"),)
+     }
+   })
+   
+   observeEvent(input$dataAssimZones, {
+     print(read.csv(input$dataAssimZones$datapath))
+     print(as.character(input$dataAssimZones[1]))})
+   
    output$dataAssimFileI <- renderUI({
      validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
      if (showI()) {
@@ -869,23 +896,22 @@ server <- function(input, output, session){
    ############################################################################    
    # Change the function which generates the Q matrix     #
    ############################################################################  
-   output$covarianceRadio <- renderUI({
+   output$varCovarFunc <- renderUI({
      validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
      
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       radioButtons(inputId = "covarianceSelect",
+       selectInput(inputId = "covarianceSelect",
                     label = HTML("<span class='label-text'>Choose variance-covariance function:</span>"),
-                    choiceValues = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
-                    choiceNames = list(
-                      HTML("<span class='option-text'>Distance-Based Decay</span>"),
-                      HTML("<span class='option-text'>Balgovind</span>"),
-                      HTML("<span class='option-text'>Exponential</span>"),
-                      HTML("<span class='option-text'>Gaussian</span>"),
-                      HTML("<span class='option-text'>Spherical</span>")
-                    ),
+                    choices = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
+                      # HTML("<span class='option-text'>Distance-Based Decay</span>"),
+                      # HTML("<span class='option-text'>Balgovind</span>"),
+                      # HTML("<span class='option-text'>Exponential</span>"),
+                      # HTML("<span class='option-text'>Gaussian</span>"),
+                      # HTML("<span class='option-text'>Spherical</span>")
+                    #),
                     selected = "DBD", #character(0), #
-                    inline = FALSE,
-                    width = "1000px")
+                    width = "1000px",
+                    multiple = FALSE)
      }
    })
    
@@ -898,18 +924,46 @@ server <- function(input, output, session){
      
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
         numericInput(inputId = "QCorrLength",
-                     label = strong("Choose Correlation Length Parameter for generating Q"),
+                     label = "Choose correlation length parameter for generating Q:",
                      value = 0.8,
                      step = 0.01,
                      min = 0)
      }
    })
    
-   output$selectPhi <- renderUI({
+   output$selectSigma <- renderUI({
      validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
      
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       print('test2')
+       numericInput(inputId = "QVar",
+                    label = "Choose variance parameter for generating Q:",
+                    value = 1,
+                    step = 0.01,
+                    min = 0)
+     }
+   })
+   
+   output$selectNbhd <- renderUI({
+     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+       numericInput(inputId = "nbhd",
+                    label = "Choose neighborhood parameter for generating Q:",
+                    value = 3,
+                    step = 1,
+                    min = 0)
+     }
+   })
+   
+   output$selectPsiDiag <- renderUI({
+     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+     
+     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+       numericInput(inputId = "psidiag",
+                    label = HTML(paste("Choose a value for the zero elements of", TeX("&#936"), "to be set to:")),
+                    value = 0.1,
+                    step = 0.01,
+                    min = 0)
      }
    })
    
@@ -1002,7 +1056,7 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      downloadButton('downloadData', "Generate Seed Data Template", 
+      downloadButton('downloadData', label = "Generate Seed Data Template", 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      style = "length:800px")
     }
@@ -1177,7 +1231,11 @@ server <- function(input, output, session){
       isDeterministic <- FALSE
     }
     
-    SpatialCompartmentalModel(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = data(), deterministic = isDeterministic, isCropped, level1Names = input$level1List)
+    SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
+                              alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, 
+                              deterministic = isDeterministic, isCropped, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
+                              dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
+                              QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
     
     # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
@@ -1202,7 +1260,7 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
 
       png(outfile, width = 800, height = 600)
-      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = data(), seedNeighbourhood = 0)  # print the seed plot direct to UI
+      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData[1], seedNeighbourhood = 0)  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Seed plot image not found")
