@@ -6,12 +6,14 @@
 
 source("R/rasterStack.R") 
 
-genQ = function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2) {
+genQ <- function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2) {
   
   nrows <- nrow(rs$rasterStack)
   #print(nrows)
+  
   ncols <- ncol(rs$rasterStack)
   #print(ncols)
+  
   p <- nrows*ncols
   #print(p)
   
@@ -85,8 +87,6 @@ genQ = function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2
     #print(QFull[1:5, 1:5]) 
     
     return(list("Q" = Q, "QFull" = QFull))
-  
-  
 }
 
 # Qmat <- genQ(createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, c("Ituri", "Nord-Kivu")), "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 4, states_observable = 2)

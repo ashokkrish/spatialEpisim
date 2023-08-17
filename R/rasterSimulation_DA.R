@@ -26,8 +26,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength, nbhd, psiDiag)
-{
+# SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength, nbhd, psiDiag)
+# {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
@@ -130,15 +130,15 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
 
-  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  # pal <- colorRampPalette(ramp)
-  # 
-  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
-  #      main = "Location of Initial Infections", 
-  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")), 
-  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  # 
-  # plot(Level1Identifier, add = TRUE)
+  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+
+  plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
+       main = "Location of Initial Infections",
+       xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+       legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+
+  plot(Level1Identifier, add = TRUE)
   # 
   # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # 
@@ -195,11 +195,11 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #-------------------------------------------#
 
     incidence_data <- read_excel(dataI)
-    death_data <- read_excel(dataD)
+    #death_data <- read_excel(dataD)
 
     print(paste("Dimension of Incidence Matrix: ", dim(incidence_data)[1], dim(incidence_data)[2]))
 
-    print(paste("Dimension of Death Matrix: ", dim(death_data)[1], dim(death_data)[2]))
+    #print(paste("Dimension of Death Matrix: ", dim(death_data)[1], dim(death_data)[2]))
 
     #------------------#
     # Read in H matrix #
@@ -211,7 +211,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  1)
     states_observable <- Hlist$states_observable
     Hmat <- Hlist$Hmat
-    print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
+    #print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
 
     Locations <- Hlist$Locations
     nHealthZones <- as.numeric(dim(Locations)[1])
@@ -223,30 +223,24 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     source("R/Q_matrix.R")
 
-    #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  2)
-    #QMat <- generateQ(nrows = nrows, ncols = ncols, varCovarFunc, QVar, QCorrLength, states_observable =  1)
     QMat <- genQ(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  1) #states_observable = 2
-     
-    # print(nrows)
-    # print(ncols)
 
     Q <- QMat$Q
     # plot(Q[1:101,1])
     # plot(Q[1,1:101])
     # print(diag(Q)[1:200])
-    #print(det(Q))
+    # print(det(Q))
     
-    #print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
+    # print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
 
-    QFull <-QMat$QFull
-    #print(det(QFull))
-    #print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
+    QFull <- QMat$QFull
+    # print(det(QFull))
+    # print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
     
     QHt <- QFull%*%t(Hmat)
 
     HQHt <- Hmat%*%QHt
     
-    #print(HQHt)
     #print(HQHt)
     #print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
 
@@ -255,19 +249,20 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     ## HQHt is a square-symmetric matrix
       print(rowSums(HQHt))
       print(colSums(HQHt))
-    #  # table(rowSums(HQHt))
-    #  # table(colSums(HQHt))
+    # table(rowSums(HQHt))
+    # table(colSums(HQHt))
       print(diag(HQHt))
-      print('det(HQHt) is:')
-      print(det(HQHt))
-    #  eigen(HQHt)$values
+    
+      print(paste("det(HQHt) is:", det(HQHt)))
+
+    # eigen(HQHt)$values
       print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
      
     #----------------------#
     # Plot the HQHt matrix #
     #----------------------#
      
-    #source("R/plotHQHt.R")
+    # source("R/plotHQHt.R")
     # plotHQHt(HQHt)
   }
   ################# DA Ends ##################
@@ -478,16 +473,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # Write forecast (prior) state to matrix #
           #----------------------------------------#
 
-          #print(paste("Xf is printed on day", t))
+          # print(paste("Xf is printed on day", t))
 
           #---------------------#
           # OSI: forecast state #
           #---------------------#
           # We track the  "Infectious" and "Dead" epidemic compartments
-          
-          # Infected <- as.matrix(Infected, byrow = T) #default is byrow = F
-          # Dead <- as.matrix(Dead, byrow=T) #default is byrow = F
-          
+
           print('Running Data Assimilation...')
           
           preDASusceptible <- Susceptible
@@ -496,40 +488,22 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           preDAInfected <- Infected
           preDARecovered <- Recovered
           preDADead <- Dead
+          
           rat <- sum(as.matrix(Exposed))/sum(as.matrix(Infected))
-          
-          #infectedRast <- Infected
-          
-          Infected <- as.matrix(Infected, byrow = T)
-          
-          #print(dim(Infected))# default is byrow = F
-          #Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
-          
-          # InfectedVec <- matrix(1:9,3,3, byrow = T) #default is byrow = F
-          # DeadVec <- as.matrix(10:18,3,3, byrow=T)#default is byrow = F
-          
-          #Xf.OSI <- t(t(as.vector(Infected)))
-          
-          # infectedTest <- matrix(Xf.OSI, nrow = nrows, ncol = ncols)
-          # 
-          # infectedTest <- raster(infectedTest)
-          # 
-          # print(infectedTest)
-          # 
-          # print(infectedRast)
-          # 
-          # print(setequal(infectedTest, infectedRast))
 
-          #Xf.OSI <- rbind(t(t(as.vector(t(Infected)))), t(t(as.vector(t(Dead)))))
+          Infected <- as.matrix(Infected, byrow = T) # default is byrow = F
           
+          # print(dim(Infected)) 
+          # Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
+
           Xf.OSI <- t(t(as.vector(t(Infected))))
           
-          #Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
+          # Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
-          #print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
+          # print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
 
-          #print(sum(Xf.OSI))
-          #table(Xf.OSI)
+          # print(sum(Xf.OSI))
+          # table(Xf.OSI)
 
           HXf <- Hmat%*%Xf.OSI
           #print(HXf)
@@ -539,10 +513,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           #----------------------------------------------#
           # Importing DRC Ebola Incidence and Death Data #
           #----------------------------------------------#
-          
-          #print(nHealthZones)
-          
-          
 
           incidence <- as.vector(incidence_data[datarow, 1:nHealthZones+2]) # Pick a row every 7 days, select third column through to the last column
           #death <- as.vector(death_data[datarow, 1:nHealthZones+2])         # Pick a row every 7 days, select third column through to the last column
@@ -580,7 +550,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           Dvector_revised <- ifelse(Dvector < 1, psiDiag, Dvector) # If a diagonal entry is zero change it to 0.1/1.
           # sum(Dvector_revised < 1)
           
-          q = nHealthZones*states_observable
+          q <- nHealthZones*states_observable
 
           M <- diag(as.vector(Dvector_revised))
           
@@ -856,7 +826,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   #print(tail(summary))
 
   return(summary)
-} # End of function
+#} # End of function
 
 #--------------#
 # Example Call #
@@ -883,13 +853,13 @@ rasterAgg <- 10
 
 alpha <- 0.000035  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
 beta  <- 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
-gamma <-1/7 #0.1428571      # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
-sigma <- 1/36 #0.02777778     # Daily fraction that move out of the infectious compartment to the recovered compartment
-delta <- 2/36 #0.05555556      # Daily fraction that move out of the infectious compartment to the dead compartment
+gamma <- 1/7  # 0.1428571      # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
+sigma <- 1/36 # 0.02777778     # Daily fraction that move out of the infectious compartment to the recovered compartment
+delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 689
+timestep <- 189
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 
@@ -897,21 +867,23 @@ deterministic <- T
 isCropped <- T
 level1Names <- c("Ituri", "Nord-Kivu")
 
-DA <- T # F # 
+DA <- F # T # 
 
 sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
 dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
 dataD <- "observeddata/Ebola_Death_Data.xlsx"
 
-varCovarFunc <- "DBD" # "Balgovind" #
+varCovarFunc <- "DBD" # "Balgovind"
 QVar <- 1
-QCorrLength <- 0.8 # 1 #
+QCorrLength <- 0.8 # 1 
+nbhd <- 3
+psiDiag <- 0.1
 
 #------------#
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "Gaussian", QVar = 1, QCorrLength = 0.8, nbhd = 3, psiDiag = 0.1)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 3, psiDiag = 0.1)
 
 #-------------#
 # DA is FALSE #
