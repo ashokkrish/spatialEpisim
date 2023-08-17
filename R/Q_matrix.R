@@ -65,9 +65,9 @@ genQ = function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2
   }
   
   # print(dim(Q))
+  QFull <- Q
   
   if (states_observable == 2) {
-    QFull <- Q
     
     Q0 <- matrix(0, p, p)
     
@@ -78,13 +78,14 @@ genQ = function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2
     #print(dim(Qbottom))
     
     QFull <- rbind(Qtop, Qbottom)
+  }
     
     #print(dim(QFull))
     
     #print(QFull[1:5, 1:5]) 
     
     return(list("Q" = Q, "QFull" = QFull))
-  }
+  
   
 }
 
