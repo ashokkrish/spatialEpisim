@@ -131,9 +131,11 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
 
-  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  # pal <- colorRampPalette(ramp)
-  # 
+  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+
+  #par(mfrow = c(1, 2))
+  
   # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
   #      main = "Location of Initial Infections",
   #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
@@ -141,10 +143,14 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # 
   # plot(Level1Identifier, add = TRUE)
   # 
-  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1,
+  #      main = "Location of Initial Deaths",
+  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # 
   # plot(Level1Identifier, add = TRUE)
-  #
-  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Deaths", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # 
+  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # plot(Level1Identifier, add = TRUE)
   # 
   # plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabitable Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
@@ -285,14 +291,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
     summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
 
-    summary[t, 14]  <- cumExposed
+    summary[t, 14]  <- round(cumExposed)
     summary[t, 15]  <- round(cumInfected)
     summary[t, 16]  <- alpha
     summary[t, 17]  <- beta
     summary[t, 18]  <- gamma
     summary[t, 19]  <- sigma
     summary[t, 20]  <- delta
-
     summary[t, 21]  <- radius
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
@@ -458,7 +463,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     {                     # DA T/F
       #NewoutputDir <- paste(outputDir, "/DA", sep="") # The directory for output files
       #if (!(file.exists(NewoutputDir))){
-        #dir.create("DA") # Folder to store output .nc files
+        #dir.create("DA") # Folder to store output files
 
       #setwd(NewoutputDir) # Change working directory to output folder
 
@@ -806,14 +811,14 @@ rasterAgg <- 10
 #------------#
 
 alpha <- 0.000035  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-beta  <- 0.008 # 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
+beta  <- 0.007 # 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
 gamma <- 1/7  # 0.1428571      # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
 sigma <- 1/36 # 0.02777778     # Daily fraction that move out of the infectious compartment to the recovered compartment
 delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 500
+timestep <- 689
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 seedRadius <- 1
@@ -829,10 +834,10 @@ dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
 dataD <- "observeddata/Ebola_Death_Data.xlsx"
 
 varCovarFunc <- "DBD" # "Balgovind"
-QVar <- 1
-QCorrLength <- 0.8 # 1 
+QVar <- 0.55
+QCorrLength <- 0.675
 nbhd <- 3
-psiDiag <- 0.5
+psiDiag <- 0.001
 
 #------------#
 # DA is TRUE #
