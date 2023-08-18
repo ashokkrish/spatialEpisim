@@ -728,12 +728,12 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           
           # deadDiff <- preDADead - Dead
           # Recovered <- preDARecovered + deadDiff
-          # Exposed <- rat*Infected
+            Exposed <- rat*Infected
           # exposedDiff <- preDAExposed - Exposed
           # Susceptible <- preDASusceptible + exposedDiff
           
           # rs$rasterStack$Recovered <- Recovered
-          # rs$rasterStack$Exposed <- Exposed
+            rs$rasterStack$Exposed <- Exposed
           # rs$rasterStack$Susceptible <- Susceptible
 
           # print('max index is'); print(which.max(Infected))
@@ -818,7 +818,7 @@ delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious 
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 689
+timestep <- 440
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 seedRadius <- 1
@@ -849,4 +849,4 @@ psiDiag <- 0.001
 # DA is FALSE #
 #-------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
