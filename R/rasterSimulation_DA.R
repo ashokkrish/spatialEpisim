@@ -612,7 +612,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           Y <- t(t(as.numeric(Dvector))) - HXf
           
-          print(Y)
+          #print(Y)
 
           #---------------------------------#
           # OSI update step: analysis state #
@@ -627,15 +627,15 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           Xa.OSI <- Xf.OSI + Ke.OSI%*%Y
 
-          print(length(Xa.OSI[Xa.OSI < 0]))
+          #print(length(Xa.OSI[Xa.OSI < 0]))
           
-          print(summary(Xa.OSI[Xa.OSI < 0]))
+          #print(summary(Xa.OSI[Xa.OSI < 0]))
           
           # print(which.max(Xa.OSI))
 
           Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero. TBW convinced me.
           
-          print(length(Xa.OSI[Xa.OSI < 0]))
+          #print(length(Xa.OSI[Xa.OSI < 0]))
 
           # Xa.OSI <- abs(Xf.OSI + Ke.OSI%*%Y)
 
@@ -827,7 +827,7 @@ deterministic <- T
 isCropped <- T
 level1Names <- c("Ituri", "Nord-Kivu")
 
-DA <- F # T # 
+DA <- T # F # 
 
 sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
 dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
