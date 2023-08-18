@@ -26,8 +26,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-# SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength, nbhd, psiDiag)
-# {
+SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, seedRadius, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength, nbhd, psiDiag)
+{
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
@@ -92,63 +92,62 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   # print(numLocations)
 
   # Seed the initial infections equitably in a Moore Neighborhood of cells
-  numCellsPerRegion    <- (2*radius + 1)^2
+  #seedRadius <- 0
+  numCellsPerRegion <- (2*seedRadius + 1)^2
   
   for (ff in 1:numLocations)
   {
     print(paste("Seed location = ", seedData[ff,1]))
-
+    
     row <- rowFromY(rs$rasterStack, seedData[ff,2])
     col <- colFromX(rs$rasterStack, seedData[ff,3])
-
+    
     print(paste("row = ", row, "col = ", col))
-    # print(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)])
-    # print(sum(Inhabitable[(row-radius):(row+radius),(col-radius):(col+radius)]))
-
+    # print(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)])
+    # print(sum(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)]))
+    
     newVaccinatedPerCell <- seedData[ff,4]#/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
-    newExpPerCell        <- seedData[ff,5]/numCellsPerRegion    #round(seedData[ff,5]/numCellsPerRegion)
-    newInfPerCell        <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
+    newExpPerCell        <- seedData[ff,5]/numCellsPerRegion     #round(seedData[ff,5]/numCellsPerRegion)
+    newInfPerCell        <- seedData[ff,6]/numCellsPerRegion     #round(seedData[ff,4]/numCellsPerRegion)
     newRecoveredPerCell  <- seedData[ff,7]#/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
     newDeadPerCell       <- seedData[ff,8]#/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
-
+    
     # print(newVaccinatedPerCell)
     # print(newExpPerCell)
     # print(newInfPerCell)
     # print(newRecoveredPerCell)
     # print(newDeadPerCell)
-
-    #Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] <- Vaccinated[(row-radius):(row+radius),(col-radius):(col+radius)] + newVaccinatedPerCell
+    
+    #Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newVaccinatedPerCell
     Vaccinated[row,col] <- Vaccinated[row,col] + newVaccinatedPerCell
-    Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] <- Exposed[(row-radius):(row+radius),(col-radius):(col+radius)] + newExpPerCell
-    Infected[(row-radius):(row+radius),(col-radius):(col+radius)] <- Infected[(row-radius):(row+radius),(col-radius):(col+radius)] + newInfPerCell
-    #Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] <- Recovered[(row-radius):(row+radius),(col-radius):(col+radius)] + newRecoveredPerCell
-    Recovered[row,col] <- Recovered[row,col] + newRecoveredPerCell
-    #Dead[(row-radius):(row+radius),(col-radius):(col+radius)] <- Dead[(row-radius):(row+radius),(col-radius):(col+radius)] + newDeadPerCell
-    Dead[row,col] <- Dead[row,col] + newDeadPerCell
-
+    Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newExpPerCell
+    Infected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Infected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newInfPerCell
+    #Recovered[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Recovered[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newRecoveredPerCell
+    Recovered[row, col] <- Recovered[row,col] + newRecoveredPerCell
+    #Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newDeadPerCell
+    Dead[row, col] <- Dead[row,col] + newDeadPerCell
+    
     #print(Exposed)
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
 
-  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  pal <- colorRampPalette(ramp)
-
-  plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
-       main = "Location of Initial Infections",
-       xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
-       legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-
-  plot(Level1Identifier, add = TRUE)
+  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  # pal <- colorRampPalette(ramp)
   # 
-  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
+  #      main = "Location of Initial Infections",
+  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # 
   # plot(Level1Identifier, add = TRUE)
-  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Deaths", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # 
+  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # plot(Level1Identifier, add = TRUE)
+  #
+  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Deaths", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # plot(Level1Identifier, add = TRUE)
   # 
   # plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabitable Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  # 
   # plot(Level1Identifier, add = TRUE)
 
   # writeRaster(Infected, "seed.tif", overwrite = TRUE)
@@ -502,13 +501,13 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
           # print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
 
-          # print(sum(Xf.OSI))
+           print(sum(Xf.OSI))
           # table(Xf.OSI)
 
           HXf <- Hmat%*%Xf.OSI
           #print(HXf)
           #print(dim(HXf))
-          #print(sum(HXf))
+          print(sum(HXf))
 
           #----------------------------------------------#
           # Importing DRC Ebola Incidence and Death Data #
@@ -538,9 +537,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           Dvector <- incidence
           
           # print(Dvector)
-          # print(dim(Dvector))
-          # sum(incidence)
-          # sum(death)
 
           #-------------------------------------#
           # Measurement error covariance matrix #
@@ -554,9 +550,9 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 
           M <- diag(as.vector(Dvector_revised))
           
-          #print(M)
+          # print(M)
           
-          #print(det(HQHt+M))
+          # print(det(HQHt+M))
 
           # library(MASS)
           # write.matrix(M, file = 'mes_err.csv')
@@ -575,8 +571,6 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # sum(QHt < 0)
           # sum(HQHt < 0)
 
-          # dim(HQHt)
-
           # levelplot(as.matrix(HQHt), col.regions= colorRampPalette(c("white", "red", "blue")))
 
           # diag(HQHt)
@@ -587,79 +581,58 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # log10(max(eigen(HQHt)$values)/min(eigen(HQHt)$values))
           #
           # det(solve(HQHt))
-          # eigen(solve(HQHt))$values # Inverse of HQHt is also positive definite since all of its eigenvalues are strictly positive.
+          # eigen(solve(HQHt))$values # Inverse of HQHt is also not positive definite since all of its eigenvalues are not strictly positive.
           # # sum(eigen(solve(HQHt))$values)
-          # thing <- Matrix::solve(HQHt + M, sparse = T, tol =  .Machine$double.eps.)
-          # 
-          # x <- 1:q
-          # y <- 1:q
-          # 
-          # # Create a grid of x and y values
-          # X <- matrix(x, nrow = q, ncol = q, byrow = TRUE)
-          # Y <- matrix(y, nrow = q, ncol = q, byrow = FALSE)
-          # 
-          # library(plot3D)
-          # persp3D(x = X, y = Y, z = thing, theta = 90, expand = 0.5,
-          #         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
-          #         colkey = list(side = 1))
-          # 
-          # print(thing[1,10])
-          # 
-          # ## HQHt is a square-symmetric matrix
-          # print(rowSums(thing))
-          # print(colSums(thing))
-          # # table(rowSums(HQHt))
-          # # table(colSums(HQHt))
-          # print(diag(thing))
-          # print('det(HQHt) is:')
-          # print(det(thing))
-          # print(sum(eigen(thing)$values))
+          
           # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
-          Ke.OSI <- QHt%*%solve(HQHt + M) 
-          # print(QHt[2325,10])
-          # print(QHt[2326,10])
-          # print(QHt[2327,10])
+          Ke.OSI <- QHt%*%solve(HQHt + M)
+          
+          # print(dim(Ke.OSI))
+          
           #write.matrix(Ke.OSI, file = 'Kal_Gain.csv') #solve((HQHt + M), t(QHt))
 
           #print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
 
-          # Questions
-          # Can the Kalman gain matrix have negative values?
-          # Can the innovation or measurement residual have negative values?
+          # Can the Kalman gain matrix have negative values? Yes.
+          # Can the innovation or measurement residual have negative values? Yes.
 
           #------------------------------------#
           # Innovation or measurement residual #
           #------------------------------------#
-          #HXf <- t(t(as.numeric(Dvector)))
+          # HXf <- t(t(as.numeric(Dvector)))
           # print(dim(QFull))
           # print(dim(Hmat))
           # print(dim(t(Hmat)))
-          # print(rowSums(t(Hmat)%*%Hmat)[1:20])
-          # print(diag(t(Hmat)%*%Hmat)[1:20])
-          
+          cbind(t(t(as.numeric(Dvector))), HXf, t(t(as.numeric(Dvector))) - HXf)
+
           Y <- t(t(as.numeric(Dvector))) - HXf
           
           print(Y)
-          
-          # print(dim(Ke.OSI))
-          # print(dim(HXf))
-          
-          #print((t(Hmat)%*%Hmat)[1920:1940,1920:1940])
-         
 
           #---------------------------------#
           # OSI update step: analysis state #
           #---------------------------------#
 
+          which(Xf.OSI > 0)
+          
+          #sum(Ke.OSI%*%Y < 0)
+          length(which(Ke.OSI%*%Y < 0))
+          length(which(Ke.OSI%*%Y > 0))
+          length(which(Ke.OSI%*%Y == 0))
+
           Xa.OSI <- Xf.OSI + Ke.OSI%*%Y
+
+          print(length(Xa.OSI[Xa.OSI < 0]))
+          
+          print(summary(Xa.OSI[Xa.OSI < 0]))
           
           # print(which.max(Xa.OSI))
-          # 
-          # print(Xa.OSI[2626:2826])
 
-          #Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero
+          Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero. TBW convinced me.
+          
+          print(length(Xa.OSI[Xa.OSI < 0]))
 
-          #Xa.OSI <- abs(Xf.OSI + Ke.OSI%*%Y)
+          # Xa.OSI <- abs(Xf.OSI + Ke.OSI%*%Y)
 
           # max(Ke.OSI%*%Y)
           # min(Ke.OSI%*%Y)
@@ -667,14 +640,14 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # sum(round(Ke.OSI%*%Y))
           #
           # print(sum(Xa.OSI))
-          # print(tail(sort(Xa.OSI), 30))
+          # print(tail(sort(Xa.OSI), 50))
           # print(sum(Xf.OSI))
 
           ###########################
 
           # sum(Xf.OSI < 0)         # Number of negative values in Xf.OSI.
           #
-          # sum(QHt$QHt < 0)        # Number of negative values in QHt.
+          # sum(QHt < 0)        # Number of negative values in QHt.
           #
           # sum(HQHt < 0)           # Number of negative values in HQHt.
           #
@@ -692,44 +665,28 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           # print(dim(HXf))
           # print(sum(HXf))
           #
-          # print(dim(Dvector))
-          # sum(incidence)
-          # sum(death)
-          #
           # HXa <- Hmat%*%Xa.OSI
           # print(dim(HXa))
           # print(sum(HXa))
 
           # cbind(HXf, round(HXa), HXa)
 
-          #print(cbind(Dvector, Hmat%*%Xf.OSI, Y, round(Hmat%*%Xa.OSI)))
+          # print(cbind(Dvector, Hmat%*%Xf.OSI, Y, round(Hmat%*%Xa.OSI)))
 
           # NOTE: when restacking make sure byrow = T.
-          
-          #I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = F) # TBW
 
           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
 
-           # I <- as.vector(t(I))
-           # I <- rev(I) 
-           # I <- matrix(I, nrow = nrows, ncol = ncols, byrow = F)
-          
           # print('max index is')
           # 
           # print(which(I == max(I), arr.ind=TRUE))
 
           # write.matrix(I, file = 'infected.csv')
 
-          # I <- raster(I)
-          # print(I)
-          # extent(I) <- extent(rs$rasterStack)
-          # print(I)
+          # I[I < 1] <- 0 # Prevent tiny values for the number of infectious
 
-          #I[I < 1] <- 0 # Prevent tiny values for the number of infectious
-
-          #D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = F) # TBW
           # D <- matrix(Xa.OSI[(p+1):(2*p)], nrow = nrows, ncol = ncols, byrow = T)
-          # print(sum(D))# AK
+          # print(sum(D))
 
           #D[D < 1] <- 0 # Prevent tiny values for the number of dead
 
@@ -749,12 +706,12 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
               if (rs$rasterStack$Inhabitable[i,j] == 0)
               {						  # Inhabitable
                 #I[i,j] <- D[i,j] <- 0
-                I[i,j]<-0
+                I[i,j] <- 0
               }
             }
           }
           
-          values(rs$rasterStack$Infected) <- I #matrix(rev(t(I)), nrows, ncols) #(apply(I, c(1,2), rev)) #I
+          values(rs$rasterStack$Infected) <- I
           # values(rs$rasterStack$Dead) <- D
           Infected <- rs$rasterStack$Infected
           # Dead <- rs$rasterStack$Dead
@@ -762,22 +719,19 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
           cumInfected <- cumInfected + sum(I - as.matrix(preDAInfected))
           
           # cumDead <- cumDead + sum(D - as.matrix(preDADead))
-          #print(sum(D - as.matrix(preDADead)))
+          # print(sum(D - as.matrix(preDADead)))
           
           # deadDiff <- preDADead - Dead
           # Recovered <- preDARecovered + deadDiff
-          #Exposed <- rat*Infected
+          # Exposed <- rat*Infected
           # exposedDiff <- preDAExposed - Exposed
           # Susceptible <- preDASusceptible + exposedDiff
           
           # rs$rasterStack$Recovered <- Recovered
-          #rs$rasterStack$Exposed <- Exposed
+          # rs$rasterStack$Exposed <- Exposed
           # rs$rasterStack$Susceptible <- Susceptible
-          
-          
-          # print('max index is')
-          # 
-          # print(which.max(Infected))
+
+          # print('max index is'); print(which.max(Infected))
          } # datarow cap
         } # If t is divisible by 7
       # elapsed week
@@ -787,15 +741,15 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # DA T/F
    ########## DA Ends ##########
 
-    # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
+  # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
 
-    # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
-    #
-    # plot(Level1Identifier, add = TRUE)
+  # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
+  #
+  # plot(Level1Identifier, add = TRUE)
 
   # Print a PNG for the infected variable
   rasterLayer <- "Infected"
-  print(allRasters[[1]]$rasterStack[[rasterLayer]])
+  #print(allRasters[[1]]$rasterStack[[rasterLayer]])
   maxRasterLayerVal <- 0
 
   for (t in 1:timestep){
@@ -826,7 +780,7 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
   #print(tail(summary))
 
   return(summary)
-#} # End of function
+} # End of function
 
 #--------------#
 # Example Call #
@@ -852,16 +806,17 @@ rasterAgg <- 10
 #------------#
 
 alpha <- 0.000035  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-beta  <- 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
+beta  <- 0.008 # 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
 gamma <- 1/7  # 0.1428571      # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
 sigma <- 1/36 # 0.02777778     # Daily fraction that move out of the infectious compartment to the recovered compartment
 delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious compartment to the dead compartment
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 189
+timestep <- 500
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
+seedRadius <- 1
 
 deterministic <- T
 isCropped <- T
@@ -877,16 +832,16 @@ varCovarFunc <- "DBD" # "Balgovind"
 QVar <- 1
 QCorrLength <- 0.8 # 1 
 nbhd <- 3
-psiDiag <- 0.1
+psiDiag <- 0.5
 
 #------------#
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 3, psiDiag = 0.1)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
 
 #-------------#
 # DA is FALSE #
 #-------------#
 
-#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon_nozones.csv", "observeddata/Ebola_Incidence_Data_nozones.xlsx", "observeddata/Ebola_Death_Data_nozones.xlsx", varCovarFunc = "DBD", QVar = 1, QCorrLength = 0.8)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
