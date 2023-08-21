@@ -321,6 +321,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           nLiving <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- 0
 
           nLiving <- Susceptible[i,j] + Vaccinated[i,j] + Exposed[i,j] + Infected[i,j] + Recovered[i,j]
+          
+          #print(Exposed[i,j])
 
           if (nLiving > 0)			# nLiving
           {
@@ -493,7 +495,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           preDARecovered <- Recovered
           preDADead <- Dead
           
-          rat <- sum(as.matrix(Exposed))/sum(as.matrix(Infected))
+          rat <- sum(as.matrix(Exposed))/(sum(as.matrix(Infected))+0.000000001)
 
           Infected <- as.matrix(Infected, byrow = T) # default is byrow = F
           
@@ -506,13 +508,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           # print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
 
-           print(sum(Xf.OSI))
+           #print(sum(Xf.OSI))
           # table(Xf.OSI)
 
           HXf <- Hmat%*%Xf.OSI
           #print(HXf)
           #print(dim(HXf))
-          print(sum(HXf))
+          #print(sum(HXf))
 
           #----------------------------------------------#
           # Importing DRC Ebola Incidence and Death Data #
@@ -612,7 +614,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           Y <- t(t(as.numeric(Dvector))) - HXf
           
-          #print(Y)
+          print(sum(Y))
+          print(sum(Ke.OSI%*%Y))
 
           #---------------------------------#
           # OSI update step: analysis state #
@@ -843,10 +846,10 @@ psiDiag <- 0.001
 # DA is TRUE #
 #------------#
 
-#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData_allempty.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
 
 #-------------#
 # DA is FALSE #
 #-------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)

@@ -66,6 +66,8 @@ genQ <- function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 
     #}
   }
   
+  diag(Q) <- ifelse(diag(Q) == 0, QVar, diag(Q))
+  
   # print(dim(Q))
   QFull <- Q
   

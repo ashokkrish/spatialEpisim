@@ -460,7 +460,7 @@ server <- function(input, output, session){
      validate(need(!is.null(input$selectedCountry), ""))
 
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = TRUE)
+       checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
      }
    })
    
@@ -480,7 +480,7 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   selected = c("Ituri", "Nord-Kivu"), multiple = TRUE,
+                   selected = c("Kwara", "Oyo"), multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
     
   })
@@ -496,7 +496,7 @@ server <- function(input, output, session){
                          label = strong("Epidemic Model"),
                          choiceValues = list("SEIRD","SVEIRD"),
                          choiceNames = list("SEIRD","SVEIRD"),
-                         selected = "SVEIRD", #character(0), # 
+                         selected = "SEIRD", #character(0), # 
                          inline = TRUE,
                          width = "1000px")
        }
@@ -830,7 +830,7 @@ server <- function(input, output, session){
    checkboxGroupInput(inputId = "selectedCompartments", 
                       "Select observable compartment(s)",
                       choices = c("V", "E", "I", "R", "D"),
-                      selected = c("I", "D"), 
+                      selected = c("I"), 
                       inline = TRUE,
                       )
    })
@@ -925,8 +925,8 @@ server <- function(input, output, session){
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
         numericInput(inputId = "QCorrLength",
                      label = "Choose correlation length parameter for generating Q:",
-                     value = 0.8,
-                     step = 0.01,
+                     value = 0.675,
+                     step = 0.001,
                      min = 0)
      }
    })
@@ -937,7 +937,7 @@ server <- function(input, output, session){
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
        numericInput(inputId = "QVar",
                     label = "Choose variance parameter for generating Q:",
-                    value = 1,
+                    value = 0.55,
                     step = 0.01,
                     min = 0)
      }
@@ -961,8 +961,8 @@ server <- function(input, output, session){
      if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
        numericInput(inputId = "psidiag",
                     label = HTML(paste("Choose a value for the zero elements of", TeX("&#936"), "to be set to:")),
-                    value = 0.1,
-                    step = 0.01,
+                    value = 0.001,
+                    step = 0.001,
                     min = 0)
      }
    })
@@ -1232,8 +1232,8 @@ server <- function(input, output, session){
     }
     
     SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
-                              alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, 
-                              deterministic = isDeterministic, isCropped, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
+                              alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
+                              deterministic = isDeterministic, isCropped = input$clipLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
                               dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
                               QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
     
@@ -1260,7 +1260,7 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
 
       png(outfile, width = 800, height = 600)
-      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData[1], seedNeighbourhood = 0)  # print the seed plot direct to UI
+      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = 0)  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Seed plot image not found")
@@ -1275,7 +1275,7 @@ server <- function(input, output, session){
     } else {
       population <- population#[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
     }
-    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Democratic Republic of Congo")
+    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
   })
   
   ##########################
