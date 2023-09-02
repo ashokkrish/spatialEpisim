@@ -54,8 +54,31 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
   
   for (i in 1:nHealthZones){
     #print(paste("Hposition:", Hpos[i]))
-
-    H[i, Hpos[i]] <- 1
+    H[i, Hpos[i]-1] <- 0.08
+    H[i, Hpos[i]+2] <- 0.04
+    H[i, Hpos[i]-2] <- 0.04
+    H[i, Hpos[i]+2*ncols] <- 0.04
+    H[i, Hpos[i]+2*ncols+1] <- 0.04
+    H[i, Hpos[i]+2*ncols-1] <- 0.04
+    H[i, Hpos[i]-2*ncols] <- 0.04
+    H[i, Hpos[i]+2+ncols] <- 0.04
+    H[i, Hpos[i]+2+2*ncols] <- 0.04
+    H[i, Hpos[i]+2-2*ncols] <- 0.04
+    H[i, Hpos[i]+2-ncols] <- 0.04
+    H[i, Hpos[i]-2+2*ncols] <- 0.04
+    H[i, Hpos[i]-1+2*ncols] <- 0.04
+    H[i, Hpos[i]+1+2*ncols] <- 0.04
+    H[i, Hpos[i]-2-ncols] <- 0.04
+    H[i, Hpos[i]-2-2*ncols] <- 0.04
+    H[i, Hpos[i]-2+ncols] <- 0.04
+    H[i, Hpos[i]+1] <- 0.08
+    H[i, Hpos[i]-ncols] <- 0.08
+    H[i, Hpos[i]+ncols] <- 0.08
+    H[i, Hpos[i]-ncols -1] <- 0.08
+    H[i, Hpos[i]-ncols +1] <- 0.08
+    H[i, Hpos[i]+ncols -1] <- 0.08
+    H[i, Hpos[i]+ncols +1] <- 0.08
+    H[i, Hpos[i]] <- 0.12
   }
   
   print(paste("Number of Health Zones:", nHealthZones))

@@ -243,8 +243,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
     
     QHt <- QFull%*%t(Hmat)
-    
-    QHt <- 0.1*QHt
 
     HQHt <- Hmat%*%QHt
     
@@ -558,6 +556,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           q <- nHealthZones*states_observable
 
           M <- diag(as.vector(Dvector_revised))
+          
+          #M <- M*exp(-t/10)
           
           # print(M)
           
