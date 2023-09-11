@@ -80,6 +80,7 @@ generateLIO2 <- function(rasterStack, sitRepData, states_observable = 2) {
     H[i, Hpos[i]+ncols +1] <- 0.08
     H[i, Hpos[i]] <- 0.12
   }
+  H <- H*5/7
   
   print(paste("Number of Health Zones:", nHealthZones))
 

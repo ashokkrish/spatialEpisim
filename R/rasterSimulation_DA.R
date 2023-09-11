@@ -823,7 +823,7 @@ delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious 
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 440
+timestep <- 689
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 seedRadius <- 1
@@ -848,10 +848,11 @@ psiDiag <- 0.001
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData_allempty.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma = 1/21, delta = 2/21, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData_allempty.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
 
 #-------------#
 # DA is FALSE #
 #-------------#
 
-#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry = "Czech Republic", directOutput, rasterAgg, alpha = 0.0015, beta = 0.05, gamma = 0.16, sigma = 0.065, delta = 0.002, radius, lambda, timestep = 120, seedFile = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedRadius, deterministic, isCropped = F, level1Names = NULL, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma = gamma/10, sigma, delta, radius, lambda, timestep = 200, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
