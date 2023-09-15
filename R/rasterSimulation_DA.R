@@ -481,7 +481,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           # print(paste("Xf is printed on day", t))
 
-          #---------------------#
+          #---------------------#),
           # OSI: forecast state #
           #---------------------#
           # We track the  "Infectious" and "Dead" epidemic compartments
@@ -804,7 +804,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 # sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength
 
 model <- "SVEIRD" # "SEIRD"
-startDate <- "2018-08-01" # today()
+startDate <- "2018-08-05" # today()
 selectedCountry <- "Democratic Republic of Congo"
 directOutput <- F
 rasterAgg <- 10
@@ -823,7 +823,7 @@ delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious 
 
 radius <- 1 # apply formula as discussed
 lambda <- 15
-timestep <- 689
+timestep <- 564
 
 seedFile <- "seeddata/COD_InitialSeedData.csv"
 seedRadius <- 1
@@ -848,7 +848,7 @@ psiDiag <- 0.001
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma = 1/21, delta = 2/21, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData_allempty.csv", seedRadius, deterministic, isCropped, level1Names, DA = T, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma = 1/21, delta = 2/21, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
 
 #-------------#
 # DA is FALSE #
