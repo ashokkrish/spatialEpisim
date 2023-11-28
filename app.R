@@ -449,7 +449,7 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = TRUE
+      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE
       )}
   })
    
@@ -480,7 +480,8 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   selected = c("Kwara", "Oyo"), multiple = TRUE,
+                   #selected = c("Kwara", "Oyo"),
+                   multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
     
   })
@@ -1275,7 +1276,7 @@ server <- function(input, output, session){
     } else {
       population <- population#[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
     }
-    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
+    #updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
   })
   
   ##########################
