@@ -210,7 +210,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # Read in H matrix #
     #------------------#
 
-    source("R/H_matrix.R") # read in H matrix code
+    source("R/H_Matrix.R") # read in H matrix code
 
     #Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
     Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  1)
