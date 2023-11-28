@@ -848,7 +848,7 @@ psiDiag <- 0.001
 # DA is TRUE #
 #------------#
 
-SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma = 1/21, delta = 2/21, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
+#SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma = 1/21, delta = 2/21, radius, lambda, timestep, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
 
 #-------------#
 # DA is FALSE #
