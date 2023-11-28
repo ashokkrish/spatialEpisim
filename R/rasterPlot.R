@@ -141,10 +141,10 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
 #---------------------------------------#
 # Sets the working directory for R file #
 #---------------------------------------#
-setDirectory <- function() {
-  setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE required
-  getwd() # Path to the working directory
-}
+# setDirectory <- function() {
+#   setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE required
+#   getwd() # Path to the working directory
+# }
 
 #-----------------------------------------------#
 # Extracts a palette from a formatted .png file #

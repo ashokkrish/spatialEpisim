@@ -25,7 +25,7 @@ WorldPop <- raster(paste0(tifFolder, tifFileName))
 
 WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # Delete this line for clear plot. Check!!!
 
-# WorldPop <- terra::rast(paste0(tifFolder, tifFileName)) 
+# WorldPop <- terra::rast(paste0(tifFolder, tifFileName))
 # Use the above line if fully switching over to terra R package completely
 # Note: rasterBasePlot.R was developed with the terra::rast()
 # Error in (function (classes, fdef, mtable) :

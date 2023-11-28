@@ -480,7 +480,7 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   #selected = c("Kwara", "Oyo"),
+                   selected = c("Kwara", "Oyo"),
                    multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
     
@@ -1274,9 +1274,9 @@ server <- function(input, output, session){
     if(input$filterLMIC){
       population <- population[population$LMIC == 'TRUE',]
     } else {
-      population <- population#[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
+      population <- population #[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
     }
-    #updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
+    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
   })
   
   ##########################
