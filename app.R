@@ -4,6 +4,7 @@ shhh(library(av))
 shhh(library(bslib))
 shhh(library(cptcity))
 shhh(library(countrycode))
+shhh(library(deSolve))
 shhh(library(dplyr))
 shhh(library(ggplot2))
 shhh(library(latex2exp))
@@ -18,16 +19,17 @@ shhh(library(rasterVis))
 shhh(library(readxl))
 shhh(library(writexl))
 shhh(library(rgdal, warn.conflicts=FALSE))
+shhh(library(sf))     # classes and functions for vector data
 shhh(library(shiny))
 shhh(library(shinyalert))
-shhh(library(shinyvalidate))
-shhh(library(shinyjs))
 shhh(library(shinyhelper))
+shhh(library(shinyjs))
+shhh(library(shinyvalidate))
 shhh(library(shinyWidgets))
 shhh(library(sp))
-shhh(library(sf))     # classes and functions for vector data
 shhh(library(stringr))
 shhh(library(terra, warn.conflicts=FALSE))  # suppressWarnings(suppressMessages(library(terra)))
+shhh(library(tidyverse))
 shhh(library(tinytex))
 
 population <- read_excel("misc/population.xlsx", 1)
@@ -72,10 +74,11 @@ ui <- fluidPage(
   #theme = bs_theme(bootswatch = "slate"),
   div(
     class = "invisible",
-    titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
+    titlePanel("Mathematical Modelling of Infectious Diseases")
+    #titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
   ),
   
-  navbarPage(title = span("Spatial Tracking of Infectious Diseases using Mathematical Models", style = "color:#000000; font-weight:bold; font-size:15pt"),
+  navbarPage(title = span("Mathematical Modelling of Infectious Diseases", style = "color:#000000; font-weight:bold; font-size:15pt"),
              
              tabPanel(title = "Model",
                       sidebarLayout(
@@ -85,93 +88,234 @@ ui <- fluidPage(
                           div(
                             id = "dashboard",
                             
-                            uiOutput("countryDropdown"),
-                          
-                            checkboxInput(inputId = "filterLMIC", label = strong("Show LMIC only"), value = FALSE),
+                            radioButtons(inputId = "modellingApproach",
+                                         label = strong("Modelling Approach"),
+                                         choiceValues = list("1", "2"),
+                                         choiceNames = list("Non-spatial Modelling", "Spatial Modelling"),
+                                         selected = "2",
+                                         inline = TRUE),
                             
-                            uiOutput("clipStateCheckbox"),
-                            
-                            conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
-
-                            uiOutput("aggInput"),
-                            
-                            uiOutput("modelRadio"),
-                            
-                            uiOutput("stochasticRadio"),
-                            
-                            conditionalPanel(
-                              id = "SEIRD_SVEIRD",
-                              withMathJax(),
-
-                              h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
-                              
-                              conditionalPanel(
-                                id = "SVEIRD",
-                                withMathJax(),
-                                condition = "input.modelSelect == 'SVEIRD'", 
-                                
-                                uiOutput("alphaInput")
-                              ),
-                              
-                              condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
-                              
-                              uiOutput("betaInput"),
+                            conditionalPanel( #### Non-spatial Modeling ----
+                                              condition = "input.modellingApproach == '1'",
    
-                              uiOutput("gammaInput"),
-                              
-                              uiOutput("sigmaInput"),
-                              
-                              uiOutput("deltaInput"),
-                              
-                              uiOutput("lambdaInput"),
-                              
-                              uiOutput("seedUpload"),
+                                pickerInput(
+                                  inputId = "nonspatialmodelSelect",
+                                  label = strong(("Epidemic Model")),
+                                  choices = list("SIR", "SIRD", "SEIR", "SEIRD", "SIR-Stochastic"),
+                                  multiple = FALSE,
+                                  selected = "SIR", #NULL,
+                                  options = pickerOptions(
+                                    actionsBox = TRUE,
+                                    title = "Please select a model")
+                                ),
+                                
+                                # radioButtons(inputId = "qValue",
+                                #              label = strong("Model Formulation"),
+                                #              choiceValues = list("1", "2"),
+                                #              choiceNames = list("True-Mass Action", "Pseudo-Mass Action"),
+                                #              selected = "2",
+                                #              inline = TRUE,
+                                #              width = "1000px"),
+                                # 
+                                # radioButtons(inputId = "nonspatialstochasticSelect",
+                                #              label = strong("Model Stochasticity"),
+                                #              choiceValues = list("Deterministic", "Stochastic"),
+                                #              choiceNames = list("Deterministic", "Stochastic"),
+                                #              selected = "Deterministic",
+                                #              inline = TRUE,
+                                #              width = "1000px"),
+                                
+                                # checkboxInput(
+                                #   inputId = "muValue",
+                                #   label = strong("Include Vital Dynamics"),
+                                #   value = FALSE,
+                                # ),
+                                # 
+                                # withMathJax(),
+                                # conditionalPanel(
+                                #   condition = "input.muValue == '1'",
+                                #         numericInput(
+                                #           inputId = "muBirth",
+                                #           label = "Birth Rate (\\( \\mu_B\\))",
+                                #           min = 0,
+                                #           #max = 1,
+                                #           step = 0.0001,
+                                #           value = 0.00,
+                                #         ),
+                                #   
+                                #         numericInput(
+                                #           inputId = "muDeath",
+                                #           label = "Death Rate due to Natural Causes (\\( \\mu_D\\))",
+                                #           min = 0,
+                                #           #max = 1,
+                                #           step = 0.0001,
+                                #           value = 0.00,
+                                #         )
+                                # ),
+                                
+                                # conditionalPanel(
+                                #   id = "SI_versus_SEI",
 
-                              uiOutput("seedDataButton"),
-                              br(),
-
-                              uiOutput("startDateInput"),
-                              
-                              uiOutput("timestepInput")),
-
-                            # actionButton("go","Run Simulation", 
-                            #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            # actionButton("resetAll","Reset Values", 
-                            #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                  # conditionalPanel(
+                                  #   withMathJax(),
+                                  #   condition = "input.nonspatialmodelSelect == 'SIR'", 
+                                
+                                withMathJax(),
+                                h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
+                                
+                                    numericInput(
+                                      inputId = "betaSIR",
+                                      label = "Transmission Rate (\\( \\beta\\))",
+                                      min = 0,
+                                      #max = 1,
+                                      step = 0.00001,
+                                      value = 0.001,
+                                    ),
+                                
+                                    numericInput(
+                                      inputId = "gammaSIR",
+                                      label = "Removal Rate  (\\( \\gamma\\))",
+                                      min = 0,
+                                      #max = 5,
+                                      step = 0.00001,
+                                      value = 0.1,
+                                    ),
+                                
+                                h5("Model Inputs:", style="font-weight: bold; font-size:11.5pt"),
+                                
+                                    numericInput(
+                                      inputId = "populationSIR",
+                                      label = "Total Population (N)",
+                                      value = 500,
+                                      min = 1,
+                                      #max = maxPopulation,
+                                      step = 1,
+                                    ),
+                                    numericInput(
+                                      inputId = "susceptibleSIR",
+                                      label = "Susceptible (S)",
+                                      value = 499,
+                                      min = 1,
+                                      #max = maxPopulation,
+                                      step = 1,
+                                    ),
+                                    numericInput(
+                                      inputId = "infectedSIR",
+                                      label = "Infected (I)",
+                                      value = 1,
+                                      min = 1,
+                                      #max = maxPopulation,
+                                      step = 1,
+                                    ),
+                                    numericInput(
+                                      inputId = "recoveredSIR",
+                                      label = "Recovered (R)",
+                                      value = 0,
+                                      min = 0,
+                                      #max = maxPopulation,
+                                      step = 1,
+                                    ),
+                                  #),
+                                #),
+                                
+                                actionButton("nonspatialgo","Run Simulation", 
+                                             style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                actionButton("nonspatialresetAll","Reset Values", 
+                                             style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                              
+                            ), #"input.modellingApproach == '1'"
                             
-                            br(),
-                            br(),
-                            
-                            uiOutput("dataAssimCheckbox"),
+                            conditionalPanel( #### Spatial Modeling ----
+                                              condition = "input.modellingApproach == '2'",
 
-                            conditionalPanel(condition = "input.dataAssim == '1'",  
-                                             uiOutput("dataAssimCmpts"),
-                                             uiOutput("dataAssimZones"),
-                                             uiOutput("dataAssimFileI"),
-                                             uiOutput("dataAssimFileD"),
-                                             
-                                             h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
-                                             
-                                             uiOutput("varCovarFunc"),
-                                             uiOutput("selectRho"),
-                                             uiOutput("selectSigma"),
-                                             uiOutput("selectNbhd"),
-                                             
-                                             h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
-                                             
-                                             uiOutput("selectPsiDiag"),
-                                             
-                                             # actionButton("goDA","Run Simulation with DA",
-                                             #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-                                             ),
-                                             # br(),
-                                             # actionButton("resetAllDA","Reset Values", 
-                                             #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("go","Run Simulation", 
-                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("resetAll","Reset Values", 
-                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            
+                                uiOutput("countryDropdown"),
+                                
+                                checkboxInput(inputId = "filterLMIC", label = strong("Show LMIC only"), value = FALSE),
+                                
+                                uiOutput("clipStateCheckbox"),
+                                
+                                conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
+                                
+                                uiOutput("aggInput"),
+                                
+                                uiOutput("modelRadio"),
+                                
+                                uiOutput("stochasticRadio"),
+                                
+                                conditionalPanel(
+                                  id = "SEIRD_SVEIRD",
+                                  withMathJax(),
+                                  
+                                  h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
+                                  
+                                  conditionalPanel(
+                                    id = "SVEIRD",
+                                    withMathJax(),
+                                    condition = "input.modelSelect == 'SVEIRD'", 
+                                    
+                                    uiOutput("alphaInput")
+                                  ),
+                                  
+                                  condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
+                                  
+                                  uiOutput("betaInput"),
+                                  
+                                  uiOutput("gammaInput"),
+                                  
+                                  uiOutput("sigmaInput"),
+                                  
+                                  uiOutput("deltaInput"),
+                                  
+                                  uiOutput("lambdaInput"),
+                                  
+                                  uiOutput("seedUpload"),
+                                  
+                                  uiOutput("seedDataButton"),
+                                  br(),
+                                  
+                                  uiOutput("startDateInput"),
+                                  
+                                  uiOutput("timestepInput")
+                                  ),
+                                
+                                # actionButton("go","Run Simulation", 
+                                #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                # actionButton("resetAll","Reset Values", 
+                                #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                
+                                br(),
+                                br(),
+                                
+                                uiOutput("dataAssimCheckbox"),
+                                
+                                conditionalPanel(condition = "input.dataAssim == '1'",  
+                                                 uiOutput("dataAssimCmpts"),
+                                                 uiOutput("dataAssimZones"),
+                                                 uiOutput("dataAssimFileI"),
+                                                 uiOutput("dataAssimFileD"),
+                                                 
+                                                 h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
+                                                 
+                                                 uiOutput("varCovarFunc"),
+                                                 uiOutput("selectRho"),
+                                                 uiOutput("selectSigma"),
+                                                 uiOutput("selectNbhd"),
+                                                 
+                                                 h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
+                                                 
+                                                 uiOutput("selectPsiDiag"),
+                                                 
+                                                 # actionButton("goDA","Run Simulation with DA",
+                                                 #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                                ),
+                                # br(),
+                                # actionButton("resetAllDA","Reset Values", 
+                                #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                actionButton("go","Run Simulation", 
+                                             style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                actionButton("resetAll","Reset Values", 
+                                             style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            ), # "input.modellingApproach == '2'",
                           ),
                         ), 
                         
@@ -217,10 +361,10 @@ ui <- fluidPage(
                                                imageOutput("fracSusPlot"),
                                                #downloadButton(outputId = "downloadPlot", label = "Save Image")
                                       )
-                          )
-                        ),
-                      )
-             ),
+                                  ) # tabsetPanel
+                            ), # mainPanel
+                      ) # sidebarLayout
+             ), # Model tabPanel
              
              tabPanel("Authors",
                       h3("Research Team", style= "font-weight:bold"),
@@ -247,7 +391,7 @@ ui <- fluidPage(
                       
                       br(),
                       
-                      p(span("Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
+                      p(span("Michael, Myer, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
@@ -272,12 +416,25 @@ ui <- fluidPage(
                            It is not a medical predictor, and should be used for informational and research purposes only.
                            Please carefully consider the parameters you choose. Interpret and use the simulated results responsibly.
                            Authors are not liable for any direct or indirect consequences of this usage.")
-             )
-      )
+             ) # Authors tabPanel
+  ) # navbarPage
 )
 
 server <- function(input, output, session){
   iv <- InputValidator$new()
+  
+  # Non-spatial Modelling
+  
+  # muValue
+  iv$add_rule("muBirth", sv_required())
+  iv$add_rule("muBirth", sv_gte(0))
+  #iv$add_rule("muBirth", sv_lte(0.1))
+  
+  iv$add_rule("muDeath", sv_required())
+  iv$add_rule("muDeath", sv_gte(0))
+  #iv$add_rule("muDeath", sv_lte(0.1))
+
+  # Spatial Modelling
   
   iv$add_rule("alpha", sv_required())
   iv$add_rule("alpha", sv_gte(0))
@@ -293,7 +450,7 @@ server <- function(input, output, session){
   
   iv$add_rule("delta", sv_required())
   iv$add_rule("delta", sv_gte(0))
-
+  
   iv$add_rule("lambda", sv_required())
   iv$add_rule("lambda", sv_gte(0))
   
@@ -304,6 +461,16 @@ server <- function(input, output, session){
   iv$add_rule("timestep", sv_gt(0))
   
   iv$enable()
+  
+  # Reset vital dynamics when not checked off
+  observe({
+    input$muValue
+    updateNumericInput(session, "muBirth", value = 0)
+  })
+  observe({
+    input$muValue
+    updateNumericInput(session, "muDeath", value = 0)
+  })
   
   values <- reactiveValues()
   values$allow_simulation_run <- TRUE
@@ -352,8 +519,8 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$go, {
     output$modelImg <- renderImage({
-        return(list(src= "www/ModelEquations.png",
-                    contentType = "image/png"))
+      return(list(src= "www/ModelEquations.png",
+                  contentType = "image/png"))
     }, deleteFile = FALSE)
   })
   
@@ -361,15 +528,15 @@ server <- function(input, output, session){
   # Output flowchart image to the app UI                                     #
   ############################################################################ 
   observeEvent(input$go, {
-  output$flowchartImg <- renderImage({
-    if (input$modelSelect == "SEIRD"){
-      return(list(src= "www/SEIRD.png",
-                  contentType = "image/png"))
-    }
-    else if (input$modelSelect == "SVEIRD"){
-      return(list(src = "www/SVEIRD.png",
-                  contentType = "image/png"))
-    }
+    output$flowchartImg <- renderImage({
+      if (input$modelSelect == "SEIRD"){
+        return(list(src= "www/SEIRD.png",
+                    contentType = "image/png"))
+      }
+      else if (input$modelSelect == "SVEIRD"){
+        return(list(src = "www/SVEIRD.png",
+                    contentType = "image/png"))
+      }
     }, deleteFile = FALSE)
   })
   
@@ -429,7 +596,7 @@ server <- function(input, output, session){
   ############################################################################    
   # This static ui field is in server since other dynamic ui elements need it#
   ############################################################################
-  output$countryDropdown <- renderUI( {
+  output$countryDropdown <- renderUI({
     pickerInput(
       inputId = "selectedCountry",
       labelMandatory (strong("Country")), 
@@ -447,31 +614,31 @@ server <- function(input, output, session){
   ############################################################################
   output$clipStateCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-
+    
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE
       )}
   })
-   
-   ############################################################################     
-   # Checkbox for Data Assimilation                                           #
-   ############################################################################ 
-   output$dataAssimCheckbox <- renderUI({
-     validate(need(!is.null(input$selectedCountry), ""))
-
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
-     }
-   })
-   
+  
+  ############################################################################     
+  # Checkbox for Data Assimilation                                           #
+  ############################################################################ 
+  output$dataAssimCheckbox <- renderUI({
+    validate(need(!is.null(input$selectedCountry), ""))
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
+    }
+  })
+  
   ############################################################################    
   # Create select box for choosing input country                             #
   ############################################################################      
   output$Level1Ui <- renderUI({
     validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
-
+    
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
-
+    
     if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
       level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1 
     } else {
@@ -490,34 +657,34 @@ server <- function(input, output, session){
   # Radio button for SEIRD vs SVEIRD Model                                   #
   ############################################################################   
   output$modelRadio <- renderUI({
-       validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-       
-       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-            radioButtons(inputId = "modelSelect",
-                         label = strong("Epidemic Model"),
-                         choiceValues = list("SEIRD","SVEIRD"),
-                         choiceNames = list("SEIRD","SVEIRD"),
-                         selected = "SEIRD", #character(0), # 
-                         inline = TRUE,
-                         width = "1000px")
-       }
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      radioButtons(inputId = "modelSelect",
+                   label = strong("Epidemic Model"),
+                   choiceValues = list("SEIRD","SVEIRD"),
+                   choiceNames = list("SEIRD","SVEIRD"),
+                   selected = "SEIRD", #character(0), # 
+                   inline = TRUE,
+                   width = "1000px")
+    }
   })
   
   ############################################################################     
   # Radio button for Deterministic vs Stochastic Model                       #
   ############################################################################  
   output$stochasticRadio <- renderUI({
-       validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-       
-       if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-            radioButtons(inputId = "stochasticSelect",
-                         label = strong("Model Stochasticity"),
-                         choiceValues = list("Deterministic", "Stochastic"),
-                         choiceNames = list("Deterministic", "Stochastic"),
-                         selected = "Deterministic", #character(0), #
-                         inline = TRUE,
-                         width = "1000px")
-            }
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      radioButtons(inputId = "stochasticSelect",
+                   label = strong("Model Stochasticity"),
+                   choiceValues = list("Deterministic", "Stochastic"),
+                   choiceNames = list("Deterministic", "Stochastic"),
+                   selected = "Deterministic", #character(0), #
+                   inline = TRUE,
+                   width = "1000px")
+    }
   })
   
   ############################################################################    
@@ -530,29 +697,29 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"alpha"])
-      } else if (input$selectedCountry == "Nigeria"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"alpha"])
-      } else if (input$selectedCountry == "Uganda"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"alpha"])}
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"alpha"])
+        } else if (input$selectedCountry == "Nigeria"){
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"alpha"])
+        } else if (input$selectedCountry == "Uganda"){
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"alpha"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"alpha"])}
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"alpha"])
-      } else if (input$selectedCountry == "Nigeria"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"alpha"])
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"alpha"])}
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"alpha"])
+        } else if (input$selectedCountry == "Nigeria"){
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"alpha"])
         }else if (input$selectedCountry == "Uganda"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
-    }
-    
-    numericInput(inputId = "alpha",
-                label = HTML(paste("Daily Vaccination Rate ", TeX("&#945"))),
-                value = alphaValue, min = 0, max = 1, step = 0.00001)
+          alphaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"alpha"])}
+      }
+      
+      numericInput(inputId = "alpha",
+                   label = HTML(paste("Daily Vaccination Rate ", TeX("&#945"))),
+                   value = alphaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -566,29 +733,29 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"beta"])
-      } else if (input$selectedCountry == "Nigeria"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"beta"])}
-      else if (input$selectedCountry == "Uganda"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"beta"])}
-      else if (input$selectedCountry == "Democratic Republic of Congo"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"beta"])}
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"beta"])
-      } else if (input$selectedCountry == "Nigeria"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"beta"])}
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"beta"])
+        } else if (input$selectedCountry == "Nigeria"){
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"beta"])}
         else if (input$selectedCountry == "Uganda"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"beta"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
-    }
-    
-    numericInput(inputId = "beta",
-                label = HTML(paste("Daily Exposure Rate ", TeX("&#946"))), 
-                value = betaValue, min = 0, max = 1, step = 0.00001)
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"beta"])}
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"beta"])
+        } else if (input$selectedCountry == "Nigeria"){
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"beta"])}
+        else if (input$selectedCountry == "Uganda"){
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+          betaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"beta"])}
+      }
+      
+      numericInput(inputId = "beta",
+                   label = HTML(paste("Daily Exposure Rate ", TeX("&#946"))), 
+                   value = betaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -602,31 +769,29 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"gamma"])
-      } else if (input$selectedCountry == "Nigeria"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"gamma"])}
-      else if (input$selectedCountry == "Uganda"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"gamma"])}
-      else if (input$selectedCountry == "Democratic Republic of Congo"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"gamma"])}
-      
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"gamma"])
-      } else if (input$selectedCountry == "Nigeria"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"gamma"])}
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"gamma"])
+        } else if (input$selectedCountry == "Nigeria"){
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"gamma"])}
         else if (input$selectedCountry == "Uganda"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"gamma"])}
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"gamma"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"gamma"])}
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"gamma"])}
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"gamma"])
+        } else if (input$selectedCountry == "Nigeria"){
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"gamma"])}
+        else if (input$selectedCountry == "Uganda"){
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"gamma"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+          gammaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"gamma"])}
+      }
       
-    }
-
-    numericInput(inputId = "gamma",
-                 label = HTML(paste("Daily Vaccination Rate ", TeX("&#947"))), 
-                 value = gammaValue, min = 0, max = 1, step = 0.00001)
+      numericInput(inputId = "gamma",
+                   label = HTML(paste("Daily Vaccination Rate ", TeX("&#947"))), 
+                   value = gammaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -640,30 +805,29 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"sigma"])
-      } else if (input$selectedCountry == "Nigeria"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"sigma"])}
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"sigma"])
+        } else if (input$selectedCountry == "Nigeria"){
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"sigma"])}
         else if (input$selectedCountry == "Uganda"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"sigma"])}
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"sigma"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"sigma"])}
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"sigma"])}
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"sigma"])
+        } else if (input$selectedCountry == "Nigeria"){
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"sigma"])}
+        else if (input$selectedCountry == "Uganda"){
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
+        else if (input$selectedCountry == "Democratic Republic of Congo"){
+          sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
+      }
       
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"sigma"])
-      } else if (input$selectedCountry == "Nigeria"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"sigma"])}
-        else if (input$selectedCountry == "Uganda"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
-        else if (input$selectedCountry == "Democratic Republic of Congo"){
-        sigmaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"sigma"])}
-    }
-    
-    numericInput(inputId = "sigma",
-                label = HTML(paste("Daily Recovery Rate ", TeX("&#963"))), 
-                value = sigmaValue, min = 0, max = 1, step = 0.00001)
+      numericInput(inputId = "sigma",
+                   label = HTML(paste("Daily Recovery Rate ", TeX("&#963"))), 
+                   value = sigmaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -677,29 +841,29 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"delta"])
-      } else if (input$selectedCountry == "Nigeria"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"delta"])}
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"delta"])
+        } else if (input$selectedCountry == "Nigeria"){
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"delta"])}
         else if (input$selectedCountry == "Uganda"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"delta"])
-      } else if (input$selectedCountry == "Nigeria"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"delta"])}
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"delta"])}
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"delta"])
+        } else if (input$selectedCountry == "Nigeria"){
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"delta"])}
         else if (input$selectedCountry == "Uganda"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
-    }
-
-    numericInput(inputId = "delta",
-                 label = HTML(paste("Daily Death Rate ", TeX("&#948"))),
-                 value = deltaValue, min = 0, max = 1, step = 0.00001)
+          deltaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"delta"])}
+      }
+      
+      numericInput(inputId = "delta",
+                   label = HTML(paste("Daily Death Rate ", TeX("&#948"))),
+                   value = deltaValue, min = 0, max = 1, step = 0.00001)
     }
   })
   
@@ -718,53 +882,51 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"lambda"])
-      } else if (input$selectedCountry == "Nigeria"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"lambda"])}
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"lambda"])
+        } else if (input$selectedCountry == "Nigeria"){
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"lambda"])}
         else if (input$selectedCountry == "Uganda"){
-        lambdaValue <- 5}
+          lambdaValue <- 5}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"lambda"])}
-      
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"lambda"])
-      } else if (input$selectedCountry == "Nigeria"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"lambda"])
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SEIRD")[1,"lambda"])}
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"lambda"])
+        } else if (input$selectedCountry == "Nigeria"){
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"lambda"])
         }
         else if (input$selectedCountry == "Uganda"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
         else if (input$selectedCountry == "Democratic Republic of Congo"){
-        lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
-    }
-    
-    numericInput(inputId = "lambda",
-                 label = HTML(paste("Distance Parameter", TeX("&#955"))),
-                value = lambdaValue,min = 1, max = 50, step = 1)
+          lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
+      }
+      
+      numericInput(inputId = "lambda",
+                   label = HTML(paste("Distance Parameter", TeX("&#955"))),
+                   value = lambdaValue,min = 1, max = 50, step = 1)
     }
   })
   
   ############################################################################    
   #                     Upload Seed Data                                     #
   ############################################################################ 
-  
   output$seedUpload <- renderUI({
-
-        validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-        fileInput(inputId = "seedData", labelMandatory("Upload Seed Data:"), placeholder = "Upload seed data (.csv or .xls or .xlsx)",
-                  accept = c(
-                    "text/csv",
-                    "text/comma-separated-values,text/plain",
-                    ".csv",
-                    ".xls",
-                    ".xlsx"),
-                  )
-
+      fileInput(inputId = "seedData", labelMandatory("Upload Seed Data:"), placeholder = "Upload seed data (.csv or .xls or .xlsx)",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"),
+      )
+      
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
     }
   })
@@ -779,28 +941,28 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-    if(input$modelSelect == "SEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"startDate"]
-      } else if (input$selectedCountry == "Nigeria"){
-        startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"startDate"]
+      if(input$modelSelect == "SEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SEIRD")[1,"startDate"]
+        } else if (input$selectedCountry == "Nigeria"){
+          startDateInput <- "2020-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SEIRD")[1,"startDate"]
+        }
+      } else if (input$modelSelect == "SVEIRD"){
+        if (input$selectedCountry == "Czech Republic"){
+          startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"startDate"]
+        } else if (input$selectedCountry == "Nigeria"){
+          startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"startDate"]
+        }
       }
-    } else if (input$modelSelect == "SVEIRD"){
-      if (input$selectedCountry == "Czech Republic"){
-        startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "CZE" & model == "SVEIRD")[1,"startDate"]
-      } else if (input$selectedCountry == "Nigeria"){
-        startDateInput <- "2021-09-01" #filter(epiparms, ISONumeric == "NGA" & model == "SVEIRD")[1,"startDate"]
-      }
-    }
       if (input$selectedCountry == "Uganda") {
         startDateInput <- "2022-10-20"
       }
       else if (input$selectedCountry == "Democratic Republic of Congo") {
         startDateInput <- "2018-08-01"}
-
-    dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
-              format = "yyyy-mm-dd", startview = "month", weekstart = 0,
-              language = "en", width = NULL)
+      
+      dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
+                format = "yyyy-mm-dd", startview = "month", weekstart = 0,
+                language = "en", width = NULL)
     }
   })
   
@@ -810,177 +972,177 @@ server <- function(input, output, session){
   output$timestepInput <- renderUI({
     timestepValue <- 10
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-       
-         if (input$selectedCountry == "Czech Republic" || input$selectedCountry == "Nigeria"){timestepValue = 120}
-         else if (input$selectedCountry == "Democratic Republic of Congo") {timestepValue = 440}
-         else if (input$selectedCountry == "Uganda") {timestepValue = 63}
-
-         if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-         numericInput(inputId = "timestep",
-                      label = "Number of Iterations (days)",
-                      min = 1, max = 3650, value = timestepValue, step = 1)}
-       }
+    
+    if (input$selectedCountry == "Czech Republic" || input$selectedCountry == "Nigeria"){timestepValue = 120}
+    else if (input$selectedCountry == "Democratic Republic of Congo") {timestepValue = 440}
+    else if (input$selectedCountry == "Uganda") {timestepValue = 63}
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      numericInput(inputId = "timestep",
+                   label = "Number of Iterations (days)",
+                   min = 1, max = 3650, value = timestepValue, step = 1)}
+  }
   )
-   ############################################################################     
-   # Data Assimilation settings                                               #
-   ############################################################################
-
-   output$dataAssimCmpts <- renderUI({
-     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-   
-   checkboxGroupInput(inputId = "selectedCompartments", 
-                      "Select observable compartment(s)",
-                      choices = c("V", "E", "I", "R", "D"),
-                      selected = c("I"), 
-                      inline = TRUE,
-                      )
-   })
-   showI <- reactive({
-     "I" %in% input$selectedCompartments
-   })
-   
-   showD <- reactive({
-     "D" %in% input$selectedCompartments
-   })
-   
-   output$dataAssimZones <- renderUI({
-     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-     if (!is.null(input$selectedCountry) && input$selectedCountry != "") {
-       fileInput(inputId = "dataAssimZones", labelMandatory ("Upload the lat/lon coordinates of reporting health zones (.csv or .xls or .xlsx)"),
-                 accept = c(
-                   "text/csv",
-                   "text/comma-separated-values,text/plain",
-                   ".csv",
-                   ".xls",
-                   ".xlsx"),)
-     }
-   })
-   
-   observeEvent(input$dataAssimZones, {
-     print(read.csv(input$dataAssimZones$datapath))
-     print(as.character(input$dataAssimZones[1]))})
-   
-   output$dataAssimFileI <- renderUI({
-     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-     if (showI()) {
-     fileInput(inputId = "assimIData", labelMandatory ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
-               accept = c(
-                 "text/csv",
-                 "text/comma-separated-values,text/plain",
-                 ".csv",
-                 ".xls",
-                 ".xlsx"), )
-     }
-   })
-   output$dataAssimFileD <- renderUI({
-     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-     if (showD()) {
-       fileInput(inputId = "assimDData", labelMandatory ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
-                 accept = c(
-                   "text/csv",
-                   "text/comma-separated-values,text/plain",
-                   ".csv",
-                   ".xls",
-                   ".xlsx"),
-                 )
-     }
-   })
-   # output$dataAssimCmpts <- renderUI({
-   #   validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-   #   
-   #   selectizeInput(inputId = "level1List", "Select observable compartments",
-   #                  choices = c("V", "E", "I", "R", "D"),
-   #                  selected = "", multiple = TRUE,
-   #                  options = list(placeholder = ""))
-   #})
-   
-   ############################################################################    
-   # Change the function which generates the Q matrix     #
-   ############################################################################  
-   output$varCovarFunc <- renderUI({
-     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-     
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       selectInput(inputId = "covarianceSelect",
-                    label = HTML("<span class='label-text'>Choose variance-covariance function:</span>"),
-                    choices = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
-                      # HTML("<span class='option-text'>Distance-Based Decay</span>"),
-                      # HTML("<span class='option-text'>Balgovind</span>"),
-                      # HTML("<span class='option-text'>Exponential</span>"),
-                      # HTML("<span class='option-text'>Gaussian</span>"),
-                      # HTML("<span class='option-text'>Spherical</span>")
-                    #),
-                    selected = "DBD", #character(0), #
-                    width = "1000px",
-                    multiple = FALSE)
-     }
-   })
-   
-   ############################################################################    
-   # Adjust parameter values for the variance=covariance function     #
-   ############################################################################  
-   
-   output$selectRho <- renderUI({
-     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-     
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-        numericInput(inputId = "QCorrLength",
-                     label = "Choose correlation length parameter for generating Q:",
-                     value = 0.675,
-                     step = 0.001,
-                     min = 0)
-     }
-   })
-   
-   output$selectSigma <- renderUI({
-     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-     
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       numericInput(inputId = "QVar",
-                    label = "Choose variance parameter for generating Q:",
-                    value = 0.55,
-                    step = 0.01,
-                    min = 0)
-     }
-   })
-   
-   output$selectNbhd <- renderUI({
-     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-     
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       numericInput(inputId = "nbhd",
-                    label = "Choose neighborhood parameter for generating Q:",
-                    value = 3,
-                    step = 1,
-                    min = 0)
-     }
-   })
-   
-   output$selectPsiDiag <- renderUI({
-     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-     
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       numericInput(inputId = "psidiag",
-                    label = HTML(paste("Choose a value for the zero elements of", TeX("&#936"), "to be set to:")),
-                    value = 0.001,
-                    step = 0.001,
-                    min = 0)
-     }
-   })
-   
-   ############################################################################    
-   # Change the recommended aggregation factor for slider dynamically         #
-   ############################################################################  
-   output$aggInput <- renderUI({
-     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-     
-     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-       sliderInput(inputId = "agg",
-                   label = "Aggregation Factor",
-                   min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
-     }
-   })
-
+  ############################################################################     
+  # Data Assimilation settings                                               #
+  ############################################################################
+  
+  output$dataAssimCmpts <- renderUI({
+    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+    
+    checkboxGroupInput(inputId = "selectedCompartments", 
+                       "Select observable compartment(s)",
+                       choices = c("V", "E", "I", "R", "D"),
+                       selected = c("I"), 
+                       inline = TRUE,
+    )
+  })
+  showI <- reactive({
+    "I" %in% input$selectedCompartments
+  })
+  
+  showD <- reactive({
+    "D" %in% input$selectedCompartments
+  })
+  
+  output$dataAssimZones <- renderUI({
+    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+    if (!is.null(input$selectedCountry) && input$selectedCountry != "") {
+      fileInput(inputId = "dataAssimZones", labelMandatory ("Upload the lat/lon coordinates of reporting health zones (.csv or .xls or .xlsx)"),
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"),)
+    }
+  })
+  
+  observeEvent(input$dataAssimZones, {
+    print(read.csv(input$dataAssimZones$datapath))
+    print(as.character(input$dataAssimZones[1]))})
+  
+  output$dataAssimFileI <- renderUI({
+    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+    if (showI()) {
+      fileInput(inputId = "assimIData", labelMandatory ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"), )
+    }
+  })
+  output$dataAssimFileD <- renderUI({
+    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+    if (showD()) {
+      fileInput(inputId = "assimDData", labelMandatory ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"),
+      )
+    }
+  })
+  # output$dataAssimCmpts <- renderUI({
+  #   validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
+  #   
+  #   selectizeInput(inputId = "level1List", "Select observable compartments",
+  #                  choices = c("V", "E", "I", "R", "D"),
+  #                  selected = "", multiple = TRUE,
+  #                  options = list(placeholder = ""))
+  #})
+  
+  ############################################################################    
+  # Change the function which generates the Q matrix     #
+  ############################################################################  
+  output$varCovarFunc <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      selectInput(inputId = "covarianceSelect",
+                  label = HTML("<span class='label-text'>Choose variance-covariance function:</span>"),
+                  choices = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
+                  # HTML("<span class='option-text'>Distance-Based Decay</span>"),
+                  # HTML("<span class='option-text'>Balgovind</span>"),
+                  # HTML("<span class='option-text'>Exponential</span>"),
+                  # HTML("<span class='option-text'>Gaussian</span>"),
+                  # HTML("<span class='option-text'>Spherical</span>")
+                  #),
+                  selected = "DBD", #character(0), #
+                  width = "1000px",
+                  multiple = FALSE)
+    }
+  })
+  
+  ############################################################################    
+  # Adjust parameter values for the variance=covariance function     #
+  ############################################################################  
+  
+  output$selectRho <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      numericInput(inputId = "QCorrLength",
+                   label = "Choose correlation length parameter for generating Q:",
+                   value = 0.675,
+                   step = 0.001,
+                   min = 0)
+    }
+  })
+  
+  output$selectSigma <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      numericInput(inputId = "QVar",
+                   label = "Choose variance parameter for generating Q:",
+                   value = 0.55,
+                   step = 0.01,
+                   min = 0)
+    }
+  })
+  
+  output$selectNbhd <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      numericInput(inputId = "nbhd",
+                   label = "Choose neighborhood parameter for generating Q:",
+                   value = 3,
+                   step = 1,
+                   min = 0)
+    }
+  })
+  
+  output$selectPsiDiag <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      numericInput(inputId = "psidiag",
+                   label = HTML(paste("Choose a value for the zero elements of", TeX("&#936"), "to be set to:")),
+                   value = 0.001,
+                   step = 0.001,
+                   min = 0)
+    }
+  })
+  
+  ############################################################################    
+  # Change the recommended aggregation factor for slider dynamically         #
+  ############################################################################  
+  output$aggInput <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      sliderInput(inputId = "agg",
+                  label = "Aggregation Factor",
+                  min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+    }
+  })
+  
   ############################################################################    
   # Output the .mp4 video from www/ to the app UI                            #
   ############################################################################  
@@ -992,7 +1154,7 @@ server <- function(input, output, session){
       controls = "controls"
     )
   })
-
+  
   ############################################################################    
   # Output bubble plot with initial seed data directly to the app UI         #
   ############################################################################ 
@@ -1016,7 +1178,7 @@ server <- function(input, output, session){
   observeEvent(input$go, {
     source("R/makePlots.R")
     output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
-       
+    
     output$cumulativePlot <- makePlot(compartments = c("D"), input = input, plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Cumulative Deaths", lineThickness = lineThickness)
     
     if (input$modelSelect == "SVEIRD"){
@@ -1041,7 +1203,7 @@ server <- function(input, output, session){
     #   list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Image not found")
     # }, deleteFile = TRUE)
   })
-
+  
   ##########################################################################    
   # Allow the user to download the time-series plots from UI               #
   ########################################################################## 
@@ -1144,7 +1306,7 @@ server <- function(input, output, session){
       if(ext == 'xlsx'){
         readxl::read_excel(input$seedData$datapath)
       } else {
-          read.csv(input$seedData$datapath)
+        read.csv(input$seedData$datapath)
       }
     })
     
@@ -1162,7 +1324,7 @@ server <- function(input, output, session){
     output$dataPlot <- renderPlot({
       buildPlot()
     })
-  
+    
     # # Allow user to download the raster plot
     # output$downloadPlot <- downloadHandler(
     #     filename = function() {
@@ -1207,7 +1369,7 @@ server <- function(input, output, session){
     #print(data())          # Prints the seed data
     
     #print(names(data()))   # Prints the column names of the seed data
-
+    
     alpha <- ifelse(input$modelSelect == "SVEIRD", input$alpha, 0) # DO NOT DELETE
     beta  <- input$beta  # DO NOT DELETE
     gamma <- input$gamma # DO NOT DELETE
@@ -1233,10 +1395,10 @@ server <- function(input, output, session){
     }
     
     SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
-                              alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
-                              deterministic = isDeterministic, isCropped = input$clipLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
-                              dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
-                              QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
+                                    alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
+                                    deterministic = isDeterministic, isCropped = input$clipLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
+                                    dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
+                                    QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
     
     # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
@@ -1250,7 +1412,7 @@ server <- function(input, output, session){
     # row10 <- data.frame(Variable = "Number of iterations (days)", Value = input$timestep)
     # 
     #values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
-
+    
     #########################################    
     # Output seed plot image to the app UI  #
     #########################################
@@ -1259,7 +1421,7 @@ server <- function(input, output, session){
       source("R/rasterClipSeedPlot.R")
       
       outfile <- tempfile(fileext = '.png')
-
+      
       png(outfile, width = 800, height = 600)
       createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = 0)  # print the seed plot direct to UI
       dev.off()
@@ -1406,7 +1568,7 @@ server <- function(input, output, session){
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Plot')
   })
-
+  
   # output$downloadOutputSummary <- downloadHandler(
   #   filename = function() {"output.csv"},
   #   content = function(file){
@@ -1416,4 +1578,4 @@ server <- function(input, output, session){
   # )
 }
 
-shinyApp(ui,server)
+shinyApp(ui, server)
