@@ -384,17 +384,16 @@ ui <- fluidPage(
                       
                       br(),
                       
-                      p(span("Tom Bayliss White", style= "font-weight:bold" )),    
-                      p("Undergraduate Student, University of Exeter, Exeter, Devon, UK"),
-                      p("Mitacs Globalink Research Intern (2023)"),
-                      
-                      
-                      br(),
-                      
                       p(span("Michael, Myer, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
+                      
+                      p(span("Tom Bayliss White", style= "font-weight:bold" )),    
+                      p("Undergraduate Student, University of Exeter, Exeter, Devon, UK"),
+                      p("Mitacs Globalink Research Intern (2023)"),
+                      
+                      br(),
                       
                       p(span("Jake Doody", style= "font-weight:bold" )),
                       p("Undergraduate Student, University of Maryland Baltimore County, MD, USA"),
