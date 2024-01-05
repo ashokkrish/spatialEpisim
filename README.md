@@ -42,6 +42,7 @@ Alternatively you can send a pull request to download all the files in this repo
 ## Directory structure
 
     /
+    |---r/
     |---gadm/
     |---misc/
     |---observeddata/
