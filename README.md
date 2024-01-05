@@ -42,11 +42,10 @@ Alternatively you can send a pull request to download all the files in this repo
 ## Directory structure
 
     /
-    |---r/
+    |---R/
     |---gadm/
     |---misc/
     |---observeddata/
-    |---R/
     |---seeddata/
     |---tif/
     |   |---cropped/
