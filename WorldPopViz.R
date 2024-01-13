@@ -12,7 +12,7 @@ source("R/clippingBaseRasterHaxby.R")
 source("R/rasterStack.R")
 
 ui <- fluidPage(
-  
+  shinyjs::useShinyjs(),
   navbarPage(title = span("WorldPop Visualizer", style = "color:#000000; font-weight:bold; font-size:15pt"),
              
              tabPanel(title = "Plotting a GeoTIFF raster",
@@ -55,18 +55,20 @@ ui <- fluidPage(
                         ), 
                         
                         mainPanel(
-                          tabsetPanel(id = 'tabSet',
-                                      tabPanel(id = "main", title ="2020 UN-Adjusted Population Count Map", imageOutput("outputImage"),
+                          div(id = "maptabPanels",
+                            tabsetPanel(id = 'tabSet',
+                                        tabPanel(id = "main", title ="2020 UN-Adjusted Population Count Map", imageOutput("outputImage"),
                                                #downloadButton('downloadPlot', 'Save Image')
-                                               ),
-                                      tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
+                                                ),
+                                        tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
 
-                                               ),
+                                                ),
                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
                                       #          )
-                         )
-                    ) #mainPanel
+                            ) # tabSet
+                          ) # maptabPanels
+                        ) #mainPanel
                ) # sidebarLayout
           ) #tabPanel
      ) #navbarPage
@@ -87,6 +89,16 @@ server <- function(input, output, session){
       width = "240px"
     )
   })
+  
+  observeEvent(input$selectedCountry, {
+    if(!is.null(input$selectedCountry) && input$selectedCountry != "") {
+      shinyjs::show(id = "maptabPanels")
+    } else {
+      shinyjs::hide(id = "maptabPanels")
+    }
+  })
+
+  
   
   ############################################################################    
   # Dynamically display the checkbox option to select for states/provinces   #
