@@ -57,7 +57,25 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
                                " (1 sq. km resolution)")  
   }
 
-  terra::plot(x, col = pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(title = expression(bold("Persons")), title.cex = 1, horiz = TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend = "bottom", mar = c(8.5, 3.5, 2.5, 2.5))
+  terra::plot(x, 
+              col = pal(8)[-1], 
+              axes = TRUE, 
+              cex.main = 1, 
+              main = aggrPlotTitle,
+              xlab = expression(bold(Longitude)),
+              ylab = expression(bold(Latitude)),
+              line.lab = 2.25,
+              cex.lab = 1.20,
+              plg = list(title = expression(bold("Persons")), 
+                         title.cex = 1, 
+                         horiz = TRUE, 
+                         loc = "bottom", 
+                         yjust = 3.5, 
+                         x.intersp=0.6, 
+                         inset=c(0, -0.2), 
+                         cex=1.15), 
+              pax = list(cex.axis=1.15), 
+              mar = c(8.5, 3.5, 2.5, 2.5))  
   terra::north(type = 2, xy = "bottomleft", cex = 1)
 
   # if (selectedCountry == "Czech Republic"){
@@ -72,7 +90,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   # plot(x, col = pal(8)[-1], axes = TRUE, main = aggrPlotTitle, plg=list(legend=c("0-10", "10-25", "25-50", "50-100", "100-250", "250-1000", ">1000"), horiz = TRUE, x = "bottom", title ="Persons per sq. km"))
   
-  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab = 1.20)
+  # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab = 1.20)
 
   #---------------------------------------#
   # Source 2: From GADM: Level1Identifier #

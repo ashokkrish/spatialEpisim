@@ -96,10 +96,29 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
                           selectedCountry,
                           " (1 sq. km resolution)")
   
-  terra::plot(x, col=pal(8)[-1], axes = TRUE, cex.main = 1, main = aggrPlotTitle, plg = list(x = xmin(lvl1Raster)-0.24*dlong, y = ymin(lvl1Raster)-0.015*dlat, title ="Persons", horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  terra::plot(x, 
+              col=pal(8)[-1], 
+              axes = TRUE, 
+              cex.main = 1, 
+              main = aggrPlotTitle,
+              xlab = expression(bold(Longitude)),
+              ylab = expression(bold(Latitude)),
+              line.lab = 2.25,
+              cex.lab = 1.20,
+              plg = list(x = xmin(lvl1Raster)-0.24*dlong, 
+                         y = ymin(lvl1Raster)-0.015*dlat, 
+                         title = expression(bold("Persons")), 
+                         horiz=TRUE,
+                         loc = "bottom", 
+                         yjust = 3.5, 
+                         x.intersp=0.6, 
+                         inset=c(0, -0.2), 
+                         cex=1.15), 
+              pax = list(cex.axis=1.15), 
+              mar=c(8.5, 3.5, 2.5, 2.5))  
   terra::north(type = 2, xy = "bottomleft", cex = 1)
   
-  title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
+  # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
  
   # Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
   # 
