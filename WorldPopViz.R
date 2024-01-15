@@ -25,11 +25,19 @@ ui <- fluidPage(
                             
                             uiOutput("clipStateCheckbox"),
                             
-                            conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
+                            conditionalPanel(
+                              condition = "input.clipLev1 == '1'",  
+                                             
+                              uiOutput("Level1Ui"),
+                              
+                              conditionalPanel(id = "listCheck", 
+                                condition = "input.level1List != null", 
+                                               
+                                uiOutput("clippedPlotButton")
+                              ),
+                            ),
                             
                             # uiOutput("aggSlider"),
-
-                            conditionalPanel(id = "listCheck", condition = "input.level1List != null", uiOutput("clippedPlotButton")),
                             
                             br(),
 
@@ -107,7 +115,7 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = TRUE)
+      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
     }
   })
 
@@ -356,9 +364,10 @@ server <- function(input, output, session){
   #Selected State/Province Map Tab Panel #
   ########################################
   
-  observe(
+  observeEvent({(input$clipLev1 == FALSE || is.null(input$level1List))
+                input$selectedCountry}, priority = 10, {
     hideTab(inputId = 'tabSet', target = 'Selected State/Province Map')
-  )
+  })
   
   observeEvent(input$go,{
     showTab(inputId = 'tabSet', target = 'Selected State/Province Map')
