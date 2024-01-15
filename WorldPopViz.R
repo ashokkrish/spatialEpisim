@@ -17,7 +17,7 @@ ui <- fluidPage(
              
              tabPanel(title = "Plotting a GeoTIFF raster",
                       sidebarLayout(
-                        sidebarPanel(
+                        sidebarPanel( # sidebar ----
                           div(
                             id = "dashboard",
                             
@@ -25,7 +25,7 @@ ui <- fluidPage(
                             
                             uiOutput("clipStateCheckbox"),
                             
-                            conditionalPanel(
+                            conditionalPanel(id = "clipPlot",
                               condition = "input.clipLev1 == '1'",  
                                              
                               uiOutput("Level1Ui"),
@@ -40,6 +40,9 @@ ui <- fluidPage(
                             # uiOutput("aggSlider"),
                             
                             br(),
+                            br(),
+                            
+                            uiOutput("resetButton"),
 
                             # uiOutput("seedDataButton"),
                             # 
@@ -62,7 +65,7 @@ ui <- fluidPage(
                            , width = 3
                         ), 
                         
-                        mainPanel(
+                        mainPanel( # mainpanel ----
                           div(id = "maptabPanels",
                             tabsetPanel(id = 'tabSet',
                                         tabPanel(id = "main", title ="2020 UN-Adjusted Population Count Map", imageOutput("outputImage"),
@@ -84,7 +87,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   
-  output$countryDropdown <- renderUI({
+  output$countryDropdown <- renderUI({ ## country selector ----
     pickerInput(
       inputId = "selectedCountry",
       label = strong("Country"),
@@ -263,6 +266,16 @@ server <- function(input, output, session){
     }
   })
   
+  output$resetButton <- renderUI({
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      actionButton(
+        inputId = "reset",
+        label = "Reset Values",
+        style ="color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      )
+    }
+  })
+  
   observeEvent(input$go, {
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
@@ -292,6 +305,12 @@ server <- function(input, output, session){
         }
      }
     }
+  })
+  
+  observeEvent(input$reset, {
+    shinyjs::reset(id = "clipPlot")
+    shinyjs::reset(id = "clipLev1")
+    shinyjs::reset(id = "selectedCountry")
   })
 
   ############################################################################    
