@@ -1,6 +1,6 @@
 library(countrycode)
-library(raster, warn.conflicts = FALSE)
-#library(terra, warn.conflicts = FALSE)
+# library(raster, warn.conflicts = FALSE)
+library(terra, warn.conflicts = FALSE)
 
 createSusceptibleLayer <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
 
