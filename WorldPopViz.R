@@ -9,6 +9,7 @@ library(shinyWidgets)
 population <- read_excel("misc/population.xlsx", 1)
 
 source("R/rasterBasePlot.R")
+source("R/rasterLeafletPlot.R")
 source("R/clippingBaseRasterHaxby.R")
 source("R/rasterStack.R")
 
@@ -23,7 +24,6 @@ ui <- fluidPage(
                             id = "dashboard",
                             
                             uiOutput("countryDropdown"),
-                            
                             uiOutput("clipStateCheckbox"),
                             
                             conditionalPanel(id = "clipPlot",
@@ -34,13 +34,15 @@ ui <- fluidPage(
                               conditionalPanel(
                                 condition = "input.level1List != ''",
                                 
-                                uiOutput("clippedPlotButton")
+                                uiOutput("clippedPlotButton"),
+                                br()
                               ),
                             ),
+                            br(),
+                            uiOutput("plottingMethod"),
                             
                             # uiOutput("aggSlider"),
                             
-                            br(),
                             br(),
                             
                             uiOutput("resetButton"),
@@ -69,11 +71,41 @@ ui <- fluidPage(
                         mainPanel( # mainpanel ----
                           div(id = "maptabPanels",
                             tabsetPanel(id = 'tabSet',
-                                        tabPanel(id = "main", title ="2020 UN-Adjusted Population Count Map", imageOutput("outputImage"),
+                                        tabPanel(id = "main", 
+                                                 title ="2020 UN-Adjusted Population Count Map",
+                                                 
+                                                 conditionalPanel(
+                                                   condition = "input.plotType == 'terra'",
+                                                   
+                                                   imageOutput("outputImage"),
+                                                 ),
+                                                 
+                                                 conditionalPanel(
+                                                   condition = "input.plotType == 'Leaflet'",
+                                                   
+                                                   leafletOutput("leafletMap",
+                                                                 width = 1024, 
+                                                                 height = 768)
+                                                 ),
+                                                 
+
                                                #downloadButton('downloadPlot', 'Save Image')
                                                 ),
-                                        tabPanel(title ="Selected State/Province Map", imageOutput("croppedOutputImage"),
-
+                                        tabPanel(title ="Selected State/Province Map", 
+                                                 
+                                                 imageOutput("croppedOutputImage"),
+                                                 
+                                                 # conditionalPanel(
+                                                 #   condition = "input.plotType == 'terra'",
+                                                 #   
+                                                 #   imageOutput("croppedOutputImage"),
+                                                 # ),
+                                                 # 
+                                                 # conditionalPanel(
+                                                 #   condition = "input.plotType == 'Leaflet'",
+                                                 #   
+                                                 #   leafletOutput("croppedLeafletMap")
+                                                 # ),
                                                 ),
                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
@@ -88,7 +120,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   
-  output$countryDropdown <- renderUI({ ## country selector ----
+  output$countryDropdown <- renderUI({ ## countryDropdown ----
     pickerInput(
       inputId = "selectedCountry",
       label = strong("Country"),
@@ -115,14 +147,16 @@ server <- function(input, output, session){
   # Reactively rasterize selected country #
   #########################################
   susceptible <- reactive({
-    createSusceptibleLayer(input$selectedCountry, 1, FALSE, level1Names = NULL)$Susceptible
+    req(!is.null(input$selectedCountry))
+
+    createSusceptibleLayer(input$selectedCountry, 1, FALSE, level1Names = NULL)
   })
   
   
   ############################################################################    
   # Dynamically display the checkbox option to select for states/provinces   #
   ############################################################################
-  output$clipStateCheckbox <- renderUI({
+  output$clipStateCheckbox <- renderUI({ # clipStateCheckbox ----
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
@@ -143,7 +177,7 @@ server <- function(input, output, session){
   #}
   #})
   
-  output$outputImage <- renderImage({
+  output$outputImage <- renderImage({ ## outputImage ----
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (input$selectedCountry == ""){
@@ -155,13 +189,22 @@ server <- function(input, output, session){
       
       # png(outfile, width = 800, height = 600)
       png(outfile, width = 1024, height = 768)
-      createBasePlot(input$selectedCountry, susceptible(), TRUE)   # print the susceptible plot direct to UI
+      createBasePlot(input$selectedCountry, susceptible()$Susceptible, TRUE)   # print the susceptible plot direct to UI
       dev.off()
       
       # list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
     }
   }, deleteFile = TRUE)
+  
+  
+  output$leafletMap <- renderLeaflet({
+    req(!is.null(input$selectedCountry))
+    
+    susc <- susceptible()$Susceptible
+    
+    createLeafletPlot(input$selectedCountry, susc)
+  })
   
   # output$downloadPlot <- downloadHandler(
   #   isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
@@ -246,7 +289,7 @@ server <- function(input, output, session){
   # Create select box for choosing input country #
   ################################################ 
   
-  output$Level1Ui <- renderUI({
+  output$Level1Ui <- renderUI({ # level1Ui ----
     validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
     
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
@@ -267,7 +310,7 @@ server <- function(input, output, session){
   # Create a country plot cropped by level1Identifier and output to UI       #
   ############################################################################ 
   
-  output$clippedPlotButton <- renderUI({
+  output$clippedPlotButton <- renderUI({ # clippedPlotButton ----
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     # if (!is.null(input$level1List) && input$level1List != ""){
@@ -277,7 +320,22 @@ server <- function(input, output, session){
     # }
   })
   
-  output$resetButton <- renderUI({
+  
+  output$plottingMethod <- renderUI({ # plottingMethod ----
+    
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      radioButtons(
+        inputId = "plotType", 
+        label = strong("Render Map(s) Using"), 
+        choices = c("terra", "Leaflet"),
+        selected = "terra",
+        inline = TRUE
+      )
+    }
+  })
+  
+  
+  output$resetButton <- renderUI({ # resetButton ----
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton(
         inputId = "reset",
@@ -294,7 +352,7 @@ server <- function(input, output, session){
       
      if(input$clipLev1 == TRUE){
 
-       if(input$level1List != "" ){
+       if(!is.null(input$level1List) && !("" %in% input$level1List)){
           output$croppedOutputImage <- renderImage({
   
             outfile <- tempfile(fileext = '.png')
@@ -303,12 +361,12 @@ server <- function(input, output, session){
             #png(outfile, width = 1024, height = 768)
             print(input$level1List)
             
-            if(!is.null(input$level1List)){
+            # if(!is.null(input$level1List)){
               #createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
               png(outfile, width = 1024, height = 768)
-              createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible(), directOutput = TRUE) # Why is rasterAgg set to 0?
+              createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE) # Why is rasterAgg set to 0?
               dev.off()
-            }
+            # }
             
             list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Select at least one state/province to plot")
   
