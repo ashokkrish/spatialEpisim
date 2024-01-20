@@ -12,7 +12,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names = NULL)$Susceptible
   #print(Susceptible)
   
-  Susceptible <- terra::rast(Susceptible) # Only a terra::rast() object can use the classify() function
+  # Susceptible <- terra::rast(Susceptible) # Only a terra::rast() object can use the classify() function
   
   fname <- paste0(inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
@@ -59,8 +59,11 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
 
   terra::plot(x, 
               col = pal(8)[-1], 
-              axes = TRUE, 
-              cex.main = 1, 
+              axes = TRUE,
+              buffer = TRUE,
+              box = TRUE,
+              cex.main = 1,
+              line.main = 1.25,
               main = aggrPlotTitle,
               xlab = expression(bold(Longitude)),
               ylab = expression(bold(Latitude)),
@@ -74,9 +77,9 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
                          x.intersp=0.6, 
                          inset=c(0, -0.2), 
                          cex=1.15), 
-              pax = list(cex.axis=1.15), 
-              mar = c(8.5, 3.5, 2.5, 2.5))  
-  terra::north(type = 2, xy = "bottomleft", cex = 1)
+              pax = list(cex.axis=1.4), 
+              mar = c(8.5, 3.5, 4, 2.5))  
+   terra::north(type = 2, xy = "bottomleft", cex = 1)
 
   # if (selectedCountry == "Czech Republic"){
   #      ## CZE
