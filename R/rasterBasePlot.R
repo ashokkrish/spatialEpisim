@@ -27,7 +27,29 @@ createBasePlot <- function(selectedCountry, susceptible, directOutput) {
   levels(x) <- levs
 
   #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  ramp <- c('#FFFFFF', 
+            '#D0D8FB', 
+            '#BAC5F7', 
+            '#8FA1F1', 
+            '#617AEC', 
+            '#0027E0', 
+            '#1965F0', 
+            '#0C81F8', 
+            '#18AFFF', 
+            '#31BEFF', 
+            '#43CAFF', 
+            '#60E1F0', 
+            '#69EBE1', 
+            '#7BEBC8', 
+            '#8AECAE', 
+            '#ACF5A8', 
+            '#CDFFA2', 
+            '#DFF58D', 
+            '#F0EC78', 
+            '#F7D767', 
+            '#FFBD56', 
+            '#FFA044', 
+            '#EE4F4D')
   pal <- colorRampPalette(ramp)
   
   if(selectedCountry == "Czech Republic"){
@@ -78,8 +100,8 @@ createBasePlot <- function(selectedCountry, susceptible, directOutput) {
                          cex=1.15), 
               pax = list(cex.axis=1.4), 
               mar = c(8.5, 3.5, 4, 2.5))  
-   terra::north(type = 2, xy = "bottomleft", cex = 1)
-
+  terra::north(type = 2, xy = "bottomleft", cex = 1)
+  
   # if (selectedCountry == "Czech Republic"){
   #      ## CZE
   #     sbar(100, type="bar", below="km", cex=0.9, xy="bottomright")
@@ -105,15 +127,9 @@ createBasePlot <- function(selectedCountry, susceptible, directOutput) {
   # print(getwd())
   
   Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
-  
-  # print("Sus Extent:")
-  # print(ext(Susceptible))
-  # print("================")
-  # print("Rds Extent:")
-  # print(ext(Level1Identifier))
-  # print("----------------------------")
-  
+    
   plot(Level1Identifier, add = TRUE)
+
   
   if(!directOutput){dev.off()} # closes the file opened with png(PNGFileName)
 } 
