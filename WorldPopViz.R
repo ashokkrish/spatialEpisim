@@ -140,15 +140,15 @@ server <- function(input, output, session){
     } else {
       outfile <- tempfile(fileext = '.png')
       
-      createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
+      # createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
       
-      png(outfile, width = 800, height = 600)
-      #png(outfile, width = 1024, height = 768)
+      # png(outfile, width = 800, height = 600)
+      png(outfile, width = 1024, height = 768)
       createBasePlot(input$selectedCountry, 1, TRUE)   # print the susceptible plot direct to UI
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
-      #list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+      # list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
     }
   }, deleteFile = TRUE)
   
@@ -294,12 +294,12 @@ server <- function(input, output, session){
             
             if(!is.null(input$level1List)){
               #createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
-              png(outfile, width = 800, height = 600)
+              png(outfile, width = 1024, height = 768)
               createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE) # Why is rasterAgg set to 0?
               dev.off()
             }
             
-            list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Select at least one state/province to plot")
+            list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Select at least one state/province to plot")
   
           }, deleteFile = TRUE)
         }
