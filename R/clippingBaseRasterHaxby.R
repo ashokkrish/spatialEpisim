@@ -49,17 +49,17 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
 
   GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
   GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Region), ]
+  GADMdata <- vect(GADMdata)
+  GAMDdata <- rast(GADMdata)
   
-  lvl1Raster <- crop(Susceptible, GADMdata)
+  lvl1Raster <- crop(Susceptible, GADMdata, mask = TRUE)
 
   dlong = abs(xmax(lvl1Raster) - xmin(lvl1Raster))
   dlat = abs(ymax(lvl1Raster) - xmax(lvl1Raster))
-
-  lvl1Raster <- mask(lvl1Raster, GADMdata)
   
   lvl1Rasterrast <- lvl1Raster
   
-  lvl1Raster <- terra::rast(lvl1Raster)
+  # lvl1Raster <- terra::rast(lvl1Raster)
  
   x <- classify(lvl1Raster, c(0, 10, 25, 50, 100, 250, 1000, 10000))
   
@@ -98,8 +98,11 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   
   terra::plot(x, 
               col=pal(8)[-1], 
-              axes = TRUE, 
-              cex.main = 1, 
+              axes = TRUE,
+              buffer = TRUE,
+              box = TRUE,
+              cex.main = 1,
+              line.main = 1.25,
               main = aggrPlotTitle,
               xlab = expression(bold(Longitude)),
               ylab = expression(bold(Latitude)),
@@ -114,8 +117,8 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
                          x.intersp=0.6, 
                          inset=c(0, -0.2), 
                          cex=1.15), 
-              pax = list(cex.axis=1.15), 
-              mar=c(8.5, 3.5, 2.5, 2.5))  
+              pax = list(cex.axis=1.4), 
+              mar=c(8.5, 3.5, 4, 2.5))  
   terra::north(type = 2, xy = "bottomleft", cex = 1)
   
   # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
@@ -131,7 +134,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Rasterrast, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
+  writeRaster(lvl1Rasterrast, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), overwrite = TRUE) # the tif file may not be at 1km resolution
   #print(getwd())
   #setwd('./R')
   #print(getwd())
