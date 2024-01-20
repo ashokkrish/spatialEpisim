@@ -22,7 +22,7 @@ shhh(library(terra, warn.conflicts=FALSE))
 
 source("R/rasterWorldPop.R")
 
-createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, directOutput = F)
+createClippedRaster <- function(selectedCountry, level1Region, susceptible, directOutput = F)
 {
   # setwd(dirname(getActiveDocumentContext()$path))
   
@@ -31,7 +31,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   # inputISOLower <- tolower(inputISO)
   
-  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
+  # Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
   
   #print(Susceptible)
 
@@ -52,7 +52,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   GADMdata <- vect(GADMdata)
   GAMDdata <- rast(GADMdata)
   
-  lvl1Raster <- crop(Susceptible, GADMdata, mask = TRUE)
+  lvl1Raster <- crop(susceptible, GADMdata, mask = TRUE)
 
   dlong = abs(xmax(lvl1Raster) - xmin(lvl1Raster))
   dlat = abs(ymax(lvl1Raster) - xmax(lvl1Raster))

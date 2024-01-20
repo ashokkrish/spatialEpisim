@@ -1,5 +1,6 @@
 library(dplyr)
 library(DT)
+library(leaflet)
 library(readxl)
 library(shiny)
 library(shinyjs)
@@ -30,9 +31,9 @@ ui <- fluidPage(
                                              
                               uiOutput("Level1Ui"),
                               
-                              conditionalPanel(id = "listCheck", 
-                                condition = "input.level1List != null", 
-                                               
+                              conditionalPanel(
+                                condition = "input.level1List != ''",
+                                
                                 uiOutput("clippedPlotButton")
                               ),
                             ),
@@ -110,6 +111,13 @@ server <- function(input, output, session){
   })
 
   
+  #########################################
+  # Reactively rasterize selected country #
+  #########################################
+  susceptible <- reactive({
+    createSusceptibleLayer(input$selectedCountry, 1, FALSE, level1Names = NULL)$Susceptible
+  })
+  
   
   ############################################################################    
   # Dynamically display the checkbox option to select for states/provinces   #
@@ -118,7 +126,10 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE)
+      checkboxInput(
+        inputId = "clipLev1", 
+        label = strong("Clip State(s)/Province(s)"), 
+        value = FALSE)
     }
   })
 
@@ -144,7 +155,7 @@ server <- function(input, output, session){
       
       # png(outfile, width = 800, height = 600)
       png(outfile, width = 1024, height = 768)
-      createBasePlot(input$selectedCountry, 1, TRUE)   # print the susceptible plot direct to UI
+      createBasePlot(input$selectedCountry, susceptible(), TRUE)   # print the susceptible plot direct to UI
       dev.off()
       
       # list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
@@ -259,11 +270,11 @@ server <- function(input, output, session){
   output$clippedPlotButton <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
-    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+    # if (!is.null(input$level1List) && input$level1List != ""){
       actionButton("go","Plot clipped raster", 
                    style ="color: #fff; background-color: #337ab7; border-color: #2e6da4",
                    style ="length:800px")
-    }
+    # }
   })
   
   output$resetButton <- renderUI({
@@ -283,7 +294,7 @@ server <- function(input, output, session){
       
      if(input$clipLev1 == TRUE){
 
-       if(!is.null(input$level1List) || input$level1List != "" ){
+       if(input$level1List != "" ){
           output$croppedOutputImage <- renderImage({
   
             outfile <- tempfile(fileext = '.png')
@@ -295,7 +306,7 @@ server <- function(input, output, session){
             if(!is.null(input$level1List)){
               #createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
               png(outfile, width = 1024, height = 768)
-              createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = TRUE) # Why is rasterAgg set to 0?
+              createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible(), directOutput = TRUE) # Why is rasterAgg set to 0?
               dev.off()
             }
             

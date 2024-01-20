@@ -4,12 +4,11 @@ library(terra, warn.conflicts = FALSE)
 
 source("R/rasterWorldPop.R")
 
-createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
+createBasePlot <- function(selectedCountry, susceptible, directOutput) {
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
 
-  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names = NULL)$Susceptible
   #print(Susceptible)
   
   # Susceptible <- terra::rast(Susceptible) # Only a terra::rast() object can use the classify() function
@@ -19,7 +18,7 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   
   if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
 
-  x <- classify(Susceptible, c(0, 10, 25, 50, 100, 250, 1000, 100000))
+  x <- classify(susceptible, c(0, 10, 25, 50, 100, 250, 1000, 100000))
   
   # plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
@@ -106,7 +105,14 @@ createBasePlot <- function(selectedCountry, rasterAgg, directOutput) {
   # print(getwd())
   
   Level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
-
+  
+  # print("Sus Extent:")
+  # print(ext(Susceptible))
+  # print("================")
+  # print("Rds Extent:")
+  # print(ext(Level1Identifier))
+  # print("----------------------------")
+  
   plot(Level1Identifier, add = TRUE)
   
   if(!directOutput){dev.off()} # closes the file opened with png(PNGFileName)
