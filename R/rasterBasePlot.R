@@ -1,5 +1,5 @@
 library(countrycode)
-library(raster, warn.conflicts = FALSE)
+# library(raster, warn.conflicts = FALSE)
 library(terra, warn.conflicts = FALSE)
 
 source("R/rasterWorldPop.R")
