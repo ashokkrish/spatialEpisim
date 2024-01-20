@@ -29,7 +29,7 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   #setwd('..') 
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
-  inputISOLower <- tolower(inputISO)
+  # inputISOLower <- tolower(inputISO)
   
   Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
   
@@ -133,8 +133,8 @@ createClippedRaster <- function(selectedCountry, level1Region, rasterAgg, direct
   # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
   
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
-  level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Rasterrast, paste("tif/cropped/", level1Region, inputISOLower,"ppp_2020_1km_Aggregated_UNadj.tif", sep='_'), overwrite = TRUE) # the tif file may not be at 1km resolution
+  # level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
+  writeRaster(lvl1Rasterrast, paste("tif/cropped/clipped_ppp_2020_1km_Aggregated_UNadj.tif"), overwrite = TRUE) # the tif file may not be at 1km resolution
   #print(getwd())
   #setwd('./R')
   #print(getwd())
