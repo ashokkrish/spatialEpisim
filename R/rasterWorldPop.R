@@ -21,7 +21,9 @@ if (!file.exists(paste0(tifFolder, tifFileName)))
   download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
 }
 
-WorldPop <- raster(paste0(tifFolder, tifFileName))
+WorldPop <- rast(paste0(tifFolder, tifFileName))
+
+# print(as.raster(WorldPop))
 
 WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # Delete this line for clear plot. Check!!!
 
