@@ -364,7 +364,7 @@ server <- function(input, output, session){
             # if(!is.null(input$level1List)){
               #createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
               png(outfile, width = 1024, height = 768)
-              createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE) # Why is rasterAgg set to 0?
+              isolate(createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE)) # Why is rasterAgg set to 0?
               dev.off()
             # }
             
