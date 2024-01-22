@@ -52,6 +52,8 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
   GADMdata <- vect(GADMdata)
   GAMDdata <- rast(GADMdata)
   
+  crs(GADMdata) <- crs(susceptible, proj = TRUE)
+  
   lvl1Raster <- crop(susceptible, GADMdata, mask = TRUE)
 
   dlong = abs(xmax(lvl1Raster) - xmin(lvl1Raster))
