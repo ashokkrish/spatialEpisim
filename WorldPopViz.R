@@ -147,8 +147,8 @@ server <- function(input, output, session){
   # Reactively rasterize selected country #
   #########################################
   susceptible <- reactive({
-    req(!is.null(input$selectedCountry))
-
+    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
+    
     createSusceptibleLayer(input$selectedCountry, 1, FALSE, level1Names = NULL)
   })
   
@@ -457,7 +457,7 @@ server <- function(input, output, session){
     hideTab(inputId = 'tabSet', target = 'Selected State/Province Map')
   })
   
-  observeEvent(input$go,{
+  observeEvent(input$go, {
     showTab(inputId = 'tabSet', target = 'Selected State/Province Map')
   })
 
