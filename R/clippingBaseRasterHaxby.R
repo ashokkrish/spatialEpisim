@@ -114,11 +114,11 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
                          horiz=TRUE,
                          loc = "bottom", 
                          yjust = 3.5, 
-                         x.intersp=0.6, 
-                         inset=c(0, -0.2), 
-                         cex=1.15), 
-              pax = list(cex.axis=1.4), 
-              mar=c(8.5, 3.5, 4, 2.5))  
+                         x.intersp = 0.6, 
+                         inset = c(0, -0.2), 
+                         cex = 1.15), 
+              pax = list(cex.axis = 1.7), 
+              mar = c(8.5, 3.5, 4, 2.5))  
   terra::north(type = 2, xy = "bottomleft", cex = 1)
   
   # title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2, cex.lab=1.20)
