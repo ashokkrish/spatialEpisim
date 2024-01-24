@@ -1,6 +1,6 @@
 library(countrycode)
-library(raster, warn.conflicts=FALSE)
-#library(terra, warn.conflicts = FALSE)
+# library(raster, warn.conflicts=FALSE)
+library(terra, warn.conflicts = FALSE)
 
 createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
 
@@ -41,10 +41,14 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     # print(which(Level1Identifier$NAME_1 %in% level1Names)) # Assigns 1, 2, ...
     # print(table(Level1Identifier$NAME_1 %in% level1Names))
     
+    Level1Identifier <- vect(Level1Identifier)
+    crs(Level1Identifier) <- crs(Susceptible, proj = TRUE)
+    # convert Level1Identifier into a spatVector
+    
     Level1Raster <- crop(Level1Identifier, Susceptible)
     # print(Level1Raster) # It is still a SpatialPolygonsDataFrame
 
-    Level1Raster <- raster(Level1Identifier, resolution = res(Susceptible)[1])
+    Level1Raster <- rast(Level1Identifier, resolution = res(Susceptible)[1])
     # print(Level1Raster) # It is now a RasterLayer
     # print(values(Level1Raster))
     
@@ -65,7 +69,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     # Level1Raster <- round(resample(Level1Raster, Susceptible, method = "bilinear"))
     # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb", fun ='modal'))
 
-    Level1Raster <- resample(Level1Raster, Susceptible, method = "ngb")
+    Level1Raster <- resample(Level1Raster, Susceptible, method = "near")
 
     values(Level1Raster) <- ifelse(values(Level1Raster) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
     # print(table(values(Level1Raster)))
@@ -89,7 +93,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
     values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with either a 0 or 1.
     
-    inhabitableTrim <- trim(Inhabitable, values = 0, padding = 1)
+    inhabitableTrim <- trim(Inhabitable, value = 0, padding = 1)
     # print(extent(inhabitableTrim))
     
     # inhabitableRows <- inhabitableCols <-
@@ -130,7 +134,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     # print(extent(Level1Raster))
     # print(extent(Susceptible))
 
-    rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
+    rasterStack <- c(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
 
     rasterStack <- crop(rasterStack, inhabitableTrim)
 
@@ -144,10 +148,13 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
   }
   else
   {
+    Level1Identifier <- vect(Level1Identifier)
+    crs(Level1Identifier) <- crs(Susceptible, proj = TRUE)
+    # convert Level1Identifier into a spatVector
     Level1Raster <- crop(Level1Identifier, Susceptible)
     # print(Level1Raster) # It is still a SpatialPolygonsDataFrame
     
-    Level1Raster <- raster(Level1Identifier, resolution = res(Susceptible)[1])
+    Level1Raster <- rast(Level1Identifier, resolution = res(Susceptible)[1])
     # print(Level1Raster) # It is now a RasterLayer
     # print(values(Level1Raster))
     
@@ -168,7 +175,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     # Level1Raster <- round(resample(Level1Raster, Susceptible, method = "bilinear"))
     # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb", fun ='modal'))
     
-    Level1Raster <- resample(Level1Raster, Susceptible, method = "ngb")
+    Level1Raster <- resample(Level1Raster, Susceptible, method = "near")
     
     values(Level1Raster) <- ifelse(values(Level1Raster) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
     # print(table(values(Level1Raster)))
@@ -208,7 +215,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     # print(extent(Level1Raster))
     # print(extent(Susceptible))
     
-    rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
+    rasterStack <- c(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
   }
 
   names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
