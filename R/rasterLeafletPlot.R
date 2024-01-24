@@ -73,15 +73,17 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
   # print(getwd())
   
   level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
+
   
   leaflet(width = 1024, 
           height = 768) %>%
     addRasterImage(x, 
-                   colors = pal(8)[-1]) %>%
+                   colors = pal(8)[-1],
+                   project = FALSE) %>%
     addPolygons(data = level1Identifier,
                 color = "#444444", 
-                weight = 1, 
-                smoothFactor = 0.5,
+                weight = 1.5, 
+                smoothFactor = 1,
                 opacity = 1.0, 
                 fillOpacity = 0,
                 popup = paste(level1Identifier$NAME_1),
