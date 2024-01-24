@@ -33,6 +33,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+
   rs <- createRasterStack(selectedCountry, rasterAgg, isCropped, level1Names)
 
   print(rs)
@@ -326,8 +327,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
           if (nLiving > 0)			# nLiving
           {
+            print(Susceptible[i,j])
             if (Susceptible[i,j] >= 1)
             {
+              print(I_tilda)
               nearbyInfected <- I_tilda[i,j]
 
               #--------------------------------------------------------------------#
@@ -398,7 +401,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
         } 					# Inhabitable
       }							# ncols
     } 							# nrows
-
+print("here")
     nextSusceptible[nextSusceptible < 0] = 0
     nextVaccinated[nextVaccinated < 0] = 0
     nextExposed[nextExposed < 0] = 0
@@ -413,14 +416,14 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     Recovered <- nextRecovered
     Dead <- nextDead
 
-    Susceptible <- raster(Susceptible)
-    Vaccinated <- raster(Vaccinated)
-    Exposed <- raster(Exposed)
-    Infected <- raster(Infected)
-    Recovered <- raster(Recovered)
-    Dead <- raster(Dead)
+    Susceptible <- rast(Susceptible)
+    Vaccinated <- rast(Vaccinated)
+    Exposed <- rast(Exposed)
+    Infected <- rast(Infected)
+    Recovered <- rast(Recovered)
+    Dead <- rast(Dead)
 
-    extent(Susceptible) <- extent(Vaccinated) <- extent(Exposed) <- extent(Infected) <- extent(Recovered) <- extent(Dead) <- extent(rs$rasterStack)
+    ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(rs$rasterStack)
     crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(rs$rasterStack)
     
     # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
@@ -763,9 +766,11 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   maxRasterLayerVal <- 0
 
   for (t in 1:timestep){
-    maxRasterLayerVal <- max(maxRasterLayerVal, maxValue(allRasters[[t]]$rasterStack[[rasterLayer]]))
+    tempMax <- minmax(allRasters[[t]]$rasterStack[[rasterLayer]])
+    print(tempMax)
+    maxRasterLayerVal <- max(maxRasterLayerVal, tempMax)
   }
-
+  print("out of for")
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
 
