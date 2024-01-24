@@ -420,23 +420,26 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session){
+  
   iv <- InputValidator$new()
+  iv_alpha <- InputValidator$new()
+  iv_seeddataupload <- InputValidator$new() 
   
   # Non-spatial Modelling
   
   # muValue
-  iv$add_rule("muBirth", sv_required())
-  iv$add_rule("muBirth", sv_gte(0))
+  # iv$add_rule("muBirth", sv_required())
+  # iv$add_rule("muBirth", sv_gte(0))
   #iv$add_rule("muBirth", sv_lte(0.1))
   
-  iv$add_rule("muDeath", sv_required())
-  iv$add_rule("muDeath", sv_gte(0))
+  # iv$add_rule("muDeath", sv_required())
+  # iv$add_rule("muDeath", sv_gte(0))
   #iv$add_rule("muDeath", sv_lte(0.1))
 
   # Spatial Modelling
   
-  iv$add_rule("alpha", sv_required())
-  iv$add_rule("alpha", sv_gte(0))
+  iv_alpha$add_rule("alpha", sv_required())
+  iv_alpha$add_rule("alpha", sv_gte(0))
   
   iv$add_rule("beta", sv_required())
   iv$add_rule("beta", sv_gte(0))
@@ -451,7 +454,8 @@ server <- function(input, output, session){
   iv$add_rule("delta", sv_gte(0))
   
   iv$add_rule("lambda", sv_required())
-  iv$add_rule("lambda", sv_gte(0))
+  iv$add_rule("lambda", sv_integer())
+  iv$add_rule("lambda", sv_gt(0))
   
   iv$add_rule("date", sv_required())
   
@@ -459,8 +463,30 @@ server <- function(input, output, session){
   iv$add_rule("timestep", sv_integer())
   iv$add_rule("timestep", sv_gt(0))
   
-  iv$enable()
+  iv_seeddataupload$add_rule("seedData", sv_required())
+  iv_seeddataupload$add_rule("seedData", ~ if(is.null(fileInputs$smStatus) || fileInputs$smStatus == 'reset') "Required")
   
+  iv_alpha$condition(~ isTRUE(input$modelSelect == "SVEIRD"))
+  
+  iv$add_validator(iv_alpha)
+  iv$add_validator(iv_seeddataupload)
+  
+  iv$enable()
+  iv_alpha$enable()
+  iv_seeddataupload$enable()
+  
+  observe({
+    print(iv$validate())
+    if(iv$is_valid()){
+      shinyjs::enable(id = "go")
+    } else {
+      shinyjs::disable(id = "go")
+    }
+  })
+  
+  # observeEvent(iv$is_valid(), {
+  #   shinyjs::enable(id = "go")
+  # })
   # Reset vital dynamics when not checked off
   observe({
     input$muValue
@@ -473,8 +499,18 @@ server <- function(input, output, session){
   
   values <- reactiveValues()
   values$allow_simulation_run <- TRUE
+  
+  fileInputs <- reactiveValues(
+    smStatus = NULL
+  )
   # values$df <- data.frame(Variable = character(), Value = character()) 
   # output$table <- renderTable(values$df)
+  
+  susceptible <- reactive({
+    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
+    
+    createSusceptibleLayer(input$selectedCountry, 0, FALSE, level1Names = NULL)
+  })
   
   ############################################################################    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -498,6 +534,7 @@ server <- function(input, output, session){
   # Output population base plot image to the app UI                          #
   ############################################################################ 
   observeEvent(input$go, {
+    req(iv$is_valid())
     output$outputImage <- renderImage({
       source("R/rasterBasePlot.R")
       outfile <- tempfile(fileext = '.png')
@@ -505,7 +542,7 @@ server <- function(input, output, session){
       #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
       png(outfile, width = 800, height = 600)
       #createBasePlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, directOutput = TRUE)  # print the susceptible plot direct to UI
-      createBasePlot(selectedCountry = input$selectedCountry, rasterAgg = 0, directOutput = TRUE)  # print the susceptible plot direct to UI
+      isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible(), directOutput = TRUE))  # print the susceptible plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
@@ -517,6 +554,7 @@ server <- function(input, output, session){
   # Output IDE equations image to the app UI                                 #
   ############################################################################ 
   observeEvent(input$go, {
+    req(iv$is_valid())
     output$modelImg <- renderImage({
       return(list(src= "www/ModelEquations.png",
                   contentType = "image/png"))
@@ -527,6 +565,7 @@ server <- function(input, output, session){
   # Output flowchart image to the app UI                                     #
   ############################################################################ 
   observeEvent(input$go, {
+    req(iv$is_valid())
     output$flowchartImg <- renderImage({
       if (input$modelSelect == "SEIRD"){
         return(list(src= "www/SEIRD.png",
@@ -554,6 +593,7 @@ server <- function(input, output, session){
   ############################################################################ 
   observeEvent(input$seedData, {
     values$allow_simulation_run <- TRUE
+    fileInputs$smStatus <- 'uploaded'
   })
   
   ############################################################################    
@@ -1175,6 +1215,7 @@ server <- function(input, output, session){
   lineThickness <- 1.5
   
   observeEvent(input$go, {
+    req(iv$is_valid())
     source("R/makePlots.R")
     output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
     
@@ -1280,6 +1321,7 @@ server <- function(input, output, session){
   # Multiple functionality when 'Run Simulation' is pressed                  #
   ############################################################################ 
   observeEvent(input$go, {
+    req(iv$is_valid())
     
     isCropped <- FALSE
     
@@ -1299,6 +1341,7 @@ server <- function(input, output, session){
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
+      req(iv$is_valid())
       req(input$seedData)
       ext <- tools::file_ext(input$seedData$datapath)
       seedData <- input$seedData
@@ -1392,13 +1435,13 @@ server <- function(input, output, session){
     {
       isDeterministic <- FALSE
     }
-    
+    print("before model")
     SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
                                     alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
                                     deterministic = isDeterministic, isCropped = input$clipLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
                                     dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
                                     QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
-    
+    print("after model")
     # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
     # row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
@@ -1446,6 +1489,7 @@ server <- function(input, output, session){
   
   observeEvent(input$resetAll,{
     hideTab(inputId = 'tabSet', target = 'Input Summary')
+    fileInputs$smStatus <- 'reset'
   })
   
   observe(
