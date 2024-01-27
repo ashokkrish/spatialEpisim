@@ -1,7 +1,7 @@
 # rm(list = ls())
 library(countrycode)
-library(raster, warn.conflicts=FALSE)
-#library(terra, warn.conflicts=FALSE) 
+# library(raster, warn.conflicts=FALSE)
+library(terra, warn.conflicts=FALSE)
 
 source("R/rasterWorldPop.R")
 
@@ -45,6 +45,8 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     Level1Identifier <- Level1Identifier[which(Level1Identifier$NAME_1 %in% level1Names), ]
     # print(Level1Identifier) # It is a SpatialPolygonsDataFrame
     
+    Level1Identifier <- vect(Level1Identifier)
+    crs(Level1Identifier) <- crs(Susceptible, proj = TRUE)
     # Level1Identifier <- Level1Identifier[Level1Identifier$NAME_1 %in% level1Names, ]
     # print(Level1Identifier)
     
@@ -54,7 +56,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     Level1Raster <- crop(Level1Identifier, Susceptible)
     # print(Level1Raster) # It is still a SpatialPolygonsDataFrame
     
-    Level1Raster <- raster(Level1Identifier, resolution = res(Susceptible)[1])
+    Level1Raster <- rast(Level1Identifier, resolution = res(Susceptible)[1])
     # print(Level1Raster) # It is now a RasterLayer
     # print(values(Level1Raster))
     
@@ -99,7 +101,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
     values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with either a 0 or 1.
     
-    inhabitableTrim <- trim(Inhabitable, values = 0, padding = 1)
+    inhabitableTrim <- terra::trim(Inhabitable, value = 0, padding = 1)
     #print(inhabitableTrim)
     
     #print(table(as.matrix(Inhabitable)))
@@ -115,7 +117,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     # print(extent(Level1Raster))
     # print(extent(Susceptible))
     
-    rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
+    rasterStack <- c(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
     
     names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
     
@@ -180,21 +182,36 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     # main = "Location of Health Zones", 
     # legend = FALSE,
 
-    plot(clippedInfected, col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of inital infections (Ituri and North Kivu)", 
-         xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")), 
-         legend = TRUE, horizontal = TRUE, legend.args = list(text='Persons', side = 1, line = 2),
-         mar = c(8.5, 3.5, 2.5, 2.5))
+    terra::plot(clippedInfected, 
+         col = pal(8)[-2], 
+         axes = TRUE, 
+         cex.main = 1, 
+         main = "Location of inital infections (Ituri and North Kivu)", 
+         xlab = expression(bold("Longitude")), 
+         ylab = expression(bold("Latitude")), 
+         plg = list(title = "Persons", 
+                           loc = "bottom", 
+                           horiz = TRUE,
+                           yjust = 3.5, 
+                           x.intersp = 0.6, 
+                           inset = c(0, -0.2), 
+                           cex = 1.15),
+         mar = c(8.5, 3.5, 4, 2.5))
     # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), 
-    plot(Level1Identifier, add = TRUE)
+    plot(Level1Identifier, 
+         add = TRUE)
     }
     else
     {
       print("Seed plot for the whole country")
+      
+      Level1Identifier <- vect(Level1Identifier)
+      crs(Level1Identifier) <- crs(Susceptible, proj = TRUE)
 
       Level1Raster <- crop(Level1Identifier, Susceptible)
       # print(Level1Raster) # It is still a SpatialPolygonsDataFrame
 
-      Level1Raster <- raster(Level1Identifier, resolution = res(Susceptible)[1])
+      Level1Raster <- rast(Level1Identifier, resolution = res(Susceptible)[1])
       # print(Level1Raster) # It is now a RasterLayer
       # print(values(Level1Raster))
 
@@ -252,7 +269,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       # print(extent(Level1Raster))
       # print(extent(Susceptible))
 
-      rasterStack <- stack(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
+      rasterStack <- c(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
 
       names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
 
@@ -324,14 +341,26 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       pal <- colorRampPalette(ramp)
       
       
-      plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of inital infections (Czechia)", 
-           xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")), 
-           legend = TRUE, horizontal = TRUE, legend.args = list(text='Persons', side = 1, line = 2),
-           mar = c(8.5, 3.5, 2.5, 2.5))
-
+      terra::plot(rasterStack[["Infected"]], 
+           col = pal(8)[-2], 
+           axes = TRUE, 
+           cex.main = 1, 
+           main = "Location of inital infections (Czechia)", 
+           xlab = expression(bold("Longitude")), 
+           ylab = expression(bold("Latitude")), 
+           plg = list(title = "Persons", 
+                      loc = "bottom", 
+                      horiz = TRUE,
+                      yjust = 3.5, 
+                      x.intersp = 0.6, 
+                      inset = c(0, -0.2), 
+                      cex = 1.15),
+           mar = c(8.5, 3.5, 4, 2.5))
+      
       #plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = TRUE, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
       # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15),
-      plot(Level1Identifier, add = TRUE)
+      plot(Level1Identifier, 
+           add = TRUE)
     }
 }
 

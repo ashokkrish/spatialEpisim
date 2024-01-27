@@ -9,7 +9,7 @@ shhh(library(magick))
 shhh(library(Matrix))
 options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(rgdal, warn.conflicts=FALSE))
-shhh(library(raster, warn.conflicts=FALSE))
+# shhh(library(raster, warn.conflicts=FALSE))
 shhh(library(rasterVis))
 shhh(library(rstudioapi))
 shhh(library(readxl))
@@ -38,6 +38,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   print(rs)
 
+  print(rs$rasterStack)
   Susceptible <- rs$rasterStack$Susceptible
   Vaccinated <- rs$rasterStack$Vaccinated
   Exposed <- rs$rasterStack$Exposed
@@ -49,8 +50,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   Level1Raster <- rs$rasterStack$Level1Raster
 
   Level1Identifier <- rs$Level1Identifier
-
-  # print(rs$rasterStack)
+  
   # print(Level1Identifier$NAME_1)  # List of states/provinces/regions
 
   # plot(Level1Raster)
@@ -134,6 +134,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
+  
+  valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
+  valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
+  valExposed <- terra::as.matrix(Exposed, wide = TRUE)
+  valInfected <- terra::as.matrix(Infected, wide = TRUE)
+  valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
+  valDead <- terra::as.matrix(Dead, wide = TRUE)
 
   #par(mfrow = c(1, 2))
   
@@ -310,34 +317,30 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #-------------------------------#
     # Generating the I_tilda matrix #
     #-------------------------------#
-
-    I_tilda <- wtd_nbrs_sum(input_matrix = raster::as.matrix(Infected), radius = radius, lambda = lambda)
+  
+    I_tilda <- wtd_nbrs_sum(input_matrix = terra::as.matrix(Infected, wide = TRUE), radius = radius, lambda = lambda)
 
     for(i in 1:nrows)
     { 							# nrows
       for(j in 1:ncols)
       {							# ncols
-        if (Inhabitable[i,j] == 1)
+        if (Inhabitable[i,j][1,1] == 1)
         {						     # Inhabitable
           nLiving <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- 0
 
-          nLiving <- Susceptible[i,j] + Vaccinated[i,j] + Exposed[i,j] + Infected[i,j] + Recovered[i,j]
-          
-          #print(Exposed[i,j])
+          nLiving <- valSusceptible[i,j] + valVaccinated[i,j] + valExposed[i,j] + valInfected[i,j] + valRecovered[i,j]
 
           if (nLiving > 0)			# nLiving
           {
-            print(Susceptible[i,j])
-            if (Susceptible[i,j] >= 1)
+            if (valSusceptible[i,j] >= 1)
             {
-              print(I_tilda)
               nearbyInfected <- I_tilda[i,j]
 
               #--------------------------------------------------------------------#
               # Some susceptible people are going to be newly vaccinated           #
               #--------------------------------------------------------------------#
 
-              newVaccinated <- alpha*Susceptible[i,j]
+              newVaccinated <- alpha*valSusceptible[i,j]
 
               dailyVaccinated <- dailyVaccinated + newVaccinated
 
@@ -348,7 +351,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
               if (nearbyInfected >= 1)
               {
-                pSusceptible <- Susceptible[i,j]/nLiving
+                pSusceptible <- valSusceptible[i,j]/nLiving
                 if (deterministic){
                   newExposed <- beta*pSusceptible*nearbyInfected
                 } else {
@@ -363,9 +366,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
             #----------------------------------------------------------#
             # Some exposed people are going to become newly infectious #
             #----------------------------------------------------------#
-            if (Exposed[i,j] >= 1)
+            if (valExposed[i,j] >= 1)
             {
-              newInfected <- gamma*Exposed[i,j]
+              newInfected <- gamma*valExposed[i,j]
 
               dailyInfected <- dailyInfected + newInfected
               cumInfected   <- cumInfected + newInfected
@@ -374,14 +377,14 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
             #-----------------------------------------------------------#
             # Some infectious people are going to either recover or die #
             #-----------------------------------------------------------#
-            if (Infected[i,j] >= 1)
+            if (valInfected[i,j] >= 1)
             {
-              newRecovered <- sigma*Infected[i,j]
+              newRecovered <- sigma*valInfected[i,j]
 
               dailyRecovered <- dailyRecovered + newRecovered
               cumRecovered <- cumRecovered + newRecovered
 
-              newDead <- delta*Infected[i,j]
+              newDead <- delta*valInfected[i,j]
 
               dailyDead <- dailyDead + newDead
               cumDead <- cumDead + newDead
@@ -391,17 +394,17 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
             # Store the next state of each cell #
             #-----------------------------------#
 
-            nextSusceptible[i,j] <- Susceptible[i,j] - newExposed - newVaccinated
-            nextVaccinated[i,j] <- Vaccinated[i,j] + newVaccinated
-            nextExposed[i,j] <- Exposed[i,j] + newExposed - newInfected
-            nextInfected[i,j] <- Infected[i,j] + newInfected - newDead - newRecovered
-            nextRecovered[i,j] <- Recovered[i,j] + newRecovered
-            nextDead[i,j] <- Dead[i,j] + newDead
+            nextSusceptible[i,j] <- valSusceptible[i,j] - newExposed - newVaccinated
+            nextVaccinated[i,j] <- valVaccinated[i,j] + newVaccinated
+            nextExposed[i,j] <- valExposed[i,j] + newExposed - newInfected
+            nextInfected[i,j] <- valInfected[i,j] + newInfected - newDead - newRecovered
+            nextRecovered[i,j] <- valRecovered[i,j] + newRecovered
+            nextDead[i,j] <- valDead[i,j] + newDead
           }					# nLiving
         } 					# Inhabitable
       }							# ncols
     } 							# nrows
-print("here")
+
     nextSusceptible[nextSusceptible < 0] = 0
     nextVaccinated[nextVaccinated < 0] = 0
     nextExposed[nextExposed < 0] = 0

@@ -8,7 +8,7 @@ shhh(library(lattice))
 shhh(library(magick))
 options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(rgdal, warn.conflicts=FALSE))
-shhh(library(raster, warn.conflicts=FALSE))
+# shhh(library(raster, warn.conflicts=FALSE))
 shhh(library(rasterVis))
 shhh(library(rstudioapi))
 shhh(library(sp))
@@ -91,8 +91,9 @@ setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
 #------------------------------------------------------#
 createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal, includeLabels) {
   is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
+
   pal <- getPalette(palettePng)
-  
+
   if (!directOutput){
     png(PNGFileName) # output the plot to the www/ image folder
   }
@@ -108,7 +109,11 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
     } else {
       par(bty = 'n')
     }
-    plot(rasterToPrint, col=pal(8)[-1], main = basePlotTitle, interpolate = FALSE, axes = includeLabels, zlim=c(0,maxVal))
+    terra::plot(rasterToPrint, 
+                col=pal(8)[-1], 
+                main = basePlotTitle, 
+                axes = includeLabels, 
+                zlim=c(0,maxVal))
   } else {
     aggrPlotTitle <- ""
     
@@ -120,9 +125,15 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
     } else {
       par(bty = 'n')
     }
-    plot(rasterToPrint, col=pal(9)[-1], main = aggrPlotTitle, interpolate = FALSE, axes = includeLabels, zlim=c(0,maxVal))
+    terra::plot(rasterToPrint, 
+                col=pal(9)[-1], 
+                main = aggrPlotTitle, 
+                axes = includeLabels, 
+                zlim=c(0,maxVal))
   }
-  plot(Level1Identifier, add = TRUE, axes = includeLabels)
+  terra::plot(Level1Identifier, 
+              add = TRUE, 
+              axes = includeLabels)
   
   if(includeLabels){
     title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
