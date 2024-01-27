@@ -78,8 +78,7 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
   leaflet(width = 1024, 
           height = 768) %>%
     addRasterImage(x, 
-                   colors = pal(8)[-1],
-                   project = FALSE) %>%
+                   colors = pal(8)[-1]) %>%
     addPolygons(data = level1Identifier,
                 color = "#444444", 
                 weight = 1.5, 
