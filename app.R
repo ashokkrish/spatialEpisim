@@ -14,7 +14,7 @@ shhh(library(maps))
 shhh(library(markdown))
 shhh(library(purrr))
 options("rgdal_show_exportToProj4_warnings"="none")
-shhh(library(raster, warn.conflicts=FALSE)) # classes and functions for raster data
+# shhh(library(raster, warn.conflicts=FALSE)) # classes and functions for raster data
 shhh(library(rasterVis))
 shhh(library(readxl))
 shhh(library(writexl))
@@ -540,12 +540,12 @@ server <- function(input, output, session){
       outfile <- tempfile(fileext = '.png')
       
       #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
-      png(outfile, width = 800, height = 600)
+      png(outfile, width = 1068, height = 768)
       #createBasePlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, directOutput = TRUE)  # print the susceptible plot direct to UI
-      isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible(), directOutput = TRUE))  # print the susceptible plot direct to UI
+      isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible()$Susceptible, directOutput = TRUE))  # print the susceptible plot direct to UI
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
   })
@@ -1315,6 +1315,8 @@ server <- function(input, output, session){
         }
       )
     }
+    
+    fileInputs$smStatus <- 'reset'
   })
   
   ############################################################################    
@@ -1435,13 +1437,13 @@ server <- function(input, output, session){
     {
       isDeterministic <- FALSE
     }
-    print("before model")
+    
     SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
                                     alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
                                     deterministic = isDeterministic, isCropped = input$clipLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
                                     dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
                                     QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
-    print("after model")
+
     # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
     # row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
@@ -1464,11 +1466,11 @@ server <- function(input, output, session){
       
       outfile <- tempfile(fileext = '.png')
       
-      png(outfile, width = 800, height = 600)
+      png(outfile, width = 1024, height = 768)
       createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = 0)  # print the seed plot direct to UI
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Seed plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
   })
