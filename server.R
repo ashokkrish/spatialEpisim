@@ -87,7 +87,7 @@ server <- function(input, output, session){
   fileInputs <- reactiveValues(
     smStatus = NULL
   )
-  # values$df <- data.frame(Variable = character(), Value = character()) 
+
   # output$table <- renderTable(values$df)
   
   susceptible <- reactive({
@@ -928,7 +928,7 @@ server <- function(input, output, session){
     print(paste0(c("isCropped", isCropped)))
     
     source("R/rasterStack.R")
-    #rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = input$level1List)
+    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = input$level1List)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
@@ -1033,19 +1033,23 @@ server <- function(input, output, session){
                                     dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
                                     QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
     
-    # row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
-    # row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
-    # row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
-    # row4  <- data.frame(Variable = "Aggregated Raster Dimension", Value = paste0(nrow(rs$rasterStack), " rows x ", ncol(rs$rasterStack), " columns = ", ncell(rs$rasterStack), " grid cells"))
-    # row5  <- data.frame(Variable = "Compartmental Model", Value = input$modelSelect)
-    # row6  <- data.frame(Variable = "Model Parameters", Value = paste("Alpha:", alpha,"Beta:", beta,"Gamma:", gamma, "Sigma:", sigma,"Delta:", delta))
-    # row7  <- data.frame(Variable = "Average Distance Travelled/Day (in km)", Value = input$lambda)
-    # row8  <- data.frame(Variable = "Radius (1 = Moore neighbourhood)", Value = radius)
-    # row9  <- data.frame(Variable = "Uploaded Seed Data", Value = input$seedData$name)
-    # row10 <- data.frame(Variable = "Number of iterations (days)", Value = input$timestep)
-    # 
-    #values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
+    row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
+    row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
+    row3  <- data.frame(Variable = "Aggregation Factor", Value = input$agg)
+    row4  <- data.frame(Variable = "Aggregated Raster Dimension", Value = paste0(nrow(rs$rasterStack), " rows x ", ncol(rs$rasterStack), " columns = ", ncell(rs$rasterStack), " grid cells"))
+    row5  <- data.frame(Variable = "Compartmental Model", Value = input$modelSelect)
+    row6  <- data.frame(Variable = "Model Parameters", Value = paste("Alpha:", alpha,"Beta:", beta,"Gamma:", gamma, "Sigma:", sigma,"Delta:", delta))
+    row7  <- data.frame(Variable = "Average Distance Travelled/Day (in km)", Value = input$lambda)
+    row8  <- data.frame(Variable = "Radius (1 = Moore neighbourhood)", Value = radius)
+    row9  <- data.frame(Variable = "Uploaded Seed Data", Value = input$seedData$name)
+    row10 <- data.frame(Variable = "Number of iterations (days)", Value = input$timestep)
+
+    values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
     
+    output$summaryTable <- renderTable({
+      values$df
+    })
+
     #########################################    
     # Output seed plot image to the app UI  #
     #########################################
@@ -1074,133 +1078,22 @@ server <- function(input, output, session){
     updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
   })
   
-  ##########################
-  #Input Summary Tab Panel #
-  ##########################
+  ################
+  # Tabset Panel #
+  ################
   
   observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Input Summary')
+    hide(id = 'tabSet')
     fileInputs$smStatus <- 'reset'
   })
   
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Input Summary')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Input Summary')
-  })
-  
-  ###############################
-  #Mathematical Model Tab Panel #
-  ###############################
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Mathematical Model')
-  )
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId= 'tabSet', target = 'Mathematical Model')
+  observeEvent(!iv$is_valid(),{
+    hide(id = 'tabSet')
   })
   
   observeEvent(input$go,{
-    showTab(inputId= 'tabSet', target = 'Mathematical Model')
-  })
-  
-  ##############################
-  #Schematic Diagram Tab Panel #
-  ##############################
-  
-  observe(
-    hideTab(inputId ='tabSet', target = 'Schematic Diagram')
-  )
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Schematic Diagram')
-  })
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Schematic Diagram')
-  })
-  
-  ##############################
-  #Initial Seed Data Tab Panel #
-  ##############################
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Initial Seed Data')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Initial Seed Data')
-  })
-  
-  ###################################
-  #Initial Seed Data Plot Tab Panel #
-  ###################################
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Seed Data Map')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Seed Data Map')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Seed Data Map')
-  })
-  
-  ##########################
-  #MP4 Animation Tab Panel #
-  ##########################
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'MP4 Animation')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'MP4 Animation')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'MP4 Animation')
-  })
-  
-  ###########################
-  #Output Summary Tab Panel #
-  ###########################
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Output Summary')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Output Summary')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Output Summary')
-  })
-  
-  ####################
-  #Plot Tab Panel    #
-  ####################
-  
-  observeEvent(input$resetAll,{
-    hideTab(inputId = 'tabSet', target = 'Plot')
-  })
-  
-  observe(
-    hideTab(inputId = 'tabSet', target = 'Plot')
-  )
-  
-  observeEvent(input$go,{
-    showTab(inputId = 'tabSet', target = 'Plot')
+    show(id = 'tabSet')
+    updateTabsetPanel(inputId = 'tabset', selected = 'Input Summary')
   })
   
   # output$downloadOutputSummary <- downloadHandler(

@@ -266,8 +266,10 @@ ui <- fluidPage(
                           tabsetPanel(id = "tabSet", selected = "Input Summary",
                                       
                                       tabPanel(title = "Input Summary",
-                                               verbatimTextOutput("summary"), 
-                                               #tableOutput("table"),
+                                               verbatimTextOutput("summary"),
+                                               br(),
+                                               tableOutput("summaryTable"),
+                                               br(),
                                                imageOutput("outputImage"),
                                                #imageOutput("croppedOutputImage"),
                                                #imageOutput("seededOutputImage"),
