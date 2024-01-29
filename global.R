@@ -40,12 +40,12 @@ fieldsMandatory <- c("selectedCountry", "seedData")
 
 #hoverDrop <- "selectedCountry"
 
-labelMandatory <- function(label) {
-  tagList(
-    label,
-    span("*", class = "mandatory_star")
-  )
-}
+# labelMandatory <- function(label) {
+#   tagList(
+#     label,
+#     span("*", class = "mandatory_star")
+#   )
+# }
 
 highlightDrop <- function(menu) {
   tagList(

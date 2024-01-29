@@ -20,6 +20,8 @@ server <- function(input, output, session){
   
   # Spatial Modelling
   
+  iv$add_rule("selectedCountry", sv_required())
+  
   iv_alpha$add_rule("alpha", sv_required())
   iv_alpha$add_rule("alpha", sv_gte(0))
   
@@ -220,7 +222,7 @@ server <- function(input, output, session){
   output$countryDropdown <- renderUI({
     pickerInput(
       inputId = "selectedCountry",
-      labelMandatory (strong("Country")), 
+      label = (strong("Country")), 
       choices = population$Country,
       multiple = FALSE,
       selected = NULL, # "Democratic Republic of Congo", #
@@ -539,7 +541,9 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-      fileInput(inputId = "seedData", labelMandatory("Upload Seed Data:"), placeholder = "Upload seed data (.csv or .xls or .xlsx)",
+      fileInput(inputId = "seedData", 
+                label = "Upload Seed Data:", 
+                placeholder = "Upload seed data (.csv or .xls or .xlsx)",
                 accept = c(
                   "text/csv",
                   "text/comma-separated-values,text/plain",
@@ -629,7 +633,8 @@ server <- function(input, output, session){
   output$dataAssimZones <- renderUI({
     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
     if (!is.null(input$selectedCountry) && input$selectedCountry != "") {
-      fileInput(inputId = "dataAssimZones", labelMandatory ("Upload the lat/lon coordinates of reporting health zones (.csv or .xls or .xlsx)"),
+      fileInput(inputId = "dataAssimZones", 
+                label = ("Upload the lat/lon coordinates of reporting health zones (.csv or .xls or .xlsx)"),
                 accept = c(
                   "text/csv",
                   "text/comma-separated-values,text/plain",
@@ -646,7 +651,8 @@ server <- function(input, output, session){
   output$dataAssimFileI <- renderUI({
     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
     if (showI()) {
-      fileInput(inputId = "assimIData", labelMandatory ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
+      fileInput(inputId = "assimIData", 
+                label = ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
                 accept = c(
                   "text/csv",
                   "text/comma-separated-values,text/plain",
@@ -658,7 +664,8 @@ server <- function(input, output, session){
   output$dataAssimFileD <- renderUI({
     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
     if (showD()) {
-      fileInput(inputId = "assimDData", labelMandatory ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
+      fileInput(inputId = "assimDData", 
+                label = ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
                 accept = c(
                   "text/csv",
                   "text/comma-separated-values,text/plain",
