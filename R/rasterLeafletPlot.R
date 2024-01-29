@@ -6,7 +6,8 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   
-  x <- classify(susceptible, c(0, 10, 25, 50, 100, 250, 1000, 100000))
+  valueRange <- c(0, 10, 25, 50, 100, 250, 1000, 100000)
+  x <- classify(susceptible, valueRange)
   
   # plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
@@ -87,12 +88,13 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
                 fillOpacity = 0,
                 popup = paste(level1Identifier$NAME_1),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                    bringToFront = TRUE))
-    # addScaleBar(position = "bottomleft") %>%
-    # addLegend(x,
-    #           pal = pal,
-    #           values = ramp,
-    #           title = "Persons",
-    #           position = "bottomleft") 
+                                                    bringToFront = TRUE)) %>%
+    addLegend(pal = colorBin(palette = pal(8)[-1],
+                             bins = valueRange,
+                             domain = valueRange),
+              values = valueRange,
+              opacity = 0.75,
+              title = "Persons",
+              position = "bottomleft")
   
 }
