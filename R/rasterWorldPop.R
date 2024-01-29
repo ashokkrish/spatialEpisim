@@ -23,6 +23,12 @@ if (!file.exists(paste0(tifFolder, tifFileName)))
 
 WorldPop <- rast(paste0(tifFolder, tifFileName))
 
+#Gives the five number summary
+print(summary(values(WorldPop)))
+
+#Number of cells that have an NA value
+print(sum(is.na(values(WorldPop))))
+
 # print(as.raster(WorldPop))
 
 WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # Delete this line for clear plot. Check!!!
