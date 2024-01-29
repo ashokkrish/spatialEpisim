@@ -94,7 +94,7 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
                              domain = valueRange),
               values = valueRange,
               opacity = 0.75,
-              title = "Persons",
-              position = "bottomleft")
+              title = "Est. persons per pixel",
+              position = "topright")
   
 }
