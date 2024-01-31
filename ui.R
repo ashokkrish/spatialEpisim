@@ -263,50 +263,55 @@ ui <- fluidPage(
                         ), 
                         
                         mainPanel(
-                          tabsetPanel(id = "tabSet", selected = "Input Summary",
-                                      
-                                      tabPanel(title = "Input Summary",
-                                               verbatimTextOutput("summary"),
-                                               br(),
-                                               tableOutput("summaryTable"),
-                                               br(),
-                                               imageOutput("outputImage"),
-                                               #imageOutput("croppedOutputImage"),
-                                               #imageOutput("seededOutputImage"),
-                                               #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
-                                      ),
-                                      
-                                      tabPanel(title = "Mathematical Model", id = "modelTab",
-                                               imageOutput("modelImg")),
-                                      
-                                      tabPanel(title = "Schematic Diagram", id = "flowchartTab",
-                                               imageOutput("flowchartImg")),
-                                      
-                                      tabPanel(title = "Initial Seed Data", 
-                                               dataTableOutput("tableSeed")),
-                                      
-                                      tabPanel(title = "Seed Data Map",
-                                               imageOutput("seedPlot")
-                                      ),
-                                      
-                                      tabPanel(title = "MP4 Animation",
-                                               uiOutput("outputVideo")#,
-                                               #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
-                                      ),
-                                      
-                                      tabPanel(title = "Output Summary",
-                                               dataTableOutput("outputSummary") ,
-                                               # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
-                                      ),
-                                      
-                                      tabPanel(title = "Plot", id = "plotTab",
-                                               imageOutput("infectedExposedPlot"),
-                                               imageOutput("cumulativePlot"),
-                                               imageOutput("fullPlot"),
-                                               imageOutput("fracSusPlot"),
-                                               #downloadButton(outputId = "downloadPlot", label = "Save Image")
-                                      )
-                          ) # tabsetPanel
+                          div(id = "tabsetContainer",
+                              tabsetPanel(id = "tabSet", selected = "Input Summary",
+                                          
+                                          tabPanel(title = "Input Summary",
+                                                   verbatimTextOutput("summary"),
+                                                   br(),
+                                                   tableOutput("summaryTable"),
+                                                   br(),
+                                                   imageOutput("outputImage"),
+                                                   #imageOutput("croppedOutputImage"),
+                                                   #imageOutput("seededOutputImage"),
+                                                   #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
+                                          ),
+                                          
+                                          tabPanel(title = "Mathematical Model", id = "modelTab",
+                                                   imageOutput("modelImg")
+                                          ),
+                                          
+                                          tabPanel(title = "Schematic Diagram", id = "flowchartTab",
+                                                   imageOutput("flowchartImg")
+                                          ),
+                                          
+                                          tabPanel(title = "Initial Seed Data", 
+                                                   dataTableOutput("tableSeed")
+                                          ),
+                                          
+                                          tabPanel(title = "Seed Data Map",
+                                                   imageOutput("seedPlot")
+                                          ),
+                                          
+                                          tabPanel(title = "MP4 Animation",
+                                                   uiOutput("outputVideo")#,
+                                                   #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
+                                          ),
+                                          
+                                          tabPanel(title = "Output Summary",
+                                                   dataTableOutput("outputSummary") ,
+                                                   # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
+                                          ),
+                                          
+                                          tabPanel(title = "Plot", id = "plotTab",
+                                                   imageOutput("infectedExposedPlot"),
+                                                   imageOutput("cumulativePlot"),
+                                                   imageOutput("fullPlot"),
+                                                   imageOutput("fracSusPlot"),
+                                                   #downloadButton(outputId = "downloadPlot", label = "Save Image")
+                                          )
+                              ) # tabsetPanel
+                          )
                         ), # mainPanel
                       ) # sidebarLayout
              ), # Model tabPanel

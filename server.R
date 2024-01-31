@@ -1083,17 +1083,18 @@ server <- function(input, output, session){
   ################
   
   observeEvent(input$resetAll,{
-    hide(id = 'tabSet')
+    shinyjs::hide(id = "tabsetContainer")
     fileInputs$smStatus <- 'reset'
+    iv$validate()
   })
   
   observeEvent(!iv$is_valid(),{
-    hide(id = 'tabSet')
+    shinyjs::hide(id = "tabsetContainer")
   })
   
   observeEvent(input$go,{
-    show(id = 'tabSet')
-    updateTabsetPanel(inputId = 'tabset', selected = 'Input Summary')
+    shinyjs::show(id = "tabsetContainer")
+    updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
   })
   
   # output$downloadOutputSummary <- downloadHandler(
