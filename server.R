@@ -223,7 +223,7 @@ server <- function(input, output, session){
     pickerInput(
       inputId = "selectedCountry",
       label = (strong("Country")), 
-      choices = population$Country,
+      choices = shortlist$Country,
       multiple = FALSE,
       selected = NULL, # "Democratic Republic of Congo", #
       options = pickerOptions(
@@ -1092,7 +1092,7 @@ server <- function(input, output, session){
     updatePickerInput(
       session, 
       inputId = 'selectedCountry', 
-      choices = population$Country, 
+      choices = shortlist$Country, 
       selected = "Nigeria")
   })
   

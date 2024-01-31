@@ -33,6 +33,7 @@ shhh(library(tidyverse))
 shhh(library(tinytex))
 
 population <- read_excel("misc/population.xlsx", 1)
+shortlist <- filter(population, shortList == "TRUE")
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
 #print(epiparms)
 
