@@ -341,7 +341,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "alpha",
-                   label = HTML(paste("Daily Vaccination Rate ", TeX("&#945"))),
+                   label = HTML(paste("Daily Vaccination Rate (&#945)")),
                    value = alphaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -377,7 +377,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "beta",
-                   label = HTML(paste("Daily Exposure Rate ", TeX("&#946"))), 
+                   label = HTML(paste("Daily Exposure Rate (&#946)")), 
                    value = betaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -413,7 +413,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "gamma",
-                   label = HTML(paste("Daily Vaccination Rate ", TeX("&#947"))), 
+                   label = HTML(paste("Daily Vaccination Rate (&#947)")), 
                    value = gammaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -449,7 +449,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "sigma",
-                   label = HTML(paste("Daily Recovery Rate ", TeX("&#963"))), 
+                   label = HTML(paste("Daily Recovery Rate (&#963)")), 
                    value = sigmaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -485,7 +485,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "delta",
-                   label = HTML(paste("Daily Death Rate ", TeX("&#948"))),
+                   label = HTML(paste("Daily Death Rate (&#948)")),
                    value = deltaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -527,7 +527,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "lambda",
-                   label = HTML(paste("Distance Parameter", TeX("&#955"))),
+                   label = HTML(paste("Distance Parameter (&#955)")),
                    value = lambdaValue,min = 1, max = 50, step = 1)
     }
   })
