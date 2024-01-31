@@ -173,11 +173,18 @@ ui <- fluidPage(
                                               
                                               uiOutput("countryDropdown"),
                                               
-                                              checkboxInput(inputId = "filterLMIC", label = strong("Show LMIC only"), value = FALSE),
+                                              # checkboxInput(
+                                              #   inputId = "filterLMIC", 
+                                              #   label = strong("Show LMIC only"), 
+                                              #   value = FALSE),
                                               
                                               uiOutput("clipStateCheckbox"),
                                               
-                                              conditionalPanel(condition = "input.clipLev1 == '1'",  uiOutput("Level1Ui")),
+                                              conditionalPanel(
+                                                condition = "input.clipLev1 == '1'",  
+                                                
+                                                uiOutput("Level1Ui")
+                                              ),
                                               
                                               uiOutput("aggInput"),
                                               
@@ -186,7 +193,8 @@ ui <- fluidPage(
                                               uiOutput("stochasticRadio"),
                                               
                                               conditionalPanel(
-                                                id = "SEIRD_SVEIRD",
+                                                condition = "input.selectedCountry != ''",
+                                                
                                                 withMathJax(),
                                                 
                                                 h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
@@ -199,7 +207,7 @@ ui <- fluidPage(
                                                   uiOutput("alphaInput")
                                                 ),
                                                 
-                                                condition = "input.modelSelect == 'SEIRD' || input.modelSelect == 'SVEIRD'", 
+                                                 
                                                 
                                                 uiOutput("betaInput"),
                                                 

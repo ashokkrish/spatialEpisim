@@ -239,8 +239,11 @@ server <- function(input, output, session){
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "clipLev1", label = strong("Clip State(s)/Province(s)"), value = FALSE
-      )}
+      checkboxInput(
+        inputId = "clipLev1", 
+        label = strong("Clip State(s)/Province(s)"), 
+        value = FALSE)
+    }
   })
   
   ############################################################################     
@@ -350,6 +353,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$betaInput <- renderUI({
+    req(!is.null(input$modelSelect))
     betaValue <- 0.055 # 0.00001
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -386,6 +390,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$gammaInput <- renderUI({
+    req(!is.null(input$modelSelect))
     gammaValue <- 0.009 #0.008
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -422,6 +427,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$sigmaInput <- renderUI({
+    req(!is.null(input$modelSelect))
     sigmaValue <- 0.065
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -458,6 +464,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$deltaInput <- renderUI({
+    req(!is.null(input$modelSelect))
     deltaValue <- 0.0015
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -499,6 +506,7 @@ server <- function(input, output, session){
   #p("NOTE:Radius of 1 is called the",a("Moore neighbourhood", href="https://en.wikipedia.org/wiki/Moore_neighborhood", target="_blank")),
   
   output$lambdaInput <- renderUI({
+    req(!is.null(input$modelSelect))
     lambdaValue <- 15
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -560,6 +568,7 @@ server <- function(input, output, session){
   #                                                                          #
   ############################################################################ 
   output$startDateInput <- renderUI({
+    req(!is.null(input$modelSelect))
     startDateInput <- Sys.Date() # NULL
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -1068,14 +1077,23 @@ server <- function(input, output, session){
     }, deleteFile = TRUE)
   })
   
-  observeEvent(input$filterLMIC,{
-    updateCheckboxInput(session, inputId = "clipLev1", value = FALSE) # uncheck the clip box first
-    if(input$filterLMIC){
-      population <- population[population$LMIC == 'TRUE',]
-    } else {
-      population <- population #[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
-    }
-    updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
+  # observeEvent(input$filterLMIC,{
+  #   updateCheckboxInput(session, inputId = "clipLev1", value = FALSE) # uncheck the clip box first
+  #   if(input$filterLMIC){
+  #     population <- population[population$LMIC == 'TRUE',]
+  #   } else {
+  #     population <- population #[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
+  #   }
+  #   updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
+  # })
+  
+  observeEvent(input$modellingApproach, {
+    
+    updatePickerInput(
+      session, 
+      inputId = 'selectedCountry', 
+      choices = population$Country, 
+      selected = "Nigeria")
   })
   
   ################
@@ -1085,7 +1103,6 @@ server <- function(input, output, session){
   observeEvent(input$resetAll,{
     shinyjs::hide(id = "tabsetContainer")
     fileInputs$smStatus <- 'reset'
-    iv$validate()
   })
   
   observeEvent(!iv$is_valid(),{
