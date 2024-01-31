@@ -91,7 +91,6 @@ createBasePlot <- function(selectedCountry, susceptible, directOutput) {
               line.lab = 2.25,
               cex.lab = 1.20,
               plg = list(title = expression(bold("Persons")), 
-                         title.cex = 1, 
                          horiz = TRUE, 
                          loc = "bottom", 
                          yjust = 3.5, 
