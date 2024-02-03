@@ -32,6 +32,8 @@ shhh(library(terra, warn.conflicts=FALSE))  # suppressWarnings(suppressMessages(
 shhh(library(tidyverse))
 shhh(library(tinytex))
 
+options(scipen = 999)
+
 population <- read_excel("misc/population.xlsx", 1)
 shortlist <- filter(population, shortList == "TRUE")
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
