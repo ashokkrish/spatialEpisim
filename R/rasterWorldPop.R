@@ -54,7 +54,7 @@ if (rasterAgg == 0 || rasterAgg == 1) {
 
 # print(Susceptible)
 
-returnList <- list("Susceptible" =  Susceptible)
+returnList <- list("Susceptible" =  Susceptible, "nRows" = nrow(WorldPop), "nCols" = ncol(WorldPop), "nCells" = ncell(WorldPop))
 
 return(returnList)
 }

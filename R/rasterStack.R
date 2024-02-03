@@ -8,7 +8,10 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 
   source("R/rasterWorldPop.R")
   
-  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)$Susceptible
+  SusceptibleLayer <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)
+  Susceptible <- SusceptibleLayer$Susceptible
+  
+  
   
   # print(Susceptible)
     
@@ -222,7 +225,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
   
   #print(rasterStack)
 
-  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = nrow(rasterStack$Susceptible), "nCols" = ncol(rasterStack$Susceptible), "nCells" = ncell(rasterStack$Susceptible))
+  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = SusceptibleLayer$nRows, "nCols" = SusceptibleLayer$nCols, "nCells" = SusceptibleLayer$nCells)
   
   return(returnList)
 }
