@@ -16,7 +16,7 @@ makePlot <- function (compartments, input, plotTitle, xTitle, yTitle, lineThickn
       labs(title = plotTitle, x = xTitle, y = yTitle) +
       scale_x_date(date_labels = "%d %b %Y")
     for (comp in compartments) {
-      p <- p + geom_line(aes_string("Date", comp), linewidth=lineThickness, color=compColors[comp,])
+      p <- p + geom_line(aes(.data[["Date"]], .data[[comp]]), linewidth=lineThickness, color=compColors[comp,])
     }
     plot(p)
     dev.off()
