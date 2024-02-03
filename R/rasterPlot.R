@@ -132,8 +132,7 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
                 zlim=c(0,maxVal))
   }
   terra::plot(Level1Identifier, 
-              add = TRUE, 
-              axes = includeLabels)
+              add = TRUE)
   
   if(includeLabels){
     title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
@@ -181,7 +180,7 @@ importGeoTiff <- function() {
   if (!file.exists(paste0(foldName, tifFileName))){
     download.file(url, paste0(foldName, tifFileName), mode = "wb")
   } 
-   WorldPop <<- raster(paste0(foldName, tifFileName))
+   WorldPop <<- rast(paste0(foldName, tifFileName))
 }
 
 #---------------------------------------------------#

@@ -99,7 +99,7 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
                           " (1 sq. km resolution)")
   
   terra::plot(x, 
-              col=pal(8)[-1], 
+              col = pal(8)[-1], 
               axes = TRUE,
               buffer = TRUE,
               box = TRUE,
@@ -110,10 +110,8 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
               ylab = expression(bold(Latitude)),
               line.lab = 2.25,
               cex.lab = 1.20,
-              plg = list(x = xmin(lvl1Raster)-0.24*dlong, 
-                         y = ymin(lvl1Raster)-0.015*dlat, 
-                         title = expression(bold("Persons")), 
-                         horiz=TRUE,
+              plg = list(title = expression(bold("Persons")), 
+                         horiz = TRUE,
                          loc = "bottom", 
                          yjust = 3.5, 
                          x.intersp = 0.6, 

@@ -232,7 +232,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       # Level1Raster <- round(resample(Level1Raster, Susceptible, method = "bilinear"))
       # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb", fun ='modal'))
 
-      Level1Raster <- resample(Level1Raster, Susceptible, method = "ngb")
+      Level1Raster <- resample(Level1Raster, Susceptible, method = "near")
 
       values(Level1Raster) <- ifelse(values(Level1Raster) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
       # print(table(values(Level1Raster)))
