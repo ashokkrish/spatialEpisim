@@ -1,7 +1,7 @@
 #---------------------------
 #     Server Components
 #---------------------------
-server <- function(input, output, session){
+server <- function(input, output, session) {
   
   iv <- InputValidator$new()
   iv_alpha <- InputValidator$new()
@@ -99,7 +99,7 @@ server <- function(input, output, session){
   # Create a country plot cropped by level1Identifier and output to UI       #
   ############################################################################ 
   # observeEvent(input$go, {
-  #   if(input$clipLev1 == TRUE){
+  #   if(input$cropLev1 == TRUE){
   #     output$croppedOutputImage <- renderImage({
   #       source("R/clippingBaseRasterHaxby.R")
   #       outfile <- tempfile(fileext = '.png')
@@ -121,11 +121,15 @@ server <- function(input, output, session){
     output$outputImage <- renderImage({
       source("R/rasterBasePlot.R")
       outfile <- tempfile(fileext = '.png')
-      
-      #createBasePlot(input$selectedCountry, input$agg, FALSE) # print the susceptible plot to www/
       png(outfile, width = 1068, height = 768)
-      #createBasePlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, directOutput = TRUE)  # print the susceptible plot direct to UI
-      isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible()$Susceptible, directOutput = TRUE))  # print the susceptible plot direct to UI
+      
+      if(input$cropLev1) {
+        req(input$level1List != "")
+        isolate(createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE))
+      } else {
+        isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible()$Susceptible, directOutput = TRUE))  # print the susceptible plot direct to UI
+      }
+      
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
@@ -234,13 +238,13 @@ server <- function(input, output, session){
   ############################################################################    
   # Dynamically display the checkbox option to select for states/provinces   #
   ############################################################################
-  output$clipStateCheckbox <- renderUI({
+  output$cropStateCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(
-        inputId = "clipLev1", 
-        label = strong("Clip State(s)/Province(s)"), 
+        inputId = "cropLev1", 
+        label = strong("Crop State(s)/Province(s)"), 
         value = FALSE)
     }
   })
@@ -260,7 +264,7 @@ server <- function(input, output, session){
   # Create select box for choosing input country                             #
   ############################################################################      
   output$Level1Ui <- renderUI({
-    validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
+    validate(need(input$cropLev1 == TRUE, "")) # catches UI warning
     
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
     
@@ -272,7 +276,7 @@ server <- function(input, output, session){
     
     selectizeInput(inputId = "level1List", "",
                    choices = level1Options,
-                   selected = c("Kwara", "Oyo"),
+                   # selected = c("Kwara", "Oyo"),
                    multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
     
@@ -417,7 +421,7 @@ server <- function(input, output, session){
       }
       
       numericInput(inputId = "gamma",
-                   label = HTML(paste("Daily Vaccination Rate (&#947)")), 
+                   label = HTML(paste("Daily Infection Rate (&#947)")), 
                    value = gammaValue, min = 0, max = 1, step = 0.00001)
     }
   })
@@ -924,7 +928,7 @@ server <- function(input, output, session){
     
     isCropped <- FALSE
     
-    if(input$clipLev1 == TRUE)
+    if(input$cropLev1 == TRUE)
     {
       isCropped <- TRUE
     }
@@ -1040,7 +1044,7 @@ server <- function(input, output, session){
     
     SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
                                     alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
-                                    deterministic = isDeterministic, isCropped = input$clipLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
+                                    deterministic = isDeterministic, isCropped = input$cropLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
                                     dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
                                     QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
     
@@ -1088,7 +1092,7 @@ server <- function(input, output, session){
   })
   
   # observeEvent(input$filterLMIC,{
-  #   updateCheckboxInput(session, inputId = "clipLev1", value = FALSE) # uncheck the clip box first
+  #   updateCheckboxInput(session, inputId = "cropLev1", value = FALSE) # uncheck the clip box first
   #   if(input$filterLMIC){
   #     population <- population[population$LMIC == 'TRUE',]
   #   } else {

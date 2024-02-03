@@ -178,10 +178,10 @@ ui <- fluidPage(
                                               #   label = strong("Show LMIC only"), 
                                               #   value = FALSE),
                                               
-                                              uiOutput("clipStateCheckbox"),
+                                              uiOutput("cropStateCheckbox"),
                                               
                                               conditionalPanel(
-                                                condition = "input.clipLev1 == '1'",  
+                                                condition = "input.cropLev1 == '1'",  
                                                 
                                                 uiOutput("Level1Ui")
                                               ),
