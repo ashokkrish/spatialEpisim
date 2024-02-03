@@ -279,6 +279,7 @@ ui <- fluidPage(
                                                    br(),
                                                    DTOutput("summaryTable"),
                                                    br(),
+                                                   br(),
                                                    imageOutput("outputImage"),
                                                    #imageOutput("croppedOutputImage"),
                                                    #imageOutput("seededOutputImage"),
