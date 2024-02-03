@@ -6,7 +6,7 @@
 
 Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io/spatialepisim>
 
-Alternatively you can send a pull request to download all the files in this repository and run the app by loading `app.R` and clicking `Run App`. Note that the ``spatialEpisim`` project is not on CRAN, just on github.
+Alternatively you can send a pull request to download all the files in this repository and run the app by loading `global.R` and clicking `Run App`. Note that the ``spatialEpisim`` project is not on CRAN, just on github.
 
 ## Key features
 
