@@ -71,20 +71,20 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     # print(freq(Level1Raster))
     
     # Resampling methods
-    # "ngb": Nearest-neighbor; assigns the value of the nearest cell
+    # "near": Nearest-neighbor; assigns the value of the nearest cell
     # "bilinear": Bilinear interpolation; assigns a weighted average of the four nearest cells (the default)
     
     # Level1Raster <- round(resample(Level1Raster, Susceptible, method = "bilinear"))
-    # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb", fun ='modal'))
+    # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "near", fun ='modal'))
     
-    Level1Raster <- resample(Level1Raster, Susceptible, method = "ngb")
+    Level1Raster <- resample(Level1Raster, Susceptible, method = "near")
     
     values(Level1Raster) <- ifelse(values(Level1Raster) > 0, values(Level1Raster), 0) # Refill the rasterLayer with 0, 1, 2, 3, ....
     # print(table(values(Level1Raster)))
     # print(freq(Level1Raster))
     
     # Level1Raster <- replace(Level1Raster, values(Level1Raster) < 0, 0)
-    # Unless you are using method = "ngb" the above line is needed for some countries.
+    # Unless you are using method = "near" the above line is needed for some countries.
     # The other method is called "bilinear"
     
     Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
@@ -186,7 +186,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
          col = pal(8)[-2], 
          axes = TRUE, 
          cex.main = 1, 
-         main = "Location of inital infections (Ituri and North Kivu)", 
+         main = "Location of initial infections (Ituri and North Kivu)", 
          xlab = expression(bold("Longitude")), 
          ylab = expression(bold("Latitude")), 
          plg = list(title = "Persons", 
@@ -226,11 +226,11 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       # print(freq(Level1Raster))
 
       # Resampling methods
-      # "ngb": Nearest-neighbor; assigns the value of the nearest cell
+      # "near": Nearest-neighbor; assigns the value of the nearest cell
       # "bilinear": Bilinear interpolation; assigns a weighted average of the four nearest cells (the default)
 
       # Level1Raster <- round(resample(Level1Raster, Susceptible, method = "bilinear"))
-      # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "ngb", fun ='modal'))
+      # Level1Raster <-  round(resample(Level1Raster, Susceptible, method = "near", fun ='modal'))
 
       Level1Raster <- resample(Level1Raster, Susceptible, method = "near")
 
@@ -239,7 +239,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       # print(freq(Level1Raster))
 
       # Level1Raster <- replace(Level1Raster, values(Level1Raster) < 0, 0)
-      # Unless you are using method = "ngb" the above line is needed for some countries.
+      # Unless you are using method = "near" the above line is needed for some countries.
       # The other method is called "bilinear"
 
       Level1Raster <- replace(Level1Raster, is.na(Level1Raster), 0)
@@ -345,7 +345,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
            col = pal(8)[-2], 
            axes = TRUE, 
            cex.main = 1, 
-           main = "Location of inital infections (Czechia)", 
+           main = "Location of initial infections (Czechia)", 
            xlab = expression(bold("Longitude")), 
            ylab = expression(bold("Latitude")), 
            plg = list(title = "Persons", 
