@@ -277,7 +277,7 @@ ui <- fluidPage(
                                           tabPanel(title = "Input Summary",
                                                    verbatimTextOutput("summary"),
                                                    br(),
-                                                   tableOutput("summaryTable"),
+                                                   DTOutput("summaryTable"),
                                                    br(),
                                                    imageOutput("outputImage"),
                                                    #imageOutput("croppedOutputImage"),
@@ -294,7 +294,7 @@ ui <- fluidPage(
                                           ),
                                           
                                           tabPanel(title = "Initial Seed Data", 
-                                                   dataTableOutput("tableSeed")
+                                                   DTOutput("tableSeed")
                                           ),
                                           
                                           tabPanel(title = "Seed Data Map",
@@ -307,7 +307,7 @@ ui <- fluidPage(
                                           ),
                                           
                                           tabPanel(title = "Output Summary",
-                                                   dataTableOutput("outputSummary") ,
+                                                   DTOutput("outputSummary") ,
                                                    # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
                                           ),
                                           

@@ -60,7 +60,6 @@ server <- function(input, output, session){
   iv_seeddataupload$enable()
   
   observe({
-    print(iv$validate())
     if(iv$is_valid()){
       shinyjs::enable(id = "go")
     } else {
@@ -952,15 +951,18 @@ server <- function(input, output, session){
       }
     })
     
-    output$tableSeed <- renderDataTable({ # print initial seed data to UI
+    output$tableSeed <- renderDT({ # print initial seed data to UI
       req(input$seedData)
       if(is.null(data())){return ()}
       data()
     })
     
-    output$outputSummary <- renderDataTable({ # print output summary to UI
+    output$outputSummary <- renderDT({ # print output summary to UI
       outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"))
-      outputSummaryTable
+      datatable(outputSummaryTable,
+                options = list(
+                  autoWidth = FALSE,
+                  scrollX = TRUE))
     })
     
     output$dataPlot <- renderPlot({
@@ -1055,8 +1057,16 @@ server <- function(input, output, session){
 
     values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
     
-    output$summaryTable <- renderTable({
-      values$df
+    output$summaryTable <- renderDT({
+      datatable(values$df,
+                rownames = FALSE,
+                options = list(
+                  dom = 't',
+                  pageLength = -1,
+                  ordering = FALSE,
+                  searching = FALSE,
+                  paging = FALSE,
+                  autoWidth = FALSE))
     })
 
     #########################################    
