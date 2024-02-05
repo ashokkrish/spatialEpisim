@@ -27,7 +27,30 @@ resKm <- 1                                        # default resolution (1Km)
 PNGFileName <- "susceptible.png"                  # default output file name
 MP4FileName <- "susceptible_MP4.mp4"              # default MP4 file name
 stackLayerFileName <- "susceptible.png"           # default name for arbitrary raster stack PNG TODO: change format to ISO3_Susceptible_0001.png
-palettePng <- "misc/seminf_haxby.png"             # default colour palette found in misc folder
+# palettePng <- "misc/seminf_haxby.png"             # default colour palette found in misc folder
+colPalette <- c('#FFFFFF', 
+                '#D0D8FB', 
+                '#BAC5F7', 
+                '#8FA1F1', 
+                '#617AEC', 
+                '#0027E0', 
+                '#1965F0', 
+                '#0C81F8', 
+                '#18AFFF', 
+                '#31BEFF', 
+                '#43CAFF', 
+                '#60E1F0', 
+                '#69EBE1', 
+                '#7BEBC8', 
+                '#8AECAE', 
+                '#ACF5A8', 
+                '#CDFFA2', 
+                '#DFF58D', 
+                '#F0EC78', 
+                '#F7D767', 
+                '#FFBD56', 
+                '#FFA044', 
+                '#EE4F4D')
 layerName <- "Susceptible"                        # used to title raster layer plot
 basePopBreaks <- c(0, 10, 25, 50, 100, 250, 1000, 100000) # TODO: dynamically set for each individual country
 aggrPopBreaks <- c(0, 5000, 10000, 25000, 50000, 75000, 100000, 250000, 500000) # TODO: dynamically set for each individual country and aggr level
@@ -42,7 +65,6 @@ printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identi
   isoCode <<- countrycode(selectedCountry, origin = "country.name", destination = "iso3c")
   rasterAgg <<- rasterAgg
   layerName <<- toString(rasterLayer)                          # alters the plot title
-
   createPlotPNG(rasterStack[[layerName]], Level1Identifier, directOutput, maxVal, includeLabels)
 }
 
@@ -92,7 +114,8 @@ setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
 createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal, includeLabels) {
   is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
 
-  pal <- getPalette(palettePng)
+  # pal <- getPalette(palettePng)
+  pal <- colorRampPalette(colPalette)
 
   if (!directOutput){
     png(PNGFileName) # output the plot to the www/ image folder
@@ -159,12 +182,12 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
 #-----------------------------------------------#
 # Extracts a palette from a formatted .png file #
 #-----------------------------------------------#
-getPalette <- function(png) {
-  raster <- terra::rast(png)
-  u <- unique(values(raster))
-  hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
-  colorRampPalette(hex)
-}
+# getPalette <- function(png) {
+#   raster <- terra::rast(png)
+#   u <- unique(values(raster))
+#   hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
+#   colorRampPalette(hex)
+# }
 
 #----------------------------------------------------#
 # Imports the GeoTIFF file into tif folder using FTP #
