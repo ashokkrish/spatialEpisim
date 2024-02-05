@@ -1,8 +1,5 @@
 library(countrycode)
-# library(raster, warn.conflicts = FALSE)
-library(terra, warn.conflicts = FALSE)
-
-source("R/rasterWorldPop.R")
+library(terra)
 
 createBasePlot <- function(selectedCountry, susceptible, directOutput) {
 
@@ -139,29 +136,11 @@ createBasePlot <- function(selectedCountry, susceptible, directOutput) {
 #------------------------#
 # # Set working directory to the root directory /spatialEpisim otherwise the below examples will not run
 #
-# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = T) 
-# createBasePlot(selectedCountry = "Czech Republic", rasterAgg = 0, directOutput = F)
+# createBasePlot(selectedCountry = "Czech Republic", susceptible = suscLayer, directOutput = T) 
+# createBasePlot(selectedCountry = "Czech Republic", susceptible = suscLayer, directOutput = F)
 #
-# createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Nigeria", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Israel", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Israel", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Latvia", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Latvia", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Belgium", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Belgium", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Japan", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Japan", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Korea", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Korea", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Rwanda", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Rwanda", rasterAgg = 0, directOutput = F)
-# 
-# createBasePlot(selectedCountry = "Uganda", rasterAgg = 0, directOutput = T)
-# createBasePlot(selectedCountry = "Uganda", rasterAgg = 0, directOutput = F)
+# createBasePlot(selectedCountry = "Nigeria", susceptible = suscLayer, directOutput = T)
+# createBasePlot(selectedCountry = "Nigeria", susceptible = suscLayer, directOutput = F)
+#
+# where "suscLayer" is a SpatRaster object containing the initial susceptible raster data created 
+# using "createSusceptibleLayer()" from rasterWorldPop.R or some other source
