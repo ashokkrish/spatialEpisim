@@ -114,6 +114,10 @@ setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
 createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal, includeLabels) {
   is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
 
+  x <- classify(rasterToPrint, c(0, 10, 25, 50, 100, 250, 1000, 100000))
+  levs <- levels(x)[[1]]
+  levels(x) <- levs
+  
   # pal <- getPalette(palettePng)
   pal <- colorRampPalette(colPalette)
 
@@ -132,10 +136,11 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
     } else {
       par(bty = 'n')
     }
-    terra::plot(rasterToPrint, 
+    terra::plot(x, 
                 col=pal(8)[-1], 
                 main = basePlotTitle, 
-                axes = includeLabels, 
+                axes = includeLabels,
+                all_levels = TRUE,
                 zlim=c(0,maxVal))
   } else {
     aggrPlotTitle <- ""
@@ -148,10 +153,11 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
     } else {
       par(bty = 'n')
     }
-    terra::plot(rasterToPrint, 
+    terra::plot(x, 
                 col=pal(9)[-1], 
                 main = aggrPlotTitle, 
                 axes = includeLabels, 
+                all_levels = TRUE,
                 zlim=c(0,maxVal))
   }
   terra::plot(Level1Identifier, 

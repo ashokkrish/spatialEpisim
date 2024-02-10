@@ -26,7 +26,11 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, timestep, seedFile, seedRadius, deterministic, isCropped, level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength, nbhd, psiDiag)
+SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, 
+                                            alpha, beta, gamma, sigma, delta, radius, lambda, 
+                                            timestep, seedFile, seedRadius, deterministic, isCropped, 
+                                            level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, 
+                                            QVar, QCorrLength, nbhd, psiDiag)
 {
   unlink("www/MP4", recursive = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
@@ -36,9 +40,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   rs <- createRasterStack(selectedCountry, rasterAgg, isCropped, level1Names)
 
-  print(rs)
-
-  print(rs$rasterStack)
   Susceptible <- rs$rasterStack$Susceptible
   Vaccinated <- rs$rasterStack$Vaccinated
   Exposed <- rs$rasterStack$Exposed
@@ -87,8 +88,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     seedData <<- read.csv(seedFile)
   }
 
-  print(seedData)
-
   numLocations <- dim(seedData)[1]
   # print(numLocations)
 
@@ -99,20 +98,16 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   for (ff in 1:numLocations)
   {
     print(paste("Seed location = ", seedData[ff,1]))
-    
-    row <- rowFromY(rs$rasterStack, seedData[ff,2])
-    col <- colFromX(rs$rasterStack, seedData[ff,3])
-    
-    print(paste("row = ", row, "col = ", col))
+    row <- terra::rowFromY(rs$rasterStack, seedData[ff,2])
+    col <- terra::colFromX(rs$rasterStack, seedData[ff,3])
+    # print("row = ", row, "col = ", col)
     # print(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)])
     # print(sum(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)]))
-    
     newVaccinatedPerCell <- seedData[ff,4]#/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
     newExpPerCell        <- seedData[ff,5]/numCellsPerRegion     #round(seedData[ff,5]/numCellsPerRegion)
     newInfPerCell        <- seedData[ff,6]/numCellsPerRegion     #round(seedData[ff,4]/numCellsPerRegion)
     newRecoveredPerCell  <- seedData[ff,7]#/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
     newDeadPerCell       <- seedData[ff,8]#/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
-    
     # print(newVaccinatedPerCell)
     # print(newExpPerCell)
     # print(newInfPerCell)
@@ -141,6 +136,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   valInfected <- terra::as.matrix(Infected, wide = TRUE)
   valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
   valDead <- terra::as.matrix(Dead, wide = TRUE)
+  # print("new----------------")
+  # print(valVaccinated)
+  # print("-------------------")
 
   #par(mfrow = c(1, 2))
   
@@ -166,9 +164,12 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   # writeRaster(Infected, "seed.tif", overwrite = TRUE)
 
-  sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
-  sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
-  sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
+  sumS <- sum(values(Susceptible)) 
+  sumV <- sum(values(Vaccinated))
+  sumE <- sum(values(Exposed)) 
+  sumI <- sum(values(Infected))
+  sumR <- sum(values(Recovered)) 
+  sumD <- sum(values(Dead))
 
   # print(sumS); print(sumV); print(sumE); print(sumI); print(sumR); print(sumD)
 
@@ -185,6 +186,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # print(propDead)
 
   print(paste("Susceptible Count before removing initial seed values: ", sum(values(Susceptible))))
+  # print(values(Susceptible))
 
   Susceptible <- Susceptible - (Susceptible*propVaccinated) - (Susceptible*propExposed) - (Susceptible*propInfected) - (Susceptible*propRecovered) - (Susceptible*propDead)
 
@@ -309,6 +311,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     summary[t, 21]  <- radius
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
+    
+    valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
+    valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
+    valExposed <- terra::as.matrix(Exposed, wide = TRUE)
+    valInfected <- terra::as.matrix(Infected, wide = TRUE)
+    valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
+    valDead <- terra::as.matrix(Dead, wide = TRUE)
 
     nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
 
@@ -324,12 +333,13 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     { 							# nrows
       for(j in 1:ncols)
       {							# ncols
+        
         if (Inhabitable[i,j][1,1] == 1)
         {						     # Inhabitable
           nLiving <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- 0
 
           nLiving <- valSusceptible[i,j] + valVaccinated[i,j] + valExposed[i,j] + valInfected[i,j] + valRecovered[i,j]
-
+          
           if (nLiving > 0)			# nLiving
           {
             if (valSusceptible[i,j] >= 1)
@@ -369,7 +379,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
             if (valExposed[i,j] >= 1)
             {
               newInfected <- gamma*valExposed[i,j]
-
               dailyInfected <- dailyInfected + newInfected
               cumInfected   <- cumInfected + newInfected
             }
@@ -450,7 +459,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     rs$rasterStack$Dead <- Dead
 
     # print('check')
-
+  # print(testData)
     summary[t, 9]   <- dailyVaccinated
     summary[t, 10]  <- dailyExposed
     summary[t, 11]  <- dailyInfected
@@ -732,7 +741,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           Infected <- rs$rasterStack$Infected
           # Dead <- rs$rasterStack$Dead
           
-          cumInfected <- cumInfected + sum(I - as.matrix(preDAInfected))
+          cumInfected <- values(cumInfected) + sum(I - as.matrix(preDAInfected))
           
           # cumDead <- cumDead + sum(D - as.matrix(preDADead))
           # print(sum(D - as.matrix(preDADead)))
@@ -770,13 +779,12 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   for (t in 1:timestep){
     tempMax <- minmax(allRasters[[t]]$rasterStack[[rasterLayer]])
-    print(tempMax)
     maxRasterLayerVal <- max(maxRasterLayerVal, tempMax)
   }
 
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
-
+  
   for (t in 1:timestep){
     fname = paste0("MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
     printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry = selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = T)

@@ -217,7 +217,6 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     
     # print(extent(Level1Raster))
     # print(extent(Susceptible))
-    
     rasterStack <- c(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead, Inhabitable, Level1Raster)
   }
 
