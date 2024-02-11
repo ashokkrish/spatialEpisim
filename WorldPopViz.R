@@ -7,6 +7,7 @@ library(shinyjs)
 library(shinyWidgets)
 
 population <- read_excel("misc/population.xlsx", 1)
+shortlist <- filter(population, shortList == "TRUE")
 
 source("R/rasterBasePlot.R")
 source("R/rasterLeafletPlot.R")
@@ -124,7 +125,7 @@ server <- function(input, output, session){
     pickerInput(
       inputId = "selectedCountry",
       label = strong("Country"),
-      choices = population$Country,
+      choices = shortlist$Country,
       multiple = FALSE,
       select = NULL, #"Democratic Republic of Congo", #
       options = pickerOptions(
