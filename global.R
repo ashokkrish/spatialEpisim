@@ -33,6 +33,14 @@ shhh(library(terra, warn.conflicts=FALSE))  # suppressWarnings(suppressMessages(
 shhh(library(tidyverse))
 shhh(library(tinytex))
 
+source("R/cropBaseRasterHaxby.R")
+source("R/makePlots.R")
+source("R/rasterBasePlot.R")
+source("R/rasterCropSeedPlot.R")
+#source("R/rasterSimulation.R")
+source("R/rasterSimulation_DA.R")
+source("R/rasterStack.R")
+
 options(scipen = 999)
 
 population <- read_excel("misc/population.xlsx", 1)
