@@ -93,8 +93,7 @@ createCroppedRaster <- function(selectedCountry, level1Region, susceptible, dire
   #                           " (1 sq. km resolution)")  
   # }
   
-  aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for ", 
-                          level1Region, " in ",
+  aggrPlotTitle <- paste0("2020 UN-Adjusted Population Count \n for cropped selection(s) in ",
                           selectedCountry,
                           " (1 sq. km resolution)")
   
