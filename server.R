@@ -173,7 +173,7 @@ server <- function(input, output, session) {
     shinyjs::disable(id = "go")
     
     values$allow_simulation_run <- FALSE
-    })
+    
   })
   
   ############################################################################    
