@@ -122,7 +122,7 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
   pal <- colorRampPalette(colPalette)
 
   if (!directOutput){
-    png(PNGFileName) # output the plot to the www/ image folder
+    png(PNGFileName, width = 1024, height = 768) # output the plot to the www/ image folder
   }
   
   if (rasterAgg == 0 || rasterAgg == 1){
@@ -140,8 +140,19 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
                 col=pal(8)[-1], 
                 main = basePlotTitle, 
                 axes = includeLabels,
+                buffer = TRUE,
+                box = TRUE,
+                cex.main = 1.5,
+                line.main = 1.25,
                 all_levels = TRUE,
-                zlim=c(0,maxVal))
+                zlim=c(0,maxVal),
+                plg = list(title = expression(bold("Persons")),
+                           title.cex = 1.25,
+                           horiz = FALSE, 
+                           loc = "topright",
+                           xjust = -1,
+                           cex = 1.25),
+                mar = c(8.5, 3.5, 4, 2.5))
   } else {
     aggrPlotTitle <- ""
     
@@ -156,15 +167,30 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
     terra::plot(x, 
                 col=pal(9)[-1], 
                 main = aggrPlotTitle, 
-                axes = includeLabels, 
+                axes = includeLabels,
+                buffer = TRUE,
+                box = TRUE,
+                cex.main = 1.5,
+                line.main = 1.25,
                 all_levels = TRUE,
-                zlim=c(0,maxVal))
+                zlim=c(0,maxVal),
+                plg = list(title = expression(bold("Persons")),
+                           title.cex = 1.25,
+                           horiz = FALSE, 
+                           loc = "topright",
+                           xjust = -1,
+                           cex = 1.25),
+                mar = c(8, 3.5, 4, 5))
   }
   terra::plot(Level1Identifier, 
               add = TRUE)
+  terra::north(type = 2, xy = "bottomleft", cex = 1)
   
   if(includeLabels){
-    title(xlab = expression(bold(Longitude)), ylab = expression(bold(Latitude)), line = 2)
+    title(xlab = expression(bold(Longitude)), 
+          ylab = expression(bold(Latitude)),
+          line = 1,
+          cex.lab = 1.5)
   }
   
   if (!directOutput){
