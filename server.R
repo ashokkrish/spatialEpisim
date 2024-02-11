@@ -978,7 +978,8 @@ server <- function(input, output, session) {
       datatable(outputSummaryTable,
                 options = list(
                   autoWidth = FALSE,
-                  scrollX = TRUE))
+                  scrollX = TRUE)) %>%
+        formatRound(columns = 2:15, digits = 0)
     })
     
     output$dataPlot <- renderPlot({
