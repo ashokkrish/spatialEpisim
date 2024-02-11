@@ -141,13 +141,13 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
 
     rasterStack <- crop(rasterStack, inhabitableTrim)
 
-    # clippedSusceptible <- crop(Susceptible, inhabitableTrim)
+    # croppedSusceptible <- crop(Susceptible, inhabitableTrim)
     # 
-    # clippedIdentifier <- crop(Level1Raster, inhabitableTrim)
+    # croppedIdentifier <- crop(Level1Raster, inhabitableTrim)
     #
-    # writeRaster(clippedSusceptible, "clippedSusceptible", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
+    # writeRaster(croppedSusceptible, "croppedSusceptible", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
     # 
-    # writeRaster(clippedIdentifier, "clippedIdentifier", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
+    # writeRaster(croppedIdentifier, "croppedIdentifier", format = "GTiff", overwrite = TRUE) # the tif file may not be at 1km resolution
   }
   else
   {

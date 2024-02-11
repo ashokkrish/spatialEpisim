@@ -12,7 +12,7 @@ source("R/rasterWorldPop.R")
 # seedData <- "seeddata/COD_InitialSeedData.csv"
 # seedNeighbourhood <- 1
 
-createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1Names = NULL, seedData, seedNeighbourhood = 0) {
+createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1Names = NULL, seedData, seedNeighbourhood = 0) {
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   
@@ -129,10 +129,10 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     print("rasterStack after cropping")
     print(rasterStack)
     
-    clippedInfected <- rasterStack[["Infected"]] 
+    croppedInfected <- rasterStack[["Infected"]] 
     
-    print(clippedInfected)
-    print("Clipped Infected Unseeded")
+    print(croppedInfected)
+    print("Cropped Infected Unseeded")
 
     #------------------------#
     # Initial seed locations #
@@ -166,11 +166,11 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
 
       newInfPerCell <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
 
-      clippedInfected[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)] <- newInfPerCell
+      croppedInfected[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)] <- newInfPerCell
     }
     
-    print(clippedInfected)
-    print("Clipped Infected Seeded")
+    print(croppedInfected)
+    print("Cropped Infected Seeded")
     
     #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
     ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
@@ -182,7 +182,7 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     # main = "Location of Health Zones", 
     # legend = FALSE,
 
-    terra::plot(clippedInfected, 
+    terra::plot(croppedInfected, 
          col = pal(8)[-2], 
          axes = TRUE, 
          cex.main = 1, 
@@ -370,16 +370,16 @@ createClippedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
 
 # Move the read.csv(paste0("seeddata/", seedData), header = T) in the example calls
 
-# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 5, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData_28.csv", seedNeighbourhood = 0)
+# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 5, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData_28.csv", seedNeighbourhood = 0)
 
-# createClippedSeedPlot(selectedCountry = "Czech Republic", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Czech Republic", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 5, isCropped = T, level1Names = c("Kwara", "Oyo"), seedData = "seeddata/NGA_InitialSeed_Oyo_Kwara.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 5, isCropped = T, level1Names = c("Kwara", "Oyo"), seedData = "seeddata/NGA_InitialSeed_Oyo_Kwara.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Korea", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "seeddata/KOR_InitialSeedData2022-07-07.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Korea", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "seeddata/KOR_InitialSeedData2022-07-07.csv", seedNeighbourhood = 1)
 
-# createClippedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)

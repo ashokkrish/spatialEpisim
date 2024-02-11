@@ -22,7 +22,7 @@ shhh(library(terra, warn.conflicts=FALSE))
 
 source("R/rasterWorldPop.R")
 
-createClippedRaster <- function(selectedCountry, level1Region, susceptible, directOutput = F)
+createCroppedRaster <- function(selectedCountry, level1Region, susceptible, directOutput = F)
 {
   # setwd(dirname(getActiveDocumentContext()$path))
   
@@ -35,7 +35,7 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
   
   #print(Susceptible)
 
-  fname <- paste0("clipped_", inputISO, "_PopulationCount.png")
+  fname <- paste0("cropped_", inputISO, "_PopulationCount.png")
   PNGFileName <<- paste0("www/", fname)
   
  if(!directOutput){png(PNGFileName, width = 1024, height = 768)} # output the plot to the www image folder
@@ -136,7 +136,7 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   unlink("tif/cropped/*")
   # level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Rasterrast, paste("tif/cropped/clipped_", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif"), overwrite = TRUE) # the tif file may not be at 1km resolution
+  writeRaster(lvl1Rasterrast, paste("tif/cropped/cropped_", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif"), overwrite = TRUE) # the tif file may not be at 1km resolution
   #print(getwd())
   #setwd('./R')
   #print(getwd())
@@ -148,24 +148,24 @@ createClippedRaster <- function(selectedCountry, level1Region, susceptible, dire
 
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0, directOutput = F)
+# createCroppedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 0, directOutput = F)
 # 
 # setwd('..')
 #
-# createClippedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0, directOutput = F)
+# createCroppedRaster(selectedCountry = "Czech Republic", level1Region = "Prague", rasterAgg = 0, directOutput = F)
 #
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0, directOutput = F)
+# createCroppedRaster(selectedCountry = "Nigeria", level1Region = "Lagos", rasterAgg = 0, directOutput = F)
 #  
 # setwd('..')
 # 
-# createClippedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0, directOutput = T)
+# createCroppedRaster(selectedCountry = "Nigeria", level1Region = "Rivers", rasterAgg = 0, directOutput = T)
 # 
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput = F)
+# createCroppedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = "Ituri", rasterAgg = 0, directOutput = F)
 #  
 # setwd('..')
 #  
-# createClippedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 15, directOutput = F)
+# createCroppedRaster(selectedCountry = "Democratic Republic of Congo", level1Region = c("Nord-Kivu", "Ituri"), rasterAgg = 15, directOutput = F)

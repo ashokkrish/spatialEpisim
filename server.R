@@ -101,11 +101,11 @@ server <- function(input, output, session) {
   # observeEvent(input$go, {
   #   if(input$cropLev1 == TRUE){
   #     output$croppedOutputImage <- renderImage({
-  #       source("R/clippingBaseRasterHaxby.R")
+  #
   #       outfile <- tempfile(fileext = '.png')
   #       
   #       png(outfile, width = 800, height = 600)
-  #       createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg, directOutput = T)
+  #       createCroppedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = input$agg, directOutput = T)
   #       dev.off()
   #       
   #       list(src = outfile, contentType = 'image/png', width = 600, height = 400, alt = "Base plot image not found")
@@ -119,13 +119,13 @@ server <- function(input, output, session) {
   observeEvent(input$go, {
     req(iv$is_valid())
     output$outputImage <- renderImage({
-      source("R/rasterBasePlot.R")
+      
       outfile <- tempfile(fileext = '.png')
       png(outfile, width = 1068, height = 768)
       
       if(input$cropLev1) {
         req(input$level1List != "")
-        isolate(createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE))
+        isolate(createCroppedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE))
       } else {
         isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible()$Susceptible, directOutput = TRUE))  # print the susceptible plot direct to UI
       }
@@ -817,15 +817,39 @@ server <- function(input, output, session) {
   
   observeEvent(input$go, {
     req(iv$is_valid())
-    source("R/makePlots.R")
-    output$infectedExposedPlot <- makePlot(compartments = c("E", "I"), input = input, plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), "Compartment Value", lineThickness = lineThickness)
     
-    output$cumulativePlot <- makePlot(compartments = c("D"), input = input, plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Cumulative Deaths", lineThickness = lineThickness)
+    output$infectedExposedPlot <- makePlot(
+                                    compartments = c("E", "I"), 
+                                    input = input, 
+                                    plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), 
+                                    xTitle = paste0("Day (from ", input$date, ")"), 
+                                    yTitle = "Compartment Value", 
+                                    lineThickness = lineThickness)
+    
+    output$cumulativePlot <- makePlot(
+                              compartments = c("D"), 
+                              input = input, 
+                              plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), 
+                              xTitle = paste0("Day (from ", input$date, ")"), 
+                              yTitle = "Cumulative Deaths", 
+                              lineThickness = lineThickness)
     
     if (input$modelSelect == "SVEIRD"){
-      output$fullPlot <- makePlot(compartments = c("S", "V", "E", "I", "R", "D"), input = input, plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Compartment Value", lineThickness = lineThickness)
+      output$fullPlot <- makePlot(
+                           compartments = c("S", "V", "E", "I", "R", "D"), 
+                           input = input, 
+                           plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
+                           xTitle = paste0("Day (from ", input$date, ")"), 
+                           yTitle = "Compartment Value", 
+                           lineThickness = lineThickness)
     } else {
-      output$fullPlot <- makePlot(compartments = c("S", "E", "I", "R", "D"), input = input, plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), xTitle = paste0("Day (from ", input$date, ")"), yTitle = "Compartment Value", lineThickness = lineThickness)
+      output$fullPlot <- makePlot(
+                           compartments = c("S", "E", "I", "R", "D"), 
+                           input = input, 
+                           plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
+                           xTitle = paste0("Day (from ", input$date, ")"), 
+                           yTitle = "Compartment Value", 
+                           lineThickness = lineThickness)
     }
     
     # output$fracSusPlot <- renderImage({
@@ -939,7 +963,6 @@ server <- function(input, output, session) {
     
     print(paste0(c("isCropped", isCropped)))
     
-    source("R/rasterStack.R")
     rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = input$level1List)
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
@@ -1024,9 +1047,6 @@ server <- function(input, output, session) {
     sigma <- input$sigma # DO NOT DELETE
     delta <- input$delta # ifelse(input$modelSelect == "SEIR", 0, input$delta) # DO NOT DELETE
     
-    #source("R/rasterSimulation.R")
-    source("R/rasterSimulation_DA.R")
-    
     eps <- 0.0000000000000001
     
     radius <- ifelse(input$lambda <= input$agg, 1, round(((input$lambda - input$agg)/input$agg) + eps) + 1)
@@ -1078,12 +1098,11 @@ server <- function(input, output, session) {
     #########################################
     
     output$seedPlot <- renderImage({
-      source("R/rasterClipSeedPlot.R")
       
       outfile <- tempfile(fileext = '.png')
       
       png(outfile, width = 1024, height = 768)
-      createClippedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = 0)  # print the seed plot direct to UI
+      createCroppedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = 0)  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
@@ -1092,7 +1111,7 @@ server <- function(input, output, session) {
   })
   
   # observeEvent(input$filterLMIC,{
-  #   updateCheckboxInput(session, inputId = "cropLev1", value = FALSE) # uncheck the clip box first
+  #   updateCheckboxInput(session, inputId = "cropLev1", value = FALSE) # uncheck the crop box first
   #   if(input$filterLMIC){
   #     population <- population[population$LMIC == 'TRUE',]
   #   } else {

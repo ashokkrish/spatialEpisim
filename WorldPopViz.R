@@ -10,7 +10,7 @@ population <- read_excel("misc/population.xlsx", 1)
 
 source("R/rasterBasePlot.R")
 source("R/rasterLeafletPlot.R")
-source("R/clippingBaseRasterHaxby.R")
+source("R/cropBaseRasterHaxby.R")
 source("R/rasterStack.R")
 
 ui <- fluidPage(
@@ -24,17 +24,17 @@ ui <- fluidPage(
                             id = "dashboard",
                             
                             uiOutput("countryDropdown"),
-                            uiOutput("clipStateCheckbox"),
+                            uiOutput("cropStateCheckbox"),
                             
-                            conditionalPanel(id = "clipPlot",
-                              condition = "input.clipLev1 == '1'",  
+                            conditionalPanel(id = "cropPlot",
+                              condition = "input.cropLev1 == '1'",  
                                              
                               uiOutput("Level1Ui"),
                               
                               conditionalPanel(
                                 condition = "input.level1List != ''",
                                 
-                                uiOutput("clippedPlotButton"),
+                                uiOutput("croppedPlotButton"),
                                 br()
                               ),
                             ),
@@ -156,13 +156,13 @@ server <- function(input, output, session){
   ############################################################################    
   # Dynamically display the checkbox option to select for states/provinces   #
   ############################################################################
-  output$clipStateCheckbox <- renderUI({ # clipStateCheckbox ----
+  output$cropStateCheckbox <- renderUI({ # cropStateCheckbox ----
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       checkboxInput(
-        inputId = "clipLev1", 
-        label = strong("Clip State(s)/Province(s)"), 
+        inputId = "cropLev1", 
+        label = strong("Crop State(s)/Province(s)"), 
         value = FALSE)
     }
   })
@@ -235,7 +235,7 @@ server <- function(input, output, session){
   # observeEvent(input$table, {
   #   isCropped <- FALSE
   #   
-  #   if(input$clipLev1 == TRUE)
+  #   if(input$cropLev1 == TRUE)
   #   {
   #     isCropped <- TRUE
   #   }
@@ -290,7 +290,7 @@ server <- function(input, output, session){
   ################################################ 
   
   output$Level1Ui <- renderUI({ # level1Ui ----
-    validate(need(input$clipLev1 == TRUE, "")) # catches UI warning
+    validate(need(input$cropLev1 == TRUE, "")) # catches UI warning
     
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
     
@@ -310,11 +310,11 @@ server <- function(input, output, session){
   # Create a country plot cropped by level1Identifier and output to UI       #
   ############################################################################ 
   
-  output$clippedPlotButton <- renderUI({ # clippedPlotButton ----
+  output$croppedPlotButton <- renderUI({ # croppedPlotButton ----
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     # if (!is.null(input$level1List) && input$level1List != ""){
-      actionButton("go","Plot clipped raster", 
+      actionButton("go","Plot cropped raster", 
                    style ="color: #fff; background-color: #337ab7; border-color: #2e6da4",
                    style ="length:800px")
     # }
@@ -350,7 +350,7 @@ server <- function(input, output, session){
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       
-     if(input$clipLev1 == TRUE){
+     if(input$cropLev1 == TRUE){
 
        if(!is.null(input$level1List) && !("" %in% input$level1List)){
           output$croppedOutputImage <- renderImage({
@@ -362,10 +362,10 @@ server <- function(input, output, session){
             print(input$level1List)
             
             # if(!is.null(input$level1List)){
-              #createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
+              #createCroppedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, rasterAgg = 0, directOutput = FALSE)
               png(outfile, width = 1024, height = 768)
               req(!is.null(input$level1List))
-              isolate(createClippedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE)) # Why is rasterAgg set to 0?
+              isolate(createCroppedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE)) # Why is rasterAgg set to 0?
               dev.off()
             # }
             
@@ -378,8 +378,8 @@ server <- function(input, output, session){
   })
   
   observeEvent(input$reset, {
-    shinyjs::reset(id = "clipPlot")
-    shinyjs::reset(id = "clipLev1")
+    shinyjs::reset(id = "cropPlot")
+    shinyjs::reset(id = "cropLev1")
     shinyjs::reset(id = "selectedCountry")
   })
 
@@ -453,7 +453,7 @@ server <- function(input, output, session){
   #Selected State/Province Map Tab Panel #
   ########################################
   
-  observeEvent({(input$clipLev1 == FALSE || is.null(input$level1List))
+  observeEvent({(input$cropLev1 == FALSE || is.null(input$level1List))
                 input$selectedCountry}, priority = 10, {
     hideTab(inputId = 'tabSet', target = 'Selected State/Province Map')
   })
