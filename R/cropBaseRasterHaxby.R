@@ -136,7 +136,7 @@ createCroppedRaster <- function(selectedCountry, level1Region, susceptible, dire
   dir.create(file.path("tif/cropped"), showWarnings = FALSE)
   unlink("tif/cropped/*")
   # level1Region <- tolower(gsub(" ", "", gsub(",", "_", toString(level1Region)))) # for single string and list depending on parameter
-  writeRaster(lvl1Rasterrast, paste("tif/cropped/cropped_", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif"), overwrite = TRUE) # the tif file may not be at 1km resolution
+  writeRaster(lvl1Rasterrast, paste0("tif/cropped/cropped_", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif"), overwrite = TRUE) # the tif file may not be at 1km resolution
   #print(getwd())
   #setwd('./R')
   #print(getwd())
