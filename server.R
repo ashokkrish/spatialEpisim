@@ -170,9 +170,10 @@ server <- function(input, output, session) {
   ############################################################################ 
   observeEvent(input$resetAll, {
     shinyjs::reset("dashboard")
-    
     shinyjs::disable(id = "go")
+    
     values$allow_simulation_run <- FALSE
+    })
   })
   
   ############################################################################    
@@ -782,19 +783,7 @@ server <- function(input, output, session) {
                   min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
     }
   })
-  
-  ############################################################################    
-  # Output the .mp4 video from www/ to the app UI                            #
-  ############################################################################  
-  output$outputVideo <- renderUI({
-    tags$video(
-      id = "video", 
-      type = "video/mp4",
-      src = "MP4/Infected_MP4.mp4",  # TODO: dynamically change which mp4 is printed
-      controls = "controls"
-    )
-  })
-  
+
   ############################################################################    
   # Output bubble plot with initial seed data directly to the app UI         #
   ############################################################################ 
@@ -1108,6 +1097,19 @@ server <- function(input, output, session) {
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
+    
+    ############################################################################    
+    # Output the .mp4 video from www/ to the app UI                            #
+    ############################################################################  
+    output$outputVideo <- renderUI({
+      
+      tags$video(
+        id = "video", 
+        type = "video/mp4",
+        src = "MP4/Infected_MP4.mp4",  # TODO: dynamically change which mp4 is printed
+        controls = "controls"
+      )
+    })
   })
   
   # observeEvent(input$filterLMIC,{
