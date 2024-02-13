@@ -1,14 +1,14 @@
-source("R/rasterWorldPop.R")
-source("R/rasterBasePlot.R")
-source("R/rasterLeafletPlot.R")
-
-selectedCountry <- "Belgium"
-
-susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg = 0, isCropped = F, level1Names = NULL)$Susceptible
-
-createBasePlot(selectedCountry, susceptible, directOutput = F)
-
-createLeafletPlot(selectedCountry, susceptible)
+# source("R/rasterWorldPop.R")
+# source("R/rasterBasePlot.R")
+# source("R/rasterLeafletPlot.R")
+# 
+# selectedCountry <- "Belgium"
+# 
+# susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg = 0, isCropped = F, level1Names = NULL)$Susceptible
+# 
+# createBasePlot(selectedCountry, susceptible, directOutput = F)
+# 
+# createLeafletPlot(selectedCountry, susceptible)
 
 # Notes on running an example
 #-----------------------------
