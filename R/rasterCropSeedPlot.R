@@ -345,7 +345,7 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
            col = pal(8)[-2], 
            axes = TRUE, 
            cex.main = 1, 
-           main = "Location of initial infections (Czechia)", 
+           main = "Location of initial infections", 
            xlab = expression(bold("Longitude")), 
            ylab = expression(bold("Latitude")), 
            plg = list(title = "Persons", 
