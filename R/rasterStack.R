@@ -1,5 +1,4 @@
 library(countrycode)
-# library(raster, warn.conflicts=FALSE)
 library(terra)
 
 createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {

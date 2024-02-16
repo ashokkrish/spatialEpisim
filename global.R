@@ -19,7 +19,6 @@ options("rgdal_show_exportToProj4_warnings"="none")
 shhh(library(rasterVis))
 shhh(library(readxl))
 shhh(library(writexl))
-shhh(library(rgdal, warn.conflicts=FALSE))
 shhh(library(sf))     # classes and functions for vector data
 shhh(library(shiny))
 shhh(library(shinyalert))
