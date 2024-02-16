@@ -1,6 +1,6 @@
 library(countrycode)
 # library(raster, warn.conflicts=FALSE)
-library(terra, warn.conflicts = FALSE)
+library(terra)
 
 createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
 
@@ -96,7 +96,7 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
     values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
     values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with either a 0 or 1.
     
-    inhabitableTrim <- trim(Inhabitable, value = 0, padding = 1)
+    inhabitableTrim <- trim(Inhabitable, value = 0)
     # print(extent(inhabitableTrim))
     
     # inhabitableRows <- inhabitableCols <-
