@@ -100,7 +100,7 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     values(Vaccinated) <- values(Exposed) <- values(Infected) <- values(Recovered) <- values(Dead) <- 0 # Fill the entire rasterLayer with zeroes
     values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0) # Fill the rasterLayer with either a 0 or 1.
     
-    inhabitableTrim <- terra::trim(Inhabitable, value = 0, padding = 1)
+    inhabitableTrim <- terra::trim(Inhabitable, value = 0)
     #print(inhabitableTrim)
     
     #print(table(as.matrix(Inhabitable)))
