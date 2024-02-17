@@ -77,7 +77,9 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
 
   
   leaflet(width = 1024, 
-          height = 768) %>%
+          height = 768,
+          options = leafletOptions(zoomSnap = 0.25, zoomDelta=0.25)) %>%
+    addProviderTiles("Esri.WorldGrayCanvas") %>%
     addRasterImage(x, 
                    colors = pal(8)[-1]) %>%
     addPolygons(data = level1Identifier,
