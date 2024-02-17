@@ -7,9 +7,6 @@ shhh(library(lattice))
 shhh(library(lubridate))
 shhh(library(magick))
 shhh(library(Matrix))
-options("rgdal_show_exportToProj4_warnings"="none")
-shhh(library(rgdal, warn.conflicts=FALSE))
-# shhh(library(raster, warn.conflicts=FALSE))
 shhh(library(rasterVis))
 shhh(library(rstudioapi))
 shhh(library(readxl))
@@ -32,7 +29,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
                                             level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, 
                                             QVar, QCorrLength, nbhd, psiDiag)
 {
-  unlink("www/MP4", recursive = TRUE) # Delete the MP4
+  unlink("www/MP4", recursive = TRUE, force = TRUE) # Delete the MP4
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
 
@@ -94,10 +91,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # Seed the initial infections equitably in a Moore Neighborhood of cells
   #seedRadius <- 0
   numCellsPerRegion <- (2*seedRadius + 1)^2
-  
   for (ff in 1:numLocations)
   {
-    print(paste("Seed location = ", seedData[ff,1]))
+    # print(seedData)
+    # print(paste("Seed location = ", seedData[ff,1]))
     row <- terra::rowFromY(rs$rasterStack, seedData[ff,2])
     col <- terra::colFromX(rs$rasterStack, seedData[ff,3])
     # print("row = ", row, "col = ", col)
@@ -113,7 +110,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     # print(newInfPerCell)
     # print(newRecoveredPerCell)
     # print(newDeadPerCell)
-    
     #Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newVaccinatedPerCell
     Vaccinated[row,col] <- Vaccinated[row,col] + newVaccinatedPerCell
     Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newExpPerCell
@@ -122,7 +118,6 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     Recovered[row, col] <- Recovered[row,col] + newRecoveredPerCell
     #Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newDeadPerCell
     Dead[row, col] <- Dead[row,col] + newDeadPerCell
-    
     #print(Exposed)
     #print(paste("Susceptible = ", sum(values(Susceptible))))
   }
@@ -787,7 +782,15 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   
   for (t in 1:timestep){
     fname = paste0("MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
-    printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry = selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = T)
+    printStackLayer(rasterStack = allRasters[[t]]$rasterStack, 
+                    rasterLayer = rasterLayer, 
+                    directOutput = directOutput, 
+                    Level1Identifier = rs$Level1Identifier, 
+                    selectedCountry = selectedCountry, 
+                    rasterAgg = rasterAgg, 
+                    fname = fname, 
+                    maxVal = maxRasterLayerVal, 
+                    includeLabels = T)
 
     # fname = paste0("MP4/", "paper/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), "_paper", ".png")
     # printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = F)
@@ -796,7 +799,9 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   # MERGE THE PNGs TO A GET AN MP4 VIDEO
   setwd("www/MP4")
   videoDuration <- 15 # in seconds
-  av::av_encode_video(list.files(pattern = ".png"), framerate = timestep/videoDuration, output = paste0(rasterLayer, "_MP4.mp4"))
+  av::av_encode_video(list.files(pattern = ".png"), 
+                      framerate = timestep/videoDuration, 
+                      output = paste0(rasterLayer, "_MP4.mp4"))
   setwd("./../..")
 
   summary[is.na(summary)] <- 0
