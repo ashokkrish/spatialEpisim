@@ -275,7 +275,8 @@ server <- function(input, output, session) {
       level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
     }
     
-    selectizeInput(inputId = "level1List", "",
+    selectizeInput(inputId = "level1List", 
+                   label = NULL,
                    choices = level1Options,
                    # selected = c("Kwara", "Oyo"),
                    multiple = TRUE,
@@ -563,7 +564,6 @@ server <- function(input, output, session) {
                   ".xls",
                   ".xlsx"),
       )
-      
       #p("Click ", a("here", href="https://docs.google.com/spreadsheets/d/1aEfioSNVVDwwTt6ky7MrOQj5uGO7QQ1NTB2TdwOBhrM/edit?usp=sharing", target="_blank"), "for a template of initial seed data")
     }
   })
@@ -879,6 +879,17 @@ server <- function(input, output, session) {
     }
   })
   
+  output$seedRadiusInput <- renderUI({
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    radioButtons(inputId = "seedRadius",
+                 label = strong("Insert infection data in"),
+                 choiceNames = list("a single cell", "a Moore neighbourhood of cells"),
+                 choiceValues = list(0, 1),
+                 selected = 0, #character(0), # 
+                 inline = TRUE)
+  })
+  
   observeEvent(input$selectedCountry, {
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
@@ -1053,7 +1064,7 @@ server <- function(input, output, session) {
     }
     
     SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
-                                    alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = 0,
+                                    alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = as.numeric(input$seedRadius),
                                     deterministic = isDeterministic, isCropped = input$cropLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
                                     dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
                                     QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
@@ -1092,7 +1103,7 @@ server <- function(input, output, session) {
       outfile <- tempfile(fileext = '.png')
       
       png(outfile, width = 1024, height = 768)
-      createCroppedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = 0)  # print the seed plot direct to UI
+      createCroppedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = as.numeric(input$seedRadius))  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
@@ -1157,4 +1168,20 @@ server <- function(input, output, session) {
   #   }
   #   
   # )
+  
+  observeEvent(is.null(input$seedData), {
+    shinyjs::hide(id = "seedRadius")
+  })
+  
+  observeEvent(input$seedData, {
+
+    if(iv_seeddataupload$is_valid()) {
+      shinyjs::hide(id = "downloadData")
+      shinyjs::show(id = "seedRadius")
+    } else {
+      shinyjs::hide(id = "seedRadius")
+      shinyjs::show(id = "downloadData")
+    }
+  })
+  
 }

@@ -219,9 +219,14 @@ ui <- fluidPage(
                                                 
                                                 uiOutput("lambdaInput"),
                                                 
+                                                br(),
+                                                
                                                 uiOutput("seedUpload"),
                                                 
                                                 uiOutput("seedDataButton"),
+                                                
+                                                uiOutput("seedRadiusInput"),
+                                                
                                                 br(),
                                                 
                                                 uiOutput("startDateInput"),
