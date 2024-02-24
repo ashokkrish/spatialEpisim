@@ -1,3 +1,4 @@
+library(bslib)
 library(dplyr)
 library(DT)
 library(leaflet)
@@ -15,6 +16,7 @@ source("R/cropBaseRasterHaxby.R")
 source("R/rasterStack.R")
 
 ui <- fluidPage(
+  theme = bs_theme(version = 4, bootswatch = "minty"),
   shinyjs::useShinyjs(),
   navbarPage(title = span("WorldPop Visualizer", style = "color:#000000; font-weight:bold; font-size:15pt"),
              
