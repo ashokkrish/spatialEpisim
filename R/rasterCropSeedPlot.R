@@ -9,9 +9,9 @@ source("R/rasterWorldPop.R")
 # isCropped <- T
 # level1Names <- c("Ituri", "Nord-Kivu")
 # seedData <- "seeddata/COD_InitialSeedData.csv"
-# seedNeighbourhood <- 1
+# seedRadius <- 1
 
-createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1Names = NULL, seedData, seedNeighbourhood = 0) {
+createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1Names = NULL, seedData, seedRadius = 0) {
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   
@@ -151,8 +151,8 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     
     print(numLocations)
     
-    # When seedNeighbourhood = 1 we seed the initial infections equitably in a Moore Neighborhood of cells
-    numCellsPerRegion <- (2*seedNeighbourhood + 1)^2
+    # When seedRadius = 1 we seed the initial infections equitably in a Moore Neighborhood of cells
+    numCellsPerRegion <- (2*seedRadius + 1)^2
 
     for (ff in 1:numLocations)
     { 
@@ -165,7 +165,7 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
 
       newInfPerCell <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
 
-      croppedInfected[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)] <- newInfPerCell
+      croppedInfected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- newInfPerCell
     }
     
     print(croppedInfected)
@@ -176,7 +176,7 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
     pal <- colorRampPalette(ramp)
     
     # If you want a plot for the 28 reporting Health Zones set
-    # seedNeighbourhood <- 0
+    # seedRadius <- 0
     # seedData <- "seeddata/COD_InitialSeedData_28.csv"
     # main = "Location of Health Zones", 
     # legend = FALSE,
@@ -305,7 +305,7 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
       
       print(numLocations)
 
-      numCellsPerRegion <- (2*seedNeighbourhood + 1)^2
+      numCellsPerRegion <- (2*seedRadius + 1)^2
 
       for (ff in 1:numLocations)
       {
@@ -323,12 +323,12 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
         }
 
         print(paste("row = ", row, "col = ", col))
-        # print(Inhabitable[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)])
-        # print(sum(Inhabitable[(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)]))
+        # print(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)])
+        # print(sum(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)]))
 
         newInfPerCell <- seedData[ff,6]/numCellsPerRegion    #round(seedData[ff,4]/numCellsPerRegion)
 
-        rasterStack[["Infected"]][(row-seedNeighbourhood):(row+seedNeighbourhood),(col-seedNeighbourhood):(col+seedNeighbourhood)] <- newInfPerCell
+        rasterStack[["Infected"]][(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- newInfPerCell
         #print(paste("Susceptible = ", sum(values(Susceptible))))
       }
 
@@ -369,16 +369,16 @@ createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1N
 
 # Move the read.csv(paste0("seeddata/", seedData), header = T) in the example calls
 
-# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData.csv", seedRadius = 1)
 
-# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/COD_InitialSeedData.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/COD_InitialSeedData.csv", seedRadius = 1)
 
-# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 5, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData_28.csv", seedNeighbourhood = 0)
+# createCroppedSeedPlot(selectedCountry = "Democratic Republic of Congo", rasterAgg = 5, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), seedData = "seeddata/COD_InitialSeedData_28.csv", seedRadius = 0)
 
-# createCroppedSeedPlot(selectedCountry = "Czech Republic", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Czech Republic", rasterAgg = 10, isCropped = F, level1Names = NULL, seedData = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedRadius = 1)
 
-# createCroppedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 5, isCropped = T, level1Names = c("Kwara", "Oyo"), seedData = "seeddata/NGA_InitialSeed_Oyo_Kwara.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 5, isCropped = T, level1Names = c("Kwara", "Oyo"), seedData = "seeddata/NGA_InitialSeed_Oyo_Kwara.csv", seedRadius = 1)
 
-# createCroppedSeedPlot(selectedCountry = "Korea", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "seeddata/KOR_InitialSeedData2022-07-07.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Korea", rasterAgg = 5, isCropped = F, level1Names = NULL, seedData = "seeddata/KOR_InitialSeedData2022-07-07.csv", seedRadius = 1)
 
-# createCroppedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", seedNeighbourhood = 1)
+# createCroppedSeedPlot(selectedCountry = "Nigeria", rasterAgg = 15, isCropped = F, level1Names = NULL, seedData = "seeddata/NGA_InitialSeedDataSep 1, 2020.csv", seedRadius = 1)

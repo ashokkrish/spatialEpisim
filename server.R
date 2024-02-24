@@ -1103,7 +1103,7 @@ server <- function(input, output, session) {
       outfile <- tempfile(fileext = '.png')
       
       png(outfile, width = 1024, height = 768)
-      createCroppedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedNeighbourhood = as.numeric(input$seedRadius))  # print the seed plot direct to UI
+      createCroppedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedRadius = as.numeric(input$seedRadius))  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
