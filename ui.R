@@ -25,7 +25,7 @@ ui <- fluidPage(
              
              tabPanel(title = "Model",
                       sidebarLayout(
-                        sidebarPanel(
+                        sidebarPanel( ## sidebar panel ----
                           shinyjs::useShinyjs(),
                           shinyjs::inlineCSS(appCSS),
                           div(
@@ -275,7 +275,7 @@ ui <- fluidPage(
                           ),
                         ), 
                         
-                        mainPanel(
+                        mainPanel( ## main panel ----
                           div(id = "tabsetContainer",
                               tabsetPanel(id = "tabSet", selected = "Input Summary",
                                           
@@ -318,10 +318,10 @@ ui <- fluidPage(
                                           ),
                                           
                                           tabPanel(title = "Plot", id = "plotTab",
-                                                   imageOutput("infectedExposedPlot"),
-                                                   imageOutput("cumulativePlot"),
-                                                   imageOutput("fullPlot"),
-                                                   imageOutput("fracSusPlot"),
+                                                   imageOutput("infectedExposedPlot", width = 800, height = 600),
+                                                   imageOutput("cumulativePlot", width = 800, height = 600),
+                                                   # imageOutput("fullPlot"),
+                                                   # imageOutput("fracSusPlot"),
                                                    #downloadButton(outputId = "downloadPlot", label = "Save Image")
                                           )
                               ) # tabsetPanel
