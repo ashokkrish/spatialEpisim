@@ -1,7 +1,7 @@
 library(countrycode)
 library(terra, warn.conflicts = FALSE)
 
-createSusceptibleLayer <- function(selectedCountry, rasterAgg = 0, isCropped = F, level1Names = NULL) {
+createSusceptibleLayer <- function(selectedCountry, rasterAgg = 0) {
 
 #----------------------------------------------------------------#
 # Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
@@ -46,14 +46,14 @@ WorldPop <- replace(WorldPop, is.na(WorldPop), 0) # Delete this line for clear p
 # print(ext(WorldPop))
 
 if (rasterAgg == 0 || rasterAgg == 1) {
-  Susceptible <- WorldPop
+  Aggregated <- WorldPop
 } else {
-  Susceptible <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
+  Aggregated <- aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
 }
 
 # print(Susceptible)
 
-returnList <- list("Susceptible" =  Susceptible, "nRows" = nrow(WorldPop), "nCols" = ncol(WorldPop), "nCells" = ncell(WorldPop))
+returnList <- list("Susceptible" =  WorldPop, "Aggregated" = Aggregated, "nRows" = nrow(WorldPop), "nCols" = ncol(WorldPop), "nCells" = ncell(WorldPop))
 
 return(returnList)
 }
