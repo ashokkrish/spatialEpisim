@@ -1,14 +1,11 @@
 library(countrycode)
 library(terra)
 
-createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL) {
+createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1Names = NULL, susceptibleLayer) {
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
-
-  source("R/rasterWorldPop.R")
   
-  SusceptibleLayer <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names)
-  Susceptible <- SusceptibleLayer$Susceptible
+  Susceptible<- susceptibleLayer$Aggregated
   
   
   
@@ -223,7 +220,13 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
   
   #print(rasterStack)
 
-  returnList <- list("rasterStack" = rasterStack, "Level1Identifier" = Level1Identifier, "selectedCountry" = selectedCountry, "rasterAgg" = rasterAgg, "nRows" = SusceptibleLayer$nRows, "nCols" = SusceptibleLayer$nCols, "nCells" = SusceptibleLayer$nCells)
+  returnList <- list("rasterStack" = rasterStack, 
+                     "Level1Identifier" = Level1Identifier, 
+                     "selectedCountry" = selectedCountry, 
+                     "rasterAgg" = rasterAgg, 
+                     "nRows" = susceptibleLayer$nRows, 
+                     "nCols" = susceptibleLayer$nCols, 
+                     "nCells" = susceptibleLayer$nCells)
   
   return(returnList)
 }
