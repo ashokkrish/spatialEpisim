@@ -15,7 +15,7 @@ shhh(library(sf))     # classes and functions for vector data
 shhh(library(terra, warn.conflicts=FALSE))
 shhh(library(writexl))
 
-source("R/rasterStack.R")  # This code generates the base RasterStack/RasterBrick
+# source("R/rasterStack.R")  # This code generates the base RasterStack/RasterBrick
 source("R/rasterPlot.R")   # This code generates the .png and .mp4 files for RasterStack
 source("R/distwtRaster.R") # This code sets the Euclidean distance and the weight matrix
 
@@ -23,8 +23,8 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, directOutput, rasterAgg, 
-                                            alpha, beta, gamma, sigma, delta, radius, lambda, 
+SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCountry, directOutput,  
+                                            rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, 
                                             timestep, seedFile, seedRadius, deterministic, isCropped, 
                                             level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, 
                                             QVar, QCorrLength, nbhd, psiDiag)
@@ -35,19 +35,17 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
 
-  rs <- createRasterStack(selectedCountry, rasterAgg, isCropped, level1Names)
+  Susceptible <- stack$rasterStack$Susceptible
+  Vaccinated <- stack$rasterStack$Vaccinated
+  Exposed <- stack$rasterStack$Exposed
+  Infected <- stack$rasterStack$Infected
+  Recovered <- stack$rasterStack$Recovered
+  Dead <- stack$rasterStack$Dead
 
-  Susceptible <- rs$rasterStack$Susceptible
-  Vaccinated <- rs$rasterStack$Vaccinated
-  Exposed <- rs$rasterStack$Exposed
-  Infected <- rs$rasterStack$Infected
-  Recovered <- rs$rasterStack$Recovered
-  Dead <- rs$rasterStack$Dead
+  Inhabitable <- stack$rasterStack$Inhabitable
+  Level1Raster <- stack$rasterStack$Level1Raster
 
-  Inhabitable <- rs$rasterStack$Inhabitable
-  Level1Raster <- rs$rasterStack$Level1Raster
-
-  Level1Identifier <- rs$Level1Identifier
+  Level1Identifier <- stack$Level1Identifier
   
   # print(Level1Identifier$NAME_1)  # List of states/provinces/regions
 
@@ -68,10 +66,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
   colnames(summary) <- names
 
-  nrows <- nrow(rs$rasterStack) #
-  ncols <- ncol(rs$rasterStack) #
+  nrows <- nrow(stack$rasterStack) #
+  ncols <- ncol(stack$rasterStack) #
 
-  p <- rs$nCells
+  p <- stack$nCells
 
   #------------------------#
   # Initial seed locations #
@@ -95,8 +93,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
   {
     # print(seedData)
     # print(paste("Seed location = ", seedData[ff,1]))
-    row <- terra::rowFromY(rs$rasterStack, seedData[ff,2])
-    col <- terra::colFromX(rs$rasterStack, seedData[ff,3])
+    row <- terra::rowFromY(stack$rasterStack, seedData[ff,2])
+    col <- terra::colFromX(stack$rasterStack, seedData[ff,3])
     # print("row = ", row, "col = ", col)
     # print(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)])
     # print(sum(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)]))
@@ -217,8 +215,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     source("R/H_Matrix.R") # read in H matrix code
 
-    #Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  2)
-    Hlist <- generateLIO2(rs$rasterStack, sitRepData, states_observable =  1)
+    #Hlist <- generateLIO2(stack$rasterStack, sitRepData, states_observable =  2)
+    Hlist <- generateLIO2(stack$rasterStack, sitRepData, states_observable =  1)
     states_observable <- Hlist$states_observable
     Hmat <- Hlist$Hmat
     #print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
@@ -233,7 +231,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
 
     source("R/Q_matrix.R")
 
-    QMat <- genQ(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  1) #states_observable = 2
+    QMat <- genQ(stack, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  1) #states_observable = 2
 
     Q <- QMat$Q
     # plot(Q[1:101,1])
@@ -430,8 +428,8 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     Recovered <- rast(Recovered)
     Dead <- rast(Dead)
 
-    ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(rs$rasterStack)
-    crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(rs$rasterStack)
+    ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(stack$rasterStack)
+    crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(stack$rasterStack)
     
     # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
     # pal <- colorRampPalette(ramp)
@@ -446,12 +444,12 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     #
     # writeRaster(Infected, file = "infectedRaster.tif", overwrite = TRUE)
 
-    rs$rasterStack$Susceptible <- Susceptible
-    rs$rasterStack$Vaccinated <- Vaccinated
-    rs$rasterStack$Exposed <- Exposed
-    rs$rasterStack$Infected <- Infected
-    rs$rasterStack$Recovered <- Recovered
-    rs$rasterStack$Dead <- Dead
+    stack$rasterStack$Susceptible <- Susceptible
+    stack$rasterStack$Vaccinated <- Vaccinated
+    stack$rasterStack$Exposed <- Exposed
+    stack$rasterStack$Infected <- Infected
+    stack$rasterStack$Recovered <- Recovered
+    stack$rasterStack$Dead <- Dead
 
     # print('check')
   # print(testData)
@@ -723,7 +721,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           { 								# nrows
             for(j in 1:ncols)
             {							  # ncols
-              if (rs$rasterStack$Inhabitable[i,j] == 0)
+              if (stack$rasterStack$Inhabitable[i,j] == 0)
               {						  # Inhabitable
                 #I[i,j] <- D[i,j] <- 0
                 I[i,j] <- 0
@@ -731,10 +729,10 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
             }
           }
           
-          values(rs$rasterStack$Infected) <- I
-          # values(rs$rasterStack$Dead) <- D
-          Infected <- rs$rasterStack$Infected
-          # Dead <- rs$rasterStack$Dead
+          values(stack$rasterStack$Infected) <- I
+          # values(stack$rasterStack$Dead) <- D
+          Infected <- stack$rasterStack$Infected
+          # Dead <- stack$rasterStack$Dead
           
           cumInfected <- values(cumInfected) + sum(I - as.matrix(preDAInfected))
           
@@ -747,21 +745,21 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
           # exposedDiff <- preDAExposed - Exposed
           # Susceptible <- preDASusceptible + exposedDiff
           
-          # rs$rasterStack$Recovered <- Recovered
-            rs$rasterStack$Exposed <- Exposed
-          # rs$rasterStack$Susceptible <- Susceptible
+          # stack$rasterStack$Recovered <- Recovered
+            stack$rasterStack$Exposed <- Exposed
+          # stack$rasterStack$Susceptible <- Susceptible
 
           # print('max index is'); print(which.max(Infected))
          } # datarow cap
         } # If t is divisible by 7
       # elapsed week
     }
-    allRasters[[t]] <- rs
+    allRasters[[t]] <- stack
   }   # time increments
 # DA T/F
    ########## DA Ends ##########
 
-  # save(rs$rasterStack[["Infected"]], file = "infectedRaster.RData")
+  # save(stack$rasterStack[["Infected"]], file = "infectedRaster.RData")
 
   # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
   #
@@ -785,7 +783,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
     printStackLayer(rasterStack = allRasters[[t]]$rasterStack, 
                     rasterLayer = rasterLayer, 
                     directOutput = directOutput, 
-                    Level1Identifier = rs$Level1Identifier, 
+                    Level1Identifier = stack$Level1Identifier, 
                     selectedCountry = selectedCountry, 
                     rasterAgg = rasterAgg, 
                     fname = fname, 
@@ -793,7 +791,7 @@ SpatialCompartmentalModelWithDA <- function(model, startDate, selectedCountry, d
                     includeLabels = T)
 
     # fname = paste0("MP4/", "paper/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), "_paper", ".png")
-    # printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = rs$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = F)
+    # printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = stack$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = F)
   }
 
   # MERGE THE PNGs TO A GET AN MP4 VIDEO
