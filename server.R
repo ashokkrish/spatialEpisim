@@ -92,7 +92,7 @@ server <- function(input, output, session) {
   susceptible <- reactive({
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
     
-    createSusceptibleLayer(input$selectedCountry, 0, FALSE, level1Names = NULL)
+    createSusceptibleLayer(input$selectedCountry, input$agg)
   })
   
   ############################################################################    
@@ -125,9 +125,14 @@ server <- function(input, output, session) {
       
       if(input$cropLev1) {
         req(input$level1List != "")
-        isolate(createCroppedRaster(selectedCountry = input$selectedCountry, level1Region = input$level1List, susceptible()$Susceptible, directOutput = TRUE))
+        isolate(createCroppedRaster(selectedCountry = input$selectedCountry, 
+                                    level1Region = input$level1List, 
+                                    susceptible()$Susceptible, 
+                                    directOutput = TRUE))
       } else {
-        isolate(createBasePlot(selectedCountry = input$selectedCountry, susceptible()$Susceptible, directOutput = TRUE))  # print the susceptible plot direct to UI
+        isolate(createBasePlot(selectedCountry = input$selectedCountry, 
+                               susceptible()$Susceptible, 
+                               directOutput = TRUE))  # print the susceptible plot direct to UI
       }
       
       dev.off()
@@ -950,20 +955,24 @@ server <- function(input, output, session) {
   observeEvent(input$go, {
     req(iv$is_valid())
     
-    isCropped <- FALSE
+    isCropped <- input$cropLev1
     
-    if(input$cropLev1 == TRUE)
-    {
-      isCropped <- TRUE
-    }
-    else
-    {
-      isCropped <- FALSE
-    }
+    # if(input$cropLev1 == TRUE)
+    # {
+    #   isCropped <- TRUE
+    # }
+    # else
+    # {
+    #   isCropped <- FALSE
+    # }
     
     print(paste0(c("isCropped", isCropped)))
-    
-    rs <- createRasterStack(input$selectedCountry, input$agg, isCropped, level1Names = input$level1List)
+  
+    rs <- createRasterStack(selectedCountry = input$selectedCountry, 
+                            rasterAgg = input$agg, 
+                            isCropped = isCropped,
+                            level1Names = input$level1List,
+                            susceptible = susceptible())
     
     # ============= TAB TO SHOW SEED DATA IN TABLE ===========
     data <- reactive({               # read seed data from .csv or .xlsx
@@ -1063,11 +1072,30 @@ server <- function(input, output, session) {
       isDeterministic <- FALSE
     }
     
-    SpatialCompartmentalModelWithDA(model = input$modelSelect, startDate = input$date, selectedCountry = input$selectedCountry, directOutput = FALSE, rasterAgg = input$agg, 
-                                    alpha, beta, gamma, sigma, delta, radius = radius, lambda = input$lambda, timestep = input$timestep, seedFile = input$seedData$datapath, seedRadius = as.numeric(input$seedRadius),
-                                    deterministic = isDeterministic, isCropped = input$cropLev1, level1Names = input$level1List, DA = input$dataAssim, sitRepData = input$dataAssimZones$datapath, 
-                                    dataI = input$assimIData$datapath, dataD = input$assimDData$datapath, varCovarFunc = input$covarianceSelect, QVar = input$QVar, 
-                                    QCorrLength = input$QCorrLength, nbhd = input$nbhd, psiDiag = input$psidiag)
+    SpatialCompartmentalModelWithDA(model = input$modelSelect,
+                                    stack = rs,
+                                    startDate = input$date, 
+                                    selectedCountry = input$selectedCountry, 
+                                    directOutput = FALSE, 
+                                    rasterAgg = input$agg, 
+                                    alpha, beta, gamma, sigma, delta, 
+                                    radius = radius, 
+                                    lambda = input$lambda, 
+                                    timestep = input$timestep, 
+                                    seedFile = input$seedData$datapath, 
+                                    seedRadius = as.numeric(input$seedRadius),
+                                    deterministic = isDeterministic, 
+                                    isCropped = input$cropLev1, 
+                                    level1Names = input$level1List, 
+                                    DA = input$dataAssim, 
+                                    sitRepData = input$dataAssimZones$datapath, 
+                                    dataI = input$assimIData$datapath, 
+                                    dataD = input$assimDData$datapath, 
+                                    varCovarFunc = input$covarianceSelect, 
+                                    QVar = input$QVar, 
+                                    QCorrLength = input$QCorrLength, 
+                                    nbhd = input$nbhd, 
+                                    psiDiag = input$psidiag)
     
     row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
@@ -1103,7 +1131,12 @@ server <- function(input, output, session) {
       outfile <- tempfile(fileext = '.png')
       
       png(outfile, width = 1024, height = 768)
-      createCroppedSeedPlot(selectedCountry = input$selectedCountry, rasterAgg = input$agg, isCropped, level1Names = input$level1List, seedData = input$seedData$datapath, seedRadius = as.numeric(input$seedRadius))  # print the seed plot direct to UI
+      createCroppedSeedPlot(selectedCountry = input$selectedCountry, 
+                            isCropped, 
+                            level1Names = input$level1List,
+                            susceptibleLayer = susceptible()$Aggregated,
+                            seedData = input$seedData$datapath, 
+                            seedRadius = as.numeric(input$seedRadius))  # print the seed plot direct to UI
       dev.off()
       
       list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
