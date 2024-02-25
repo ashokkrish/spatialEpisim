@@ -11,14 +11,12 @@ source("R/rasterWorldPop.R")
 # seedData <- "seeddata/COD_InitialSeedData.csv"
 # seedRadius <- 1
 
-createCroppedSeedPlot <- function(selectedCountry, rasterAgg, isCropped, level1Names = NULL, seedData, seedRadius = 0) {
+createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL, susceptibleLayer, seedData, seedRadius = 0) {
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   
-  Susceptible <- createSusceptibleLayer(selectedCountry, rasterAgg, isCropped, level1Names = NULL)$Susceptible
+  Susceptible <- susceptibleLayer
   
-  print(Susceptible)
-  print("Susceptible")
 
     #---------------------------------------#
     # Source 2: From GADM: Level1Identifier #
