@@ -5,6 +5,7 @@ server <- function(input, output, session) {
   
   iv <- InputValidator$new()
   iv_alpha <- InputValidator$new()
+  iv_cropped <- InputValidator$new()
   iv_seeddataupload <- InputValidator$new() 
   
   # Non-spatial Modelling
@@ -47,16 +48,22 @@ server <- function(input, output, session) {
   iv$add_rule("timestep", sv_integer())
   iv$add_rule("timestep", sv_gt(0))
   
+  iv_cropped$add_rule("level1List", sv_required())
+  
   iv_seeddataupload$add_rule("seedData", sv_required())
   iv_seeddataupload$add_rule("seedData", ~ if(is.null(fileInputs$smStatus) || fileInputs$smStatus == 'reset') "Required")
   
   iv_alpha$condition(~ isTRUE(input$modelSelect == "SVEIRD"))
   
+  iv_cropped$condition(~ isTRUE(input$cropLev1))
+  
   iv$add_validator(iv_alpha)
+  iv$add_validator(iv_cropped)
   iv$add_validator(iv_seeddataupload)
   
   iv$enable()
   iv_alpha$enable()
+  iv_cropped$enable()
   iv_seeddataupload$enable()
   
   observe({
@@ -1131,7 +1138,7 @@ server <- function(input, output, session) {
     #########################################
     
     output$seedPlot <- renderImage({
-      
+      req(iv$is_valid())
       outfile <- tempfile(fileext = '.png')
       
       png(outfile, width = 1024, height = 768)
