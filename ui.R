@@ -181,7 +181,7 @@ ui <- fluidPage(
                                               uiOutput("cropStateCheckbox"),
                                               
                                               conditionalPanel(
-                                                condition = "input.cropLev1 == '1'",  
+                                                condition = "input.cropLev1",  
                                                 
                                                 uiOutput("Level1Ui")
                                               ),
