@@ -822,11 +822,11 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 # deterministic, isCropped, level1Names, DA = F,
 # sitRepData, dataI, dataD, varCovarFunc, QVar, QCorrLength
 
-model <- "SVEIRD" # "SEIRD"
-startDate <- "2018-08-05" # today()
-selectedCountry <- "Democratic Republic of Congo"
-directOutput <- F
-rasterAgg <- 10
+# model <- "SVEIRD" # "SEIRD"
+# startDate <- "2018-08-05" # today()
+# selectedCountry <- "Democratic Republic of Congo"
+# directOutput <- F
+# rasterAgg <- 10
 
 #t <- 1
 
@@ -834,34 +834,34 @@ rasterAgg <- 10
 # Parameters #
 #------------#
 
-alpha <- 0.000035  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
-beta  <- 0.007 # 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
-gamma <- 1/7  # 0.1428571      # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
-sigma <- 1/36 # 0.02777778     # Daily fraction that move out of the infectious compartment to the recovered compartment
-delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious compartment to the dead compartment
+# alpha <- 0.000035  # Daily fraction that move out of the susceptible compartment to the vaccinated compartment
+# beta  <- 0.007 # 0.006     # Daily fraction that move out of the susceptible compartment to the exposed compartment
+# gamma <- 1/7  # 0.1428571      # Daily fraction that move out of the exposed compartment to the infectious compartment **** Gamma has to remain the same for all scenarios
+# sigma <- 1/36 # 0.02777778     # Daily fraction that move out of the infectious compartment to the recovered compartment
+# delta <- 2/36 # 0.05555556     # Daily fraction that move out of the infectious compartment to the dead compartment
 
-radius <- 1 # apply formula as discussed
-lambda <- 15
-timestep <- 564
-
-seedFile <- "seeddata/COD_InitialSeedData.csv"
-seedRadius <- 1
-
-deterministic <- T
-isCropped <- T
-level1Names <- c("Ituri", "Nord-Kivu")
-
-DA <- T # F # 
-
-sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
-dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
-dataD <- "observeddata/Ebola_Death_Data.xlsx"
-
-varCovarFunc <- "DBD" # "Balgovind"
-QVar <- 0.55
-QCorrLength <- 0.675
-nbhd <- 3
-psiDiag <- 0.001
+# radius <- 1 # apply formula as discussed
+# lambda <- 15
+# timestep <- 564
+# 
+# seedFile <- "seeddata/COD_InitialSeedData.csv"
+# seedRadius <- 1
+# 
+# deterministic <- T
+# isCropped <- T
+# level1Names <- c("Ituri", "Nord-Kivu")
+# 
+# DA <- T # F # 
+# 
+# sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
+# dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
+# dataD <- "observeddata/Ebola_Death_Data.xlsx"
+# 
+# varCovarFunc <- "DBD" # "Balgovind"
+# QVar <- 0.55
+# QCorrLength <- 0.675
+# nbhd <- 3
+# psiDiag <- 0.001
 
 #------------#
 # DA is TRUE #
