@@ -251,7 +251,7 @@ server <- function(input, output, session) {
       checkboxInput(
         inputId = "cropLev1", 
         label = strong("Crop State(s)/Province(s)"), 
-        value = FALSE)
+        value = TRUE)
     }
   })
   
@@ -270,6 +270,7 @@ server <- function(input, output, session) {
   # Create select box for choosing input country                             #
   ############################################################################      
   output$Level1Ui <- renderUI({
+    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
     validate(need(input$cropLev1 == TRUE, "")) # catches UI warning
     
     isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
@@ -283,7 +284,7 @@ server <- function(input, output, session) {
     selectizeInput(inputId = "level1List", 
                    label = NULL,
                    choices = level1Options,
-                   # selected = c("Kwara", "Oyo"),
+                   selected = c("Ituri", "Nord-Kivu"),
                    multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
     
@@ -300,7 +301,7 @@ server <- function(input, output, session) {
                    label = strong("Epidemic Model"),
                    choiceValues = list("SEIRD","SVEIRD"),
                    choiceNames = list("SEIRD","SVEIRD"),
-                   selected = "SEIRD", #character(0), # 
+                   selected = "SVEIRD", #character(0), # 
                    inline = TRUE,
                    width = "1000px")
     }
@@ -886,13 +887,16 @@ server <- function(input, output, session) {
   
   output$seedRadiusInput <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+
     
-    radioButtons(inputId = "seedRadius",
-                 label = strong("Insert infection data in"),
-                 choiceNames = list("a single cell", "a Moore neighbourhood of cells"),
-                 choiceValues = list(0, 1),
-                 selected = 0, #character(0), # 
-                 inline = TRUE)
+    if(!is.null(fileInputs$smStatus) && fileInputs$smStatus != 'reset') {
+      radioButtons(inputId = "seedRadius",
+                   label = strong("Insert infection data in"),
+                   choiceNames = list("a single cell", "a Moore neighbourhood of cells"),
+                   choiceValues = list(0, 1),
+                   selected = 0, #character(0), # 
+                   inline = TRUE)
+    }
   })
   
   observeEvent(input$selectedCountry, {
@@ -1173,7 +1177,7 @@ server <- function(input, output, session) {
       session, 
       inputId = 'selectedCountry', 
       choices = shortlist$Country, 
-      selected = "Nigeria")
+      selected = "Democratic Republic of Congo")
   })
   
   ################
