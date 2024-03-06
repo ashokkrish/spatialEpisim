@@ -152,7 +152,7 @@ server <- function(input, output, session){
   susceptible <- reactive({
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
     
-    createSusceptibleLayer(input$selectedCountry, 1, FALSE, level1Names = NULL)
+    createSusceptibleLayer(input$selectedCountry, 0)
   })
   
   
