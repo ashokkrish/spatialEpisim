@@ -64,4 +64,4 @@ return(returnList)
 
 # NOTE: The isCropped argument is unused
 
-# createSusceptibleLayer("Nigeria", 0, isCropped = F, level1Names = NULL)
+# createSusceptibleLayer("Nigeria", 0)
