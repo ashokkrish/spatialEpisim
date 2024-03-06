@@ -146,19 +146,19 @@ server <- function(input, output, session){
   })
 
   
-  #########################################
+  #---------------------------------------#
   # Reactively rasterize selected country #
-  #########################################
+  #---------------------------------------#
   susceptible <- reactive({
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
-    
+
     createSusceptibleLayer(input$selectedCountry, 0)
   })
   
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Dynamically display the checkbox option to select for states/provinces   #
-  ############################################################################
+  #--------------------------------------------------------------------------#
   output$cropStateCheckbox <- renderUI({ # cropStateCheckbox ----
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -221,9 +221,9 @@ server <- function(input, output, session){
   #     }
   #   })
   
-  ######################################################################################    
+  #------------------------------------------------------------------------------------#    
   # Create a table of population count stratified by states/provinces and output to UI #
-  ###################################################################################### 
+  #------------------------------------------------------------------------------------# 
   
   # output$tableButton <- renderUI({
   #   validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
@@ -288,9 +288,9 @@ server <- function(input, output, session){
   #   # )})
   # })
   
-  ################################################    
+  #----------------------------------------------#    
   # Create select box for choosing input country #
-  ################################################ 
+  #----------------------------------------------# 
   
   output$Level1Ui <- renderUI({ # level1Ui ----
     validate(need(input$cropLev1 == TRUE, "")) # catches UI warning
@@ -309,9 +309,9 @@ server <- function(input, output, session){
                    options = list(placeholder = "Select a state/province"))
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Create a country plot cropped by level1Identifier and output to UI       #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   
   output$croppedPlotButton <- renderUI({ # croppedPlotButton ----
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
@@ -386,9 +386,9 @@ server <- function(input, output, session){
     shinyjs::reset(id = "selectedCountry")
   })
 
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Generate seed data and have an option to download the file locally       #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   
   # output$seedDataButton <- renderUI({
   #   validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
@@ -452,9 +452,13 @@ server <- function(input, output, session){
   #   }
   # })
 
-  ########################################
+  #--------------------------------------#
   #Selected State/Province Map Tab Panel #
-  ########################################
+  #--------------------------------------#
+  
+  observeEvent(input$cropLev1, {
+    updateTabsetPanel(inputId = "tabSet", selected = "2020 UN-Adjusted Population Count Map")
+  })
   
   observeEvent({(input$cropLev1 == FALSE || is.null(input$level1List))
                 input$selectedCountry}, priority = 10, {
