@@ -1,7 +1,9 @@
 library(bslib)
 library(dplyr)
 library(DT)
+library(htmltools)
 library(leaflet)
+library(readr)
 library(readxl)
 library(shiny)
 library(shinyjs)
@@ -10,12 +12,13 @@ library(shinyWidgets)
 population <- read_excel("misc/population.xlsx", 1)
 shortlist <- filter(population, shortList == "TRUE")
 
+source("R/cropBaseRasterHaxby.R")
 source("R/rasterBasePlot.R")
 source("R/rasterLeafletPlot.R")
-source("R/cropBaseRasterHaxby.R")
 source("R/rasterStack.R")
+source("R/seedDataBubblePlot.R")
 
-ui <- fluidPage(
+ui <- fluidPage( # UI ----
   theme = bs_theme(version = 4, bootswatch = "minty"),
   shinyjs::useShinyjs(),
   navbarPage(title = span("WorldPop Visualizer", style = "color:#000000; font-weight:bold; font-size:15pt"),
@@ -47,7 +50,10 @@ ui <- fluidPage(
                             # uiOutput("aggSlider"),
                             
                             br(),
-                            
+                            uiOutput("transPathFileInputs"),
+                            br(),
+                            uiOutput("transPathDateInput"),
+                            br(),
                             uiOutput("resetButton"),
 
                             # uiOutput("seedDataButton"),
@@ -96,20 +102,28 @@ ui <- fluidPage(
                                                 ),
                                         tabPanel(title ="Selected State/Province Map", 
                                                  
-                                                 imageOutput("croppedOutputImage"),
+                                                 # imageOutput("croppedOutputImage"),
                                                  
-                                                 # conditionalPanel(
-                                                 #   condition = "input.plotType == 'terra'",
-                                                 #   
-                                                 #   imageOutput("croppedOutputImage"),
-                                                 # ),
-                                                 # 
-                                                 # conditionalPanel(
-                                                 #   condition = "input.plotType == 'Leaflet'",
-                                                 #   
-                                                 #   leafletOutput("croppedLeafletMap")
-                                                 # ),
+                                                 conditionalPanel(
+                                                   condition = "input.plotType == 'terra'",
+
+                                                   imageOutput("croppedOutputImage"),
+                                                 ),
+
+                                                 conditionalPanel(
+                                                   condition = "input.plotType == 'Leaflet'",
+
+                                                   leafletOutput("croppedLeafletMap",
+                                                                 width = 1024, 
+                                                                 height = 768)
+                                                 ),
                                                 ),
+                                        tabPanel(title = "Transmission Path",
+                                                 
+                                                 leafletOutput("transmission",
+                                                               width = 1024,
+                                                               height = 768),
+                                                 )
                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
                                       #          )
@@ -121,7 +135,61 @@ ui <- fluidPage(
      ) #navbarPage
 ) # fluidPage
 
-server <- function(input, output, session){
+server <- function(input, output, session){ # Server ----
+  
+  valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000)
+  ramp <- c('#FFFFFF', 
+            '#D0D8FB', 
+            '#BAC5F7', 
+            '#8FA1F1', 
+            '#617AEC', 
+            '#0027E0', 
+            '#1965F0', 
+            '#0C81F8', 
+            '#18AFFF', 
+            '#31BEFF', 
+            '#43CAFF', 
+            '#60E1F0', 
+            '#69EBE1', 
+            '#7BEBC8', 
+            '#8AECAE', 
+            '#ACF5A8', 
+            '#CDFFA2', 
+            '#DFF58D', 
+            '#F0EC78', 
+            '#F7D767', 
+            '#FFBD56', 
+            '#FFA044', 
+            '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+  colorPalette <- colorBin(pal(8)[-1], domain = valueRange, bins = valueRange)
+  
+  #---------------------------------------#
+  ##          Input Validators         ----
+  #---------------------------------------#
+  iv <- InputValidator$new()
+  iv_dataupload <- InputValidator$new() 
+  
+  iv_dataupload$add_rule("latLonData", sv_required())
+  iv_dataupload$add_rule("latLonData", ~ if(is.null(fileInputs$latLonStatus) || fileInputs$latLonStatus == 'reset') "Required")
+  iv_dataupload$add_rule("incidenceData", sv_required())
+  iv_dataupload$add_rule("incidenceData", ~ if(is.null(fileInputs$incidenceStatus) || fileInputs$incidenceStatus == 'reset') "Required")
+  
+  iv$add_validator(iv_dataupload)
+  
+  iv$enable()
+  iv_dataupload$enable()
+  
+  
+  #----------------------------------------------------------------------#
+  # Values to flag when the lat/lon & incidence file inputs have files 
+  # uploaded
+  #----------------------------------------------------------------------#
+  fileInputs <- reactiveValues(
+    latLonStatus = NULL,
+    incidenceStatus = NULL
+  )
+  
   
   output$countryDropdown <- renderUI({ ## countryDropdown ----
     pickerInput(
@@ -143,6 +211,9 @@ server <- function(input, output, session){
     } else {
       shinyjs::hide(id = "maptabPanels")
     }
+    
+    fileInputs$latLonStatus <- 'reset'
+    fileInputs$incidenceStatus <- 'reset'
   })
 
   
@@ -180,6 +251,89 @@ server <- function(input, output, session){
   #}
   #})
   
+  #--------------------------------------------------------------------------#    
+  # Display the file inputs for generating the transmission path             #
+  #--------------------------------------------------------------------------#
+  output$transPathFileInputs <- renderUI({
+    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
+    
+    tagList(
+      fileInput(inputId = "latLonData", 
+                label = strong("Upload Lat-Lon Data:"), 
+                placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"),
+      ),
+      
+      br(),
+      
+      fileInput(inputId = "incidenceData", 
+                label = strong("Upload Incidence/Death Data:"), 
+                placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"),
+      )
+    )
+  })
+  
+  #--------------------------------------------------------------------------#    
+  # Dynamically generate a date slider that contains the dates for all the 
+  # observed data in the incidence/death file
+  #--------------------------------------------------------------------------# 
+  output$transPathDateInput <- renderUI({
+    req(iv_dataupload$is_valid())
+    
+    dateInfo <- colnames(transPathData())[4:length(colnames(transPathData()))]
+    
+    sliderTextInput(
+      inputId = "transPathDate",
+      label = strong("Date"),
+      choices = dateInfo,
+      selected = dateInfo[1],
+      animate = animationOptions(interval = 250, loop = FALSE)
+    )
+  })
+  
+  
+  #--------------------------------------------------------------------------#    
+  # Checks to see that files have been uploaded (helper func)                #
+  #--------------------------------------------------------------------------# 
+  observeEvent(input$latLonData, {
+    fileInputs$latLonStatus <- 'uploaded'
+  })
+  
+  observeEvent(input$incidenceData, {
+    fileInputs$incidenceStatus <- 'uploaded'
+  })
+  
+  
+  #---------------------------------------------------------------------------#    
+  # Combine the lat/long data with the observed infection into a single table #
+  #---------------------------------------------------------------------------# 
+  transPathData <- reactive({
+    req(iv_dataupload$is_valid())
+    
+    incidenceData <- openDataFile(input$incidenceData)
+    latLonData <- openDataFile(input$latLonData)
+
+    incidence <- as.data.frame(t(incidenceData))
+    incidenceCols <- incidence[2,]
+    incidence <- incidence[3:nrow(incidence),]
+    colnames(incidence) <- incidenceCols
+    
+    plotData <- cbind(latLonData, lapply(incidence, as.numeric))
+  })
+  
+  
+  
   output$outputImage <- renderImage({ ## outputImage ----
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
@@ -205,9 +359,66 @@ server <- function(input, output, session){
     req(!is.null(input$selectedCountry))
     
     susc <- susceptible()$Susceptible
+    level1Names <- NULL
     
-    createLeafletPlot(input$selectedCountry, susc)
+    createLeafletPlot(input$selectedCountry, level1Names, susc)
   })
+  
+  
+  
+  output$transmission <- renderLeaflet({
+    
+    level1Names <- NULL
+    
+    if(input$cropLev1 == TRUE){
+      
+      if(!is.null(input$level1List) && !("" %in% input$level1List)){
+        level1Names <- input$level1List
+      }
+    }
+    
+    createLeafletBubblePlot(input$selectedCountry, level1Names, transPathData(), 1)
+  })
+  
+  
+  #--------------------------------------------------------------------------#    
+  # Proxy map for the leaflet plot to dynamically update the transmission
+  # path data
+  #--------------------------------------------------------------------------# 
+  observe({
+    req(!is.null(input$transPathDate))
+    
+    # which date (column of data) to plot
+    transDate <- input$transPathDate
+    
+    plotData <- transPathData()
+    
+    # To access a column inside the leafletProxy function the column name must 
+    # be called directly (can't use a variable storing the column name) so we
+    # must set the column we want to a known name ("Current")
+    colnames(plotData)[colnames(plotData) == transDate] <- "Current"
+    
+    labelText <- paste0(
+      "Health Zone: ", plotData$HealthZone, "<br/>",
+      "Count: ", plotData["Current"], "<br/>") %>%
+      lapply(htmltools::HTML)
+    
+    # To update the map, clear out the old markers and draw new ones using the 
+    # data from the newly selected date
+    leafletProxy("transmission",
+                 data = plotData) %>%
+      clearMarkers() %>%
+      addCircleMarkers(lng = ~Longitude,
+                       lat = ~Latitude,
+                       radius = ~Current,
+                       weight = 1,
+                       opacity = 1,
+                       color = ~ifelse(Current > 0, "black", "transparent"),
+                       fillColor = ~ifelse(Current > 0, colorPalette(Current), "transparent"),
+                       fillOpacity = 0.8,
+                       label = labelText)
+  })
+  
   
   # output$downloadPlot <- downloadHandler(
   #   isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c"),
@@ -375,6 +586,15 @@ server <- function(input, output, session){
             list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Select at least one state/province to plot")
   
           }, deleteFile = TRUE)
+          
+          output$croppedLeafletMap <- renderLeaflet({
+            req(!is.null(input$level1List))
+            
+            susc <- susceptible()$Susceptible
+            level1Names <- input$level1List
+
+            createLeafletPlot(input$selectedCountry, level1Names, susc)
+          })
         }
      }
     }
@@ -384,6 +604,9 @@ server <- function(input, output, session){
     shinyjs::reset(id = "cropPlot")
     shinyjs::reset(id = "cropLev1")
     shinyjs::reset(id = "selectedCountry")
+    
+    fileInputs$latLonStatus <- 'reset'
+    fileInputs$incidenceStatus <- 'reset'
   })
 
   #--------------------------------------------------------------------------#    
@@ -476,6 +699,23 @@ server <- function(input, output, session){
   # observeEvent(input$table,{
   #   showTab(inputId = 'tabSet', target = 'Population Count by State/Province')
   # })
+  
+  #--------------------------------------------------------------------#
+  # Helper function to open different files based on their format
+  #--------------------------------------------------------------------#
+  openDataFile <- function(datafile) {
+    ext <- tools::file_ext(datafile$name)
+    ext <- tolower(ext)
+    
+    switch(ext, 
+           csv = read_csv(datafile$datapath, show_col_types = FALSE),
+           xls = read_xls(datafile$datapath),
+           xlsx = read_xlsx(datafile$datapath),
+           txt = read_tsv(datafile$datapath, show_col_types = FALSE),
+           
+           validate("Improper file format.")
+    )
+  }
 }
 
 shinyApp(ui,server)
