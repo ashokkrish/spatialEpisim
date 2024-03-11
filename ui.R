@@ -1,7 +1,7 @@
-#---------------------------
+#------------------------- #
 #      UI Components
-#---------------------------
-ui <- fluidPage(
+#------------------------- #
+ui <- fluidPage( # UI ----
   tags$head(
     tags$style(HTML("
       .label-text {
@@ -348,7 +348,7 @@ ui <- fluidPage(
                       
                       br(),
                       
-                      p(span("Michael, Myer, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
+                      p(span("Michael Myer, Tobias Wondwossen, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
