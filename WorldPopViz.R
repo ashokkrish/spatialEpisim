@@ -7,6 +7,7 @@ library(readr)
 library(readxl)
 library(shiny)
 library(shinyjs)
+library(shinyvalidate)
 library(shinyWidgets)
 
 population <- read_excel("misc/population.xlsx", 1)
