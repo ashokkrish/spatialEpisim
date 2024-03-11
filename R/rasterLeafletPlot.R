@@ -2,12 +2,32 @@ library(countrycode)
 library(leaflet)
 library(terra, warn.conflicts = FALSE)
 
-createLeafletPlot <- function(selectedCountry, susceptible) {
+createLeafletPlot <- function(selectedCountry, level1Names, susceptible) {
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   
   valueRange <- c(0, 10, 25, 50, 100, 250, 1000, 100000)
-  x <- classify(susceptible, valueRange)
+  
+  
+  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file 
+  gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
+  GADMdata <- readRDS(paste0(gadmFolder, gadmFileName))
+  
+  if(!is.null(level1Names)){
+    GADMdata <- GADMdata[GADMdata$NAME_1 %in% c(level1Names), ]
+    GADMdata <- vect(GADMdata)
+    GAMDdata <- rast(GADMdata)
+    
+    crs(GADMdata) <- crs(susceptible, proj = TRUE)
+    
+    lvl1Raster <- crop(susceptible, GADMdata, mask = TRUE)
+    
+    lvl1Rasterrast <- lvl1Raster
+    
+    x <- classify(lvl1Raster, c(0, 10, 25, 50, 100, 250, 1000, 10000))
+  } else {
+    x <- classify(susceptible, valueRange)
+  }
   
   # plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
   
@@ -67,28 +87,19 @@ createLeafletPlot <- function(selectedCountry, susceptible) {
                             " (1 sq. km resolution)")
   }
   
-  gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file 
-  gadmFolder <- "gadm/"                                               # .rds files should be stored in local gadm/ folder
-  
-  # print(paste0(gadmFolder, gadmFileName))
-  # print(getwd())
-  
-  level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
-
-  
   leaflet(width = 1024, 
           height = 768,
           options = leafletOptions(zoomSnap = 0.25, zoomDelta=0.25)) %>%
     addProviderTiles("Esri.WorldGrayCanvas") %>%
     addRasterImage(x, 
                    colors = pal(8)[-1]) %>%
-    addPolygons(data = level1Identifier,
+    addPolygons(data = GADMdata,
                 color = "#444444", 
                 weight = 1.5, 
                 smoothFactor = 1,
                 opacity = 1.0, 
                 fillOpacity = 0,
-                popup = paste(level1Identifier$NAME_1),
+                popup = paste(GADMdata$NAME_1),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
     addLegend(pal = colorBin(palette = pal(8)[-1],
