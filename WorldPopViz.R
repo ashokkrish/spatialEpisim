@@ -45,8 +45,6 @@ ui <- fluidPage( # UI ----
                                 br()
                               ),
                             ),
-                            br(),
-                            uiOutput("plottingMethod"),
                             
                             # uiOutput("aggSlider"),
                             
@@ -82,49 +80,30 @@ ui <- fluidPage( # UI ----
                           div(id = "maptabPanels",
                             tabsetPanel(id = 'tabSet',
                                         tabPanel(id = "main", 
-                                                 title ="2020 UN-Adjusted Population Count Map",
-                                                 
-                                                 conditionalPanel(
-                                                   condition = "input.plotType == 'terra'",
+                                                 title ="Leaflet Plot",
                                                    
-                                                   imageOutput("outputImage"),
-                                                 ),
-                                                 
-                                                 conditionalPanel(
-                                                   condition = "input.plotType == 'Leaflet'",
-                                                   
-                                                   leafletOutput("leafletMap",
-                                                                 width = 1024, 
-                                                                 height = 768),
-                                                 ),
-                                                 
+                                                 leafletOutput("leafletMap",
+                                                               width = 1024, 
+                                                               height = 768),
 
                                                #downloadButton('downloadPlot', 'Save Image')
                                                 ),
-                                        tabPanel(title ="Selected State/Province Map", 
-                                                 
-                                                 # imageOutput("croppedOutputImage"),
-                                                 
-                                                 conditionalPanel(
-                                                   condition = "input.plotType == 'terra'",
+                                        tabPanel(title ="Leaflet Cropped Plot", 
 
-                                                   imageOutput("croppedOutputImage"),
-                                                 ),
-
-                                                 conditionalPanel(
-                                                   condition = "input.plotType == 'Leaflet'",
-
-                                                   leafletOutput("croppedLeafletMap",
-                                                                 width = 1024, 
-                                                                 height = 768)
-                                                 ),
+                                                 leafletOutput("croppedLeafletMap",
+                                                               width = 1024, 
+                                                               height = 768)
+                                                ),
+                                        tabPanel(title = "terra Plot",
+                                                   
+                                                 imageOutput("outputImage"),
                                                 ),
                                         tabPanel(title = "Transmission Path",
                                                  
                                                  leafletOutput("transmission",
                                                                width = 1024,
                                                                height = 768),
-                                                 )
+                                                )
                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
                                       #          )
@@ -536,20 +515,6 @@ server <- function(input, output, session){ # Server ----
   })
   
   
-  output$plottingMethod <- renderUI({ # plottingMethod ----
-    
-    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      radioButtons(
-        inputId = "plotType", 
-        label = strong("Render Map(s) Using"), 
-        choices = c("terra", "Leaflet"),
-        selected = "terra",
-        inline = TRUE
-      )
-    }
-  })
-  
-  
   output$resetButton <- renderUI({ # resetButton ----
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton(
@@ -681,16 +646,16 @@ server <- function(input, output, session){ # Server ----
   #--------------------------------------#
   
   observeEvent(input$cropLev1, {
-    updateTabsetPanel(inputId = "tabSet", selected = "2020 UN-Adjusted Population Count Map")
+    updateTabsetPanel(inputId = "tabSet", selected = "Leaflet Plot")
   })
   
   observeEvent({(input$cropLev1 == FALSE || is.null(input$level1List))
                 input$selectedCountry}, priority = 10, {
-    hideTab(inputId = 'tabSet', target = 'Selected State/Province Map')
+    hideTab(inputId = 'tabSet', target = 'Leaflet Cropped Plot')
   })
   
   observeEvent(input$go, {
-    showTab(inputId = 'tabSet', target = 'Selected State/Province Map')
+    showTab(inputId = 'tabSet', target = 'Leaflet Cropped Plot')
   })
 
   # observe(
