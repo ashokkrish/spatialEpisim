@@ -22,6 +22,7 @@ shhh(library(writexl))
 shhh(library(sf))     # classes and functions for vector data
 shhh(library(shiny))
 shhh(library(shinyalert))
+shhh(library(shinybusy))
 shhh(library(shinyhelper))
 shhh(library(shinyjs))
 shhh(library(shinyvalidate))

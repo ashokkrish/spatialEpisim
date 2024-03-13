@@ -1,6 +1,6 @@
-#---------------------------
+#--------------------------#
 #     Server Components
-#---------------------------
+#--------------------------#
 server <- function(input, output, session) {
   
   iv <- InputValidator$new()
@@ -965,7 +965,9 @@ server <- function(input, output, session) {
   ############################################################################ 
   observeEvent(input$go, {
     req(iv$is_valid())
-    
+    show_modal_spinner(spin = "cube-grid",
+                       color = "#18536F",
+                       text = "   Calculating...   ")
     isCropped <- input$cropLev1
     
     # if(input$cropLev1 == TRUE)
@@ -1166,6 +1168,7 @@ server <- function(input, output, session) {
         controls = "controls"
       )
     })
+    remove_modal_spinner()
   })
   
   # observeEvent(input$filterLMIC,{
@@ -1203,6 +1206,7 @@ server <- function(input, output, session) {
   observeEvent(input$go,{
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
+    shinyjs::runjs("window.scrollTo(0, 0)")
   })
   
   # output$downloadOutputSummary <- downloadHandler(
