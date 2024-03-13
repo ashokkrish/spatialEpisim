@@ -1,4 +1,6 @@
+library(countrycode)
 library(htmltools)
+library(leaflet)
 library(terra)
 
 createLeafletBubblePlot <- function(selectedCountry, level1Names, plotData, activeCol) {
@@ -72,7 +74,7 @@ createLeafletBubblePlot <- function(selectedCountry, level1Names, plotData, acti
                              domain = valueRange),
               values = valueRange,
               opacity = 0.75,
-              title = "Est. persons per pixel",
+              title = "Obs. persons",
               position = "topright")
   
   leafletPlot
