@@ -1,0 +1,38 @@
+/* Header menu styles --------------------------------------------------*/
+  .nav {                                                                /**/
+    align-items: center;                                                /**/
+  }                                                                     /**/
+  .navbar,                                                              /**/
+  .navbar-brand,                                                        /**/
+  .navbar-light .navbar-brand, 
+  .navbar.navbar-default .navbar-brand{    /**/
+    color: #F5F5F5;                                                     /**/
+    --bslib-navbar-default-bg: #18536F;                                 /**/
+  }                                                                     /**/
+  .navbar-nav .nav-link.active {                                        /**/
+    color: #F5F5F5!important;                                           /**/
+  }                                                                     /**/
+  .navbar-nav .nav-link {                                               /**/
+    color: rgba(245,245,245,0.5)!important;                             /**/
+  }                                                                     /**/
+  .navTitle {
+    padding: 15px 15px 0px 15px;
+    background-color: #18536F;
+  }
+  .pageTitle {                                                          /**/
+    color: #F5F5F5;                                                     /**/
+    font-weight: bold;                                                  /**/
+    font-size: 24pt;                                                    /**/
+    padding: 0px 10px;                                                  /**/
+    vertical-align: middle;                                             /**/
+  }                                                                     /**/
+  .container-fluid {                                                    /**/
+    padding-right: 0px;                                                 /**/
+    padding-left: 0px;                                                  /**/
+  }                                                                     /**/
+  .tab-content,                                                         /**/
+  .navbar {                                                             /**/
+    padding-right: 15px;                                                /**/
+    padding-left: 15px;                                                 /**/
+  }                                                                     /**/
+  /*----------------------------------------------------------------------*/

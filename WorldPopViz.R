@@ -20,9 +20,15 @@ source("R/rasterStack.R")
 source("R/seedDataBubblePlot.R")
 
 ui <- fluidPage( # UI ----
-  theme = bs_theme(version = 4, bootswatch = "minty"),
+  theme = bs_theme(version = 4, 
+                   primary = "#18536F"),
+  tags$head(
+    tags$link(rel = "stylesheet", 
+              type="text/css", 
+              href="SE-banner.css")
+  ),
   shinyjs::useShinyjs(),
-  navbarPage(title = span("WorldPop Visualizer", style = "color:#000000; font-weight:bold; font-size:15pt"),
+  navbarPage(title = span("WorldPop Visualizer", class = "pageTitle"),
              
              tabPanel(title = "Plotting a GeoTIFF raster",
                       sidebarLayout(
@@ -347,6 +353,7 @@ server <- function(input, output, session){ # Server ----
   
   
   output$transmission <- renderLeaflet({
+    req(!is.null(input$selectedCountry))
     
     level1Names <- NULL
     
@@ -566,7 +573,7 @@ server <- function(input, output, session){ # Server ----
     }
   })
   
-  observeEvent(input$reset, {
+  observeEvent(input$reset, priority = 10, {
     shinyjs::reset(id = "cropPlot")
     shinyjs::reset(id = "cropLev1")
     shinyjs::reset(id = "selectedCountry")

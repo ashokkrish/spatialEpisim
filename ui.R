@@ -13,16 +13,28 @@ ui <- fluidPage( # UI ----
       }
     "))
   ),
-  theme = bs_theme(version = 4, bootswatch = "minty"),
+  theme = bs_theme(version = 4, 
+                   primary = "#18536F"),
+  tags$head(
+    tags$link(rel = "stylesheet", 
+              type="text/css", 
+              href="SE-banner.css")
+  ),
   #theme = bs_theme(bootswatch = "slate"),
   div(
-    class = "invisible",
-    titlePanel("Mathematical Modelling of Infectious Diseases")
+    class = "navTitle",
+    # titlePanel("Mathematical Modelling of Infectious Diseases")
     #titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
+    span(
+      class = "pageTitle",
+      tags$em("spatialEpisim"), 
+      ": Spatial Tracking of Infectious Diseases using Mathematical Models", 
+      br() 
+    )
   ),
   
-  navbarPage(title = span("Mathematical Modelling of Infectious Diseases", style = "color:#000000; font-weight:bold; font-size:15pt"),
-             
+  navbarPage(title = "",
+    
              tabPanel(title = "Model",
                       sidebarLayout(
                         sidebarPanel( ## sidebar panel ----
