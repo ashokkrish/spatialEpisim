@@ -6,6 +6,7 @@ library(leaflet)
 library(readr)
 library(readxl)
 library(shiny)
+library(shinybusy)
 library(shinyjs)
 library(shinyvalidate)
 library(shinyWidgets)
@@ -14,6 +15,7 @@ population <- read_excel("misc/population.xlsx", 1)
 shortlist <- filter(population, shortList == "TRUE")
 
 source("R/cropBaseRasterHaxby.R")
+source("R/makeLollipop.R")
 source("R/rasterBasePlot.R")
 source("R/rasterLeafletPlot.R")
 source("R/rasterStack.R")
@@ -28,6 +30,11 @@ ui <- fluidPage( # UI ----
               href="SE-banner.css")
   ),
   shinyjs::useShinyjs(),
+  
+  add_busy_spinner(spin = "cube-grid",
+                   color = "#18536F",
+                   margins = c("50%","50%")),
+  
   navbarPage(title = span("WorldPop Visualizer", class = "pageTitle"),
              
              tabPanel(title = "Plotting a GeoTIFF raster",
@@ -88,28 +95,47 @@ ui <- fluidPage( # UI ----
                                         tabPanel(id = "main", 
                                                  title ="Leaflet Plot",
                                                    
+                                                 br(),
                                                  leafletOutput("leafletMap",
                                                                width = 1024, 
                                                                height = 768),
-
+                                                 br(),
+                                                 br()
                                                #downloadButton('downloadPlot', 'Save Image')
-                                                ),
+                                                 ),
                                         tabPanel(title ="Leaflet Cropped Plot", 
 
+                                                 br(),
                                                  leafletOutput("croppedLeafletMap",
                                                                width = 1024, 
-                                                               height = 768)
-                                                ),
+                                                               height = 768),
+                                                 br(),
+                                                 br()
+                                                 ),
                                         tabPanel(title = "terra Plot",
                                                    
+                                                 br(),
                                                  imageOutput("outputImage"),
-                                                ),
+                                                 br(),
+                                                 br()
+                                                 ),
                                         tabPanel(title = "Transmission Path",
                                                  
+                                                 br(),
                                                  leafletOutput("transmission",
                                                                width = 1024,
                                                                height = 768),
-                                                )
+                                                 br(),
+                                                 br()
+                                                 ),
+                                        tabPanel(title = "Lollipop Chart",
+                                                 
+                                                 br(),
+                                                 plotOutput("lollipop",
+                                                            height = 1000),
+                                                 br(),
+                                                 br()
+                                                 )
                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
                                       #          )
@@ -306,7 +332,7 @@ server <- function(input, output, session){ # Server ----
   #---------------------------------------------------------------------------# 
   transPathData <- reactive({
     req(iv_dataupload$is_valid())
-    
+
     incidenceData <- openDataFile(input$incidenceData)
     latLonData <- openDataFile(input$latLonData)
 
@@ -354,6 +380,7 @@ server <- function(input, output, session){ # Server ----
   
   output$transmission <- renderLeaflet({
     req(!is.null(input$selectedCountry))
+    req(iv_dataupload$is_valid())
     
     level1Names <- NULL
     
@@ -365,6 +392,13 @@ server <- function(input, output, session){ # Server ----
     }
     
     createLeafletBubblePlot(input$selectedCountry, level1Names, transPathData(), 1)
+  })
+  
+  
+  output$lollipop <- renderPlot({
+    req(iv_dataupload$is_valid())
+    
+    plotLolliChart(input$incidenceData$datapath)
   })
   
   
