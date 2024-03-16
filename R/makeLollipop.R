@@ -9,14 +9,16 @@ plotLolliChart <- function(filename) {
   chartData <- data.frame(x = colnames(data),
                           y = colSums(data))
   
-  plotTitle <- paste("Total Observed Persons per Health Zone from", file[1,"Date"], "to", file[nrow(file), "Date"])
+  plotTitle <- paste("Cumulative Cases per Location from", file[1,"Date"], "to", file[nrow(file), "Date"])
   
   plot <- ggplot(chartData, aes(x=x, y=y)) +
-    geom_segment( aes(x=x, xend=x, y=0, yend=y), color="black") +
-    geom_point( color="#18536F", size=3, position = position_dodge2(0.5)) +
+    # geom_hline(yintercept = 0) +
+    # geom_vline(xintercept = colnames(data)[1]) +
+    geom_segment( aes(x=reorder(x, y), xend=reorder(x, y), y=0, yend=y), color="black") +
+    geom_point( color="#18536F", size=5) +
     labs(title = plotTitle,
-         x = "Health Zone", # x and y labels will be flipped
-         y = "Total Observed Persons") +
+         x = "Location", # x and y labels will be flipped
+         y = "Cumulative Cases") +
     theme_light() +
     coord_flip() +
     theme(
@@ -26,19 +28,19 @@ plotLolliChart <- function(filename) {
                                 margin = margin(0, 0, 50, 0)),
       panel.grid.major.y = element_blank(),
       panel.border = element_blank(),
-      plot.margin = unit(c(1, 1, 1, 1),"cm"),
+      plot.margin = unit(c(1, 1, 1, 0),"cm"),
       axis.title.x = element_text(size = 20, 
-                                  face = "bold", 
-                                  vjust = -1.5,
+                                  face = "bold",
                                   margin = margin(25, 0, 0, 0)),
       axis.title.y = element_text(size = 20, 
                                   face = "bold",
                                   margin = margin(0, 25, 0, 0)),
       axis.text.x.bottom = element_text(size = 14),
       axis.text.y.left = element_text(size = 14),
-      axis.ticks.y = element_blank()
+      axis.ticks.y = element_blank(),
+      axis.line = element_line(linewidth = 0.5)
     ) +
-    scale_y_continuous(n.breaks = 8)
+    scale_y_continuous(n.breaks = 8, expand = c(0, 0), limits = c(0,(max(chartData[,"y"] * 1.1))))
 
   plot
 }
