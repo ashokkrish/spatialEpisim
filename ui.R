@@ -20,7 +20,7 @@ ui <- fluidPage( # UI ----
               type="text/css", 
               href="SE-banner.css")
   ),
-  #theme = bs_theme(bootswatch = "slate"),
+
   div(
     class = "navTitle",
     # titlePanel("Mathematical Modelling of Infectious Diseases")
@@ -360,7 +360,7 @@ ui <- fluidPage( # UI ----
                       
                       br(),
                       
-                      p(span("Michael Myer, Tobias Wondwossen, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
+                      p(span("Michael Myer, Tobias Wondwossen, Khanh Le, Michael Walsh, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
