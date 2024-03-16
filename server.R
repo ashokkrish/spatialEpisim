@@ -822,7 +822,7 @@ server <- function(input, output, session) {
     
     output$infectedExposedPlot <- makePlot(
                                     compartments = c("E", "I"), 
-                                    input = input, 
+                                    selectedCountry = input$selectedCountry, 
                                     plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), 
                                     xTitle = paste0("Day (from ", input$date, ")"), 
                                     yTitle = "Compartment Value", 
@@ -830,7 +830,7 @@ server <- function(input, output, session) {
     
     output$cumulativePlot <- makePlot(
                               compartments = c("D"), 
-                              input = input, 
+                              selectedCountry = input$selectedCountry, 
                               plotTitle = paste0("Estimated Cumulative Deaths in ", input$selectedCountry), 
                               xTitle = paste0("Day (from ", input$date, ")"), 
                               yTitle = "Cumulative Deaths", 
@@ -839,7 +839,7 @@ server <- function(input, output, session) {
     if (input$modelSelect == "SVEIRD"){
       output$fullPlot <- makePlot(
                            compartments = c("S", "V", "E", "I", "R", "D"), 
-                           input = input, 
+                           selectedCountry = input$selectedCountry, 
                            plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
                            xTitle = paste0("Day (from ", input$date, ")"), 
                            yTitle = "Compartment Value", 
@@ -847,7 +847,7 @@ server <- function(input, output, session) {
     } else {
       output$fullPlot <- makePlot(
                            compartments = c("S", "E", "I", "R", "D"), 
-                           input = input, 
+                           selectedCountry = input$selectedCountry, 
                            plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
                            xTitle = paste0("Day (from ", input$date, ")"), 
                            yTitle = "Compartment Value", 
@@ -967,7 +967,9 @@ server <- function(input, output, session) {
     req(iv$is_valid())
     show_modal_spinner(spin = "cube-grid",
                        color = "#18536F",
-                       text = "   Calculating...   ")
+                       text = p("   Calculating...   ",
+                                br(),
+                                "This may take several minutes."))
     isCropped <- input$cropLev1
     
     # if(input$cropLev1 == TRUE)
