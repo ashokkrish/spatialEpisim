@@ -831,7 +831,7 @@ server <- function(input, output, session) {
     output$cumulativePlot <- makePlot(
                               compartments = c("D"), 
                               input = input, 
-                              plotTitle = paste0("Estimated Cumulative COVID-19 Deaths in ", input$selectedCountry), 
+                              plotTitle = paste0("Estimated Cumulative Deaths in ", input$selectedCountry), 
                               xTitle = paste0("Day (from ", input$date, ")"), 
                               yTitle = "Cumulative Deaths", 
                               lineThickness = lineThickness)
