@@ -17,8 +17,8 @@ makePlot <- function (compartments, selectedCountry, plotTitle, xTitle, yTitle, 
     
     p = ggplot(plotData) +
       labs(title = plotTitle, x = xTitle, y = yTitle) +
-      scale_x_date(date_labels = "%d %b %Y") +
-      ylim(0, NA)
+      scale_x_date(date_labels = "%d %b %Y") 
+      # ylim(0, NA)
     
     for (comp in compartments) {
       p <- p + geom_line(aes(.data[["Date"]], .data[[comp]]), linewidth=lineThickness, color=compColors[comp,])
