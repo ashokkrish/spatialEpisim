@@ -45,6 +45,45 @@ plotLolliChart <- function(filename) {
   plot
 }
 
+plotTimeSeries <- function(filename, selectedCountry) {
+  
+  file <- as.data.frame(openDataFile(filename))
+  plotData <- data.frame(x = ymd(file[,"Date"]),
+                          y = rowSums(file[,3:ncol(file)]))
+  plotTitle <- paste0("Time-Series Graph of Daily Incidence/Death Rates in ", selectedCountry)
+  
+  print(plotData)
+  
+  p = ggplot(plotData,
+             aes(x = x, y = y)) +
+    geom_line(color="#22031F", linewidth = 3) +
+    geom_point(color="#22031F") +
+    # geom_area(fill = "#22031F", alpha = 0.3) +
+    labs(title = plotTitle, 
+         x = "Date", 
+         y = "Number of Persons") +
+    scale_x_date(date_breaks = "2 months", date_labels = "%d %b %Y") +
+    scale_y_continuous(minor_breaks = waiver()) +
+    theme(
+      plot.title = element_text(size = 20, 
+                                face = "bold",
+                                margin = margin(0, 0, 25, 0)),
+      axis.title.x = element_text(size = 18, 
+                                  face = "bold",
+                                  margin = margin(25, 0, 0, 0)),
+      axis.title.y = element_text(size = 18, 
+                                  face = "bold",
+                                  margin = margin(0, 25, 0, 0)),
+      axis.text.x.bottom = element_text(size = 14),
+      axis.text.y.left = element_text(size = 14),
+      axis.line = element_line(linewidth = 0.5),
+      plot.margin = unit(c(1, 1, 1, 0),"cm")
+    ) 
+    # scale_color_gradient(low="#9E929D", high="#22031F") 
+  
+  return(p)
+}
+
 openDataFile <- function(filename) {
   ext <- tools::file_ext(filename)
   ext <- tolower(ext)
