@@ -15,11 +15,11 @@ population <- read_excel("misc/population.xlsx", 1)
 shortlist <- filter(population, shortList == "TRUE")
 
 source("R/cropBaseRasterHaxby.R")
-source("R/makeLollipop.R")
 source("R/rasterBasePlot.R")
 source("R/rasterLeafletPlot.R")
 source("R/rasterStack.R")
 source("R/seedDataBubblePlot.R")
+source("R/WorldPopPlots.R")
 
 ui <- fluidPage( # UI ----
   theme = bs_theme(version = 4, 
@@ -135,7 +135,14 @@ ui <- fluidPage( # UI ----
                                                             height = 1000),
                                                  br(),
                                                  br()
-                                                 )
+                                                 ),
+                                        tabPanel(title = "Daily Incidence/Death",
+                                                 
+                                                 br(),
+                                                 plotOutput("dailyIncidence",
+                                                            height = 600),
+                                                 br(),
+                                                 br())
                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
                                       #          )
@@ -399,6 +406,12 @@ server <- function(input, output, session){ # Server ----
     req(iv_dataupload$is_valid())
     
     plotLolliChart(input$incidenceData$datapath)
+  })
+  
+  output$dailyIncidence <- renderPlot({
+    req(iv_dataupload$is_valid())
+    
+    plotTimeSeries(input$incidenceData$datapath, input$selectedCountry)
   })
   
   
