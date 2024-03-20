@@ -156,6 +156,7 @@ server <- function(input, output, session) {
     req(iv$is_valid())
     output$modelImg <- renderImage({
       return(list(src= "www/ModelEquations.png",
+                  height = 400,
                   contentType = "image/png"))
     }, deleteFile = FALSE)
   })
@@ -168,10 +169,12 @@ server <- function(input, output, session) {
     output$flowchartImg <- renderImage({
       if (input$modelSelect == "SEIRD"){
         return(list(src= "www/SEIRD.png",
+                    height = 400,
                     contentType = "image/png"))
       }
       else if (input$modelSelect == "SVEIRD"){
         return(list(src = "www/SVEIRD.png",
+                    height = 400,
                     contentType = "image/png"))
       }
     }, deleteFile = FALSE)
@@ -241,7 +244,7 @@ server <- function(input, output, session) {
       label = (strong("Country")), 
       choices = shortlist$Country,
       multiple = FALSE,
-      selected = NULL, # "Democratic Republic of Congo", #
+      selected = "Democratic Republic of Congo", #
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country")
@@ -823,7 +826,7 @@ server <- function(input, output, session) {
     output$infectedExposedPlot <- makePlot(
                                     compartments = c("E", "I"), 
                                     selectedCountry = input$selectedCountry, 
-                                    plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in ", input$selectedCountry), 
+                                    plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in \n", input$selectedCountry), 
                                     xTitle = paste0("Day (from ", input$date, ")"), 
                                     yTitle = "Compartment Value", 
                                     lineThickness = lineThickness)
@@ -1183,14 +1186,14 @@ server <- function(input, output, session) {
   #   updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
   # })
   
-  observeEvent(input$modellingApproach, {
-    
-    updatePickerInput(
-      session, 
-      inputId = 'selectedCountry', 
-      choices = shortlist$Country, 
-      selected = "Democratic Republic of Congo")
-  })
+  # observeEvent(input$modellingApproach, {
+  #   
+  #   updatePickerInput(
+  #     session, 
+  #     inputId = 'selectedCountry', 
+  #     choices = shortlist$Country, 
+  #     selected = "Democratic Republic of Congo")
+  # })
   
   ################
   # Tabset Panel #
