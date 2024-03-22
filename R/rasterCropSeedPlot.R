@@ -325,18 +325,23 @@ printCroppedSeedPlot <- function(infectedData, level1Identifier) {
   terra::plot(infectedData, 
               col = pal(8)[-2], 
               axes = TRUE, 
-              cex.main = 1, 
+              cex.main = 1.5,
+              line.main = 1.25,
               main = "Location of initial infections", 
               xlab = expression(bold("Longitude")), 
-              ylab = expression(bold("Latitude")), 
-              plg = list(title = "Persons", 
+              ylab = expression(bold("Latitude")),
+              line.lab = 2.25,
+              cex.lab = 1.4,
+              plg = list(title = expression(bold("Persons")),
+                         title.cex = 1.25,
                          loc = "bottom", 
                          horiz = TRUE,
                          yjust = 3.5, 
                          x.intersp = 0.6, 
                          inset = c(0, -0.2), 
-                         cex = 1.15),
-              mar = c(8.5, 3.5, 4, 2.5))
+                         cex = 1.25),
+              pax = list(cex.axis = 1.7),
+              mar = c(8.5, 2.5, 2.5, 2.5))
   
   #plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = TRUE, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15),
