@@ -321,10 +321,8 @@ ui <- fluidPage( # UI ----
                                           # ),
                                           
                                           tabPanel(title = "Initial Seed Data", 
-                                                   DTOutput("tableSeed")
-                                          ),
-                                          
-                                          tabPanel(title = "Seed Data Map",
+                                                   DTOutput("tableSeed"),
+                                                   br(),
                                                    imageOutput("seedPlot")
                                           ),
                                           
