@@ -18,14 +18,14 @@ plotLolliChart <- function(selectedCountry, filename) {
   if(selectedCountry %in% prependList) {
     plotTitle <- paste0(plotTitle, "the ")
   }
-  plotTitle <- paste0(plotTitle, selectedCountry, "\nfrom ", file[1,"Date"], "to", file[nrow(file), "Date"])
+  plotTitle <- paste0(plotTitle, selectedCountry, "\nfrom ", file[1,"Date"], " to ", file[nrow(file), "Date"])
   
   
   plot <- ggplot(chartData, aes(x=x, y=y)) +
     # geom_hline(yintercept = 0) +
     # geom_vline(xintercept = colnames(data)[1]) +
     geom_segment(aes(x=reorder(x, y), xend=reorder(x, y), y=0, yend=y), color="black") +
-    geom_point(color="#18536F", size=5) +
+    geom_point(color="#18536F", size=2.5) +
     labs(title = plotTitle,
          x = "Location", # x and y labels will be flipped
          y = "Cumulative Cases") +
