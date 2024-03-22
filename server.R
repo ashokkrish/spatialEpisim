@@ -959,6 +959,13 @@ server <- function(input, output, session) {
           write.csv(frameCombine, sheetName, row.names = FALSE)
         }
       )
+      
+      if(input$selectedCountry != "Democratic Republic of Congo") {
+        updateCheckboxInput(
+          inputId = "cropLev1",
+          value = FALSE
+        )
+      }
     }
     
     fileInputs$smStatus <- 'reset'
