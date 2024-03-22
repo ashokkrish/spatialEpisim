@@ -102,9 +102,9 @@ server <- function(input, output, session) {
     createSusceptibleLayer(input$selectedCountry, input$agg)
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Create a country plot cropped by level1Identifier and output to UI       #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   # observeEvent(input$go, {
   #   if(input$cropLev1 == TRUE){
   #     output$croppedOutputImage <- renderImage({
@@ -120,9 +120,9 @@ server <- function(input, output, session) {
   #   }
   # })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Output population base plot image to the app UI                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   observeEvent(input$go, {
     req(iv$is_valid())
     output$outputImage <- renderImage({
@@ -149,9 +149,9 @@ server <- function(input, output, session) {
     }, deleteFile = TRUE)
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Output IDE equations image to the app UI                                 #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   observeEvent(input$go, {
     req(iv$is_valid())
     output$modelImg <- renderImage({
@@ -161,9 +161,9 @@ server <- function(input, output, session) {
     }, deleteFile = FALSE)
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Output flowchart image to the app UI                                     #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   observeEvent(input$go, {
     req(iv$is_valid())
     output$flowchartImg <- renderImage({
@@ -180,9 +180,9 @@ server <- function(input, output, session) {
     }, deleteFile = FALSE)
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   # Reset all parameter sliders, country selection, etc.                     #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   observeEvent(input$resetAll, {
     shinyjs::reset("dashboard")
     shinyjs::disable(id = "go")
@@ -191,17 +191,17 @@ server <- function(input, output, session) {
     
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   # Checks to see that a new file has been uploaded (helper func)            #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   observeEvent(input$seedData, {
     values$allow_simulation_run <- TRUE
     fileInputs$smStatus <- 'uploaded'
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   # Check if all mandatory fields have a value                               #
-  ############################################################################   
+  #--------------------------------------------------------------------------#  
   # observe({
   #       mandatoryFilled <-
   #       vapply(fieldsMandatory,
@@ -218,9 +218,9 @@ server <- function(input, output, session) {
   #   }
   # })
   
-  ##############################################################################
-  #highlight drop down item when hovering                                      #
-  ##############################################################################
+  #--------------------------------------------------------------------------#
+  # highlight drop down item when hovering                                   #
+  #--------------------------------------------------------------------------#
   # observe({
   #   hoverDrop <-
   #     vapply(hoverDrop,
@@ -235,9 +235,9 @@ server <- function(input, output, session) {
   #   }
   # })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # This static ui field is in server since other dynamic ui elements need it#
-  ############################################################################
+  #--------------------------------------------------------------------------#
   output$countryDropdown <- renderUI({
     pickerInput(
       inputId = "selectedCountry",
@@ -251,9 +251,9 @@ server <- function(input, output, session) {
     )
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Dynamically display the checkbox option to select for states/provinces   #
-  ############################################################################
+  #--------------------------------------------------------------------------#
   output$cropStateCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -265,9 +265,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################     
+  #--------------------------------------------------------------------------#    
   # Checkbox for Data Assimilation                                           #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   output$dataAssimCheckbox <- renderUI({
     validate(need(!is.null(input$selectedCountry), ""))
     
@@ -276,9 +276,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   # Create select box for choosing input country                             #
-  ############################################################################      
+  #--------------------------------------------------------------------------#     
   output$Level1Ui <- renderUI({
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
     validate(need(input$cropLev1 == TRUE, "")) # catches UI warning
@@ -300,9 +300,9 @@ server <- function(input, output, session) {
     
   })
   
-  ############################################################################     
+  #--------------------------------------------------------------------------#     
   # Radio button for SEIRD vs SVEIRD Model                                   #
-  ############################################################################   
+  #--------------------------------------------------------------------------#  
   output$modelRadio <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -317,9 +317,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################     
+  #--------------------------------------------------------------------------#     
   # Radio button for Deterministic vs Stochastic Model                       #
-  ############################################################################  
+  #--------------------------------------------------------------------------#  
   output$stochasticRadio <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -334,9 +334,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   # TODO: refactor numericInputs into single function                        #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   output$alphaInput <- renderUI({
     alphaValue <- 0.00015 # 0.2100
     
@@ -370,9 +370,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   #                                                                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   output$betaInput <- renderUI({
     req(!is.null(input$modelSelect))
     betaValue <- 0.055 # 0.00001
@@ -407,9 +407,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   #                                                                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   output$gammaInput <- renderUI({
     req(!is.null(input$modelSelect))
     gammaValue <- 0.009 #0.008
@@ -444,9 +444,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   #                                                                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   output$sigmaInput <- renderUI({
     req(!is.null(input$modelSelect))
     sigmaValue <- 0.065
@@ -481,9 +481,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   #                                                                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   output$deltaInput <- renderUI({
     req(!is.null(input$modelSelect))
     deltaValue <- 0.0015
@@ -518,9 +518,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   #                                                                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   
   #helpText('NOTE: Radius of 1 is called the Moore neighbourhood.'),
   #HTML("<p>NOTE: Radius of 1 is called the <a href='https://en.wikipedia.org/wiki/Moore_neighborhood'>Moore neighbourhood</a></p>", target = "_blank"),
@@ -561,9 +561,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   #                     Upload Seed Data                                     #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   output$seedUpload <- renderUI({
     
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -584,9 +584,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   #                                                                          #
-  ############################################################################ 
+  #--------------------------------------------------------------------------#
   output$startDateInput <- renderUI({
     req(!is.null(input$modelSelect))
     startDateInput <- Sys.Date() # NULL
@@ -620,9 +620,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################     
+  #--------------------------------------------------------------------------#    
   # numeric input for number of iterations                                   #
-  ############################################################################  
+  #--------------------------------------------------------------------------# 
   output$timestepInput <- renderUI({
     timestepValue <- 10
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -637,9 +637,10 @@ server <- function(input, output, session) {
                    min = 1, max = 3650, value = timestepValue, step = 1)}
   }
   )
-  ############################################################################     
+  
+  #--------------------------------------------------------------------------#    
   # Data Assimilation settings                                               #
-  ############################################################################
+  #--------------------------------------------------------------------------#
   
   output$dataAssimCmpts <- renderUI({
     validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
@@ -713,9 +714,9 @@ server <- function(input, output, session) {
   #                  options = list(placeholder = ""))
   #})
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#   
   # Change the function which generates the Q matrix     #
-  ############################################################################  
+  #--------------------------------------------------------------------------# 
   output$varCovarFunc <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -735,9 +736,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
-  # Adjust parameter values for the variance=covariance function     #
-  ############################################################################  
+  #--------------------------------------------------------------------------#    
+  # Adjust parameter values for the variance=covariance function             #
+  #--------------------------------------------------------------------------# 
   
   output$selectRho <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
@@ -787,9 +788,9 @@ server <- function(input, output, session) {
     }
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Change the recommended aggregation factor for slider dynamically         #
-  ############################################################################  
+  #--------------------------------------------------------------------------#  
   output$aggInput <- renderUI({
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
     
@@ -800,9 +801,9 @@ server <- function(input, output, session) {
     }
   })
 
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Output bubble plot with initial seed data directly to the app UI         #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   # observeEvent(input$go, {
   #   output$seededOutputImage <- renderImage({
   #     source("R/plotSeedData.R", encoding="UTF-8")
@@ -874,16 +875,16 @@ server <- function(input, output, session) {
     # }, deleteFile = TRUE)
   })
   
-  ##########################################################################    
+  #------------------------------------------------------------------------#    
   # Allow the user to download the time-series plots from UI               #
-  ########################################################################## 
+  #------------------------------------------------------------------------# 
   # observeEvent(input$go, {
   #   # TODO: implement downloading of files
   # })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Generate seed data and have an option to download the file locally       #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   
   output$seedDataButton <- renderUI({
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
@@ -963,9 +964,9 @@ server <- function(input, output, session) {
     fileInputs$smStatus <- 'reset'
   })
   
-  ############################################################################    
+  #--------------------------------------------------------------------------#    
   # Multiple functionality when 'Run Simulation' is pressed                  #
-  ############################################################################ 
+  #--------------------------------------------------------------------------# 
   observeEvent(input$go, {
     req(iv$is_valid())
     show_modal_spinner(spin = "cube-grid",
@@ -1007,8 +1008,19 @@ server <- function(input, output, session) {
     
     output$tableSeed <- renderDT({ # print initial seed data to UI
       req(input$seedData)
-      if(is.null(data())){return ()}
-      data()
+      if(is.null(data())){
+        return ()
+      }
+      datatable(data(),
+                rownames = FALSE,
+                options = list(
+                  dom = 't',
+                  pageLength = -1,
+                  ordering = FALSE,
+                  searching = FALSE,
+                  paging = FALSE,
+                  autoWidth = TRUE,
+                  scrollX = TRUE),)
     })
     
     output$outputSummary <- renderDT({ # print output summary to UI
@@ -1140,9 +1152,9 @@ server <- function(input, output, session) {
                   autoWidth = FALSE))
     })
 
-    #########################################    
+    #---------------------------------------#    
     # Output seed plot image to the app UI  #
-    #########################################
+    #---------------------------------------#
     
     output$seedPlot <- renderImage({
       req(iv$is_valid())
@@ -1161,9 +1173,9 @@ server <- function(input, output, session) {
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
     
-    ############################################################################    
+    #--------------------------------------------------------------------------#    
     # Output the .mp4 video from www/ to the app UI                            #
-    ############################################################################  
+    #--------------------------------------------------------------------------#  
     output$outputVideo <- renderUI({
       
       tags$video(
@@ -1195,9 +1207,9 @@ server <- function(input, output, session) {
   #     selected = "Democratic Republic of Congo")
   # })
   
-  ################
+  #--------------#
   # Tabset Panel #
-  ################
+  #--------------#
   
   observeEvent(input$resetAll,{
     shinyjs::hide(id = "tabsetContainer")
