@@ -3,6 +3,7 @@ library(dplyr)
 library(DT)
 library(htmltools)
 library(leaflet)
+library(plotly)
 library(readr)
 library(readxl)
 library(shiny)
@@ -131,7 +132,7 @@ ui <- fluidPage( # UI ----
                                         tabPanel(title = "Lollipop Chart",
                                                  
                                                  br(),
-                                                 plotOutput("lollipop",
+                                                 plotlyOutput("lollipop",
                                                             height = 1000),
                                                  br(),
                                                  br()
@@ -139,11 +140,11 @@ ui <- fluidPage( # UI ----
                                         tabPanel(title = "Daily Incidence/Death",
                                                  
                                                  br(),
-                                                 plotOutput("dailyIncidence",
-                                                            height = 600),
+                                                 plotlyOutput("dailyIncidence",
+                                                            height = 800),
                                                  br(),
                                                  br())
-                                      # tabPanel(title ="Population Count by State/Province",
+                                       # tabPanel(title ="Population Count by State/Province",
                                       #          DT::dataTableOutput("aggTable")
                                       #          )
                             ) # tabSet
@@ -402,16 +403,18 @@ server <- function(input, output, session){ # Server ----
   })
   
   
-  output$lollipop <- renderPlot({
+  output$lollipop <- renderPlotly({
     req(iv_dataupload$is_valid())
     
-    plotLolliChart(input$incidenceData$datapath)
+    p <- plotLolliChart(input$selectedCountry, input$incidenceData$datapath)
+    ggplotly(p)
   })
   
-  output$dailyIncidence <- renderPlot({
+  output$dailyIncidence <- renderPlotly({
     req(iv_dataupload$is_valid())
     
-    plotTimeSeries(input$incidenceData$datapath, input$selectedCountry)
+    p <- plotTimeSeries(input$incidenceData$datapath, input$selectedCountry)
+    ggplotly(p)
   })
   
   
