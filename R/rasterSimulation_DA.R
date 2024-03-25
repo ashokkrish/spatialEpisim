@@ -305,6 +305,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
     
+    valInhabitable <- terra::as.matrix(Inhabitable, wide = TRUE)
     valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
     valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
     valExposed <- terra::as.matrix(Exposed, wide = TRUE)
@@ -313,6 +314,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     valDead <- terra::as.matrix(Dead, wide = TRUE)
 
     nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
+    pSusceptible <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- matrix(0, nrows, ncols, byrow = T)
 
     dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
 
@@ -320,99 +322,78 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     # Generating the I_tilda matrix #
     #-------------------------------#
   
-    I_tilda <- wtd_nbrs_sum(input_matrix = terra::as.matrix(Infected, wide = TRUE), radius = radius, lambda = lambda)
+    I_tilda <- wtd_nbrs_sum(input_matrix = valInfected, radius = radius, lambda = lambda)
 
-    for(i in 1:nrows)
-    { 							# nrows
-      for(j in 1:ncols)
-      {							# ncols
-        
-        if (Inhabitable[i,j][1,1] == 1)
-        {						     # Inhabitable
-          nLiving <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- 0
-
-          nLiving <- valSusceptible[i,j] + valVaccinated[i,j] + valExposed[i,j] + valInfected[i,j] + valRecovered[i,j]
-          
-          if (nLiving > 0)			# nLiving
-          {
-            if (valSusceptible[i,j] >= 1)
-            {
-              nearbyInfected <- I_tilda[i,j]
-
-              #--------------------------------------------------------------------#
-              # Some susceptible people are going to be newly vaccinated           #
-              #--------------------------------------------------------------------#
-
-              newVaccinated <- alpha*valSusceptible[i,j]
-
-              dailyVaccinated <- dailyVaccinated + newVaccinated
-
-              #--------------------------------------------------------------------#
-              # Some susceptible people who come in contact with nearby infected   #
-              # are going to be newly exposed                                      #
-              #--------------------------------------------------------------------#
-
-              if (nearbyInfected >= 1)
-              {
-                pSusceptible <- valSusceptible[i,j]/nLiving
-                if (deterministic){
-                  newExposed <- beta*pSusceptible*nearbyInfected
-                } else {
-                  rpois(1, beta*pSusceptible*nearbyInfected)
-                }
-
-                dailyExposed <- dailyExposed + newExposed
-                cumExposed <- cumExposed + newExposed
-              }
-            }
-
-            #----------------------------------------------------------#
-            # Some exposed people are going to become newly infectious #
-            #----------------------------------------------------------#
-            if (valExposed[i,j] >= 1)
-            {
-              newInfected <- gamma*valExposed[i,j]
-              dailyInfected <- dailyInfected + newInfected
-              cumInfected   <- cumInfected + newInfected
-            }
-
-            #-----------------------------------------------------------#
-            # Some infectious people are going to either recover or die #
-            #-----------------------------------------------------------#
-            if (valInfected[i,j] >= 1)
-            {
-              newRecovered <- sigma*valInfected[i,j]
-
-              dailyRecovered <- dailyRecovered + newRecovered
-              cumRecovered <- cumRecovered + newRecovered
-
-              newDead <- delta*valInfected[i,j]
-
-              dailyDead <- dailyDead + newDead
-              cumDead <- cumDead + newDead
-            }
-
-            #-----------------------------------#
-            # Store the next state of each cell #
-            #-----------------------------------#
-
-            nextSusceptible[i,j] <- valSusceptible[i,j] - newExposed - newVaccinated
-            nextVaccinated[i,j] <- valVaccinated[i,j] + newVaccinated
-            nextExposed[i,j] <- valExposed[i,j] + newExposed - newInfected
-            nextInfected[i,j] <- valInfected[i,j] + newInfected - newDead - newRecovered
-            nextRecovered[i,j] <- valRecovered[i,j] + newRecovered
-            nextDead[i,j] <- valDead[i,j] + newDead
-          }					# nLiving
-        } 					# Inhabitable
-      }							# ncols
-    } 							# nrows
-
-    nextSusceptible[nextSusceptible < 0] = 0
-    nextVaccinated[nextVaccinated < 0] = 0
-    nextExposed[nextExposed < 0] = 0
-    nextInfected[nextInfected < 0] = 0
-    nextRecovered[nextRecovered < 0] = 0
-    nextDead[nextDead < 0] = 0
+    nLiving <- valSusceptible + valVaccinated + valExposed + valInfected + valRecovered
+    
+    #--------------------------------------------------------------------#
+    # Some susceptible people are going to be newly vaccinated           #
+    #--------------------------------------------------------------------#
+    newVaccinated <- alpha*valSusceptible
+    newVaccinated[valSusceptible < 1] <- 0 
+    
+    dailyVaccinated <- sum(newVaccinated)
+    
+    #--------------------------------------------------------------------#
+    # Some susceptible people who come in contact with nearby infected   #
+    # are going to be newly exposed                                      #
+    #--------------------------------------------------------------------#
+    pSusceptible <- valSusceptible/nLiving
+    pSusceptible[is.nan(pSusceptible)] <- 0
+    
+    if(deterministic) {
+      newExposed <- beta*pSusceptible*I_tilda
+    } else {
+      rpois(1, beta*pSusceptible*I_tilda)
+    }
+    newExposed[valSusceptible < 1] <- 0 
+    newExposed[I_tilda < 1] <- 0 
+    
+    dailyExposed <- sum(newExposed)
+    cumExposed <- cumExposed + sum(newExposed)
+    
+    #----------------------------------------------------------#
+    # Some exposed people are going to become newly infectious #
+    #----------------------------------------------------------#
+    newInfected <- gamma*valExposed
+    newInfected[valExposed < 1] <- 0
+    
+    dailyInfected <- sum(newInfected)
+    cumInfected   <- cumInfected + sum(newInfected)
+    
+    #-----------------------------------------------------------#
+    # Some infectious people are going to either recover or die #
+    #-----------------------------------------------------------#
+    newRecovered <- sigma*valInfected
+    newRecovered[valInfected < 1] <- 0
+    
+    dailyRecovered <- sum(newRecovered)
+    cumRecovered <- cumRecovered + sum(newRecovered)
+    
+    newDead <- delta*valInfected
+    newDead[valInfected < 1] <- 0
+    
+    dailyDead <- sum(newDead)
+    cumDead <- cumDead + sum(newDead)
+    
+    #-----------------------------------#
+    # Store the next state of each cell #
+    #-----------------------------------#
+    nextSusceptible <- valSusceptible - newExposed - newVaccinated
+    nextVaccinated <- valVaccinated + newVaccinated
+    nextExposed <- valExposed + newExposed - newInfected
+    nextInfected <- valInfected + newInfected - newDead - newRecovered
+    nextRecovered <- valRecovered + newRecovered
+    nextDead <- valDead + newDead
+    
+    
+    nextSusceptible[nLiving <= 0] <- 0
+    nextVaccinated[nLiving <= 0] <- 0
+    nextExposed[nLiving <= 0] <- 0
+    nextInfected[nLiving <= 0] <- 0
+    nextRecovered[nLiving <= 0] <- 0
+    nextDead[nLiving <= 0] <- 0
+  
 
     Susceptible <- nextSusceptible
     Vaccinated <- nextVaccinated
