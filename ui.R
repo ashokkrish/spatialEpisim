@@ -337,10 +337,11 @@ ui <- fluidPage( # UI ----
                                           ),
                                           
                                           tabPanel(title = "Plot", id = "plotTab",
-                                                   imageOutput("infectedExposedPlot", width = 800, height = 600),
+                                                   plotlyOutput("infectedExposedPlot", width = 800, height = 600),
                                                    br(),
-                                                   imageOutput("cumulativePlot", width = 800, height = 600),
-                                                   # imageOutput("fullPlot"),
+                                                   plotlyOutput("cumulativePlot", width = 800, height = 600),
+                                                   br(),
+                                                   plotlyOutput("fullPlot", width = 800, height = 600),
                                                    # imageOutput("fracSusPlot"),
                                                    #downloadButton(outputId = "downloadPlot", label = "Save Image")
                                           )
