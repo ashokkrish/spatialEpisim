@@ -13,6 +13,7 @@ shhh(library(lattice))
 shhh(library(latticeExtra))
 shhh(library(maps))
 shhh(library(markdown))
+shhh(library(plotly))
 shhh(library(purrr))
 options("rgdal_show_exportToProj4_warnings"="none")
 # shhh(library(raster, warn.conflicts=FALSE)) # classes and functions for raster data
