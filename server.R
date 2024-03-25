@@ -824,39 +824,49 @@ server <- function(input, output, session) {
   observeEvent(input$go, {
     req(iv$is_valid())
     
-    output$infectedExposedPlot <- makePlot(
-                                    compartments = c("E", "I"), 
-                                    selectedCountry = input$selectedCountry, 
-                                    plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in \n", input$selectedCountry), 
-                                    xTitle = paste0("Day (from ", input$date, ")"), 
-                                    yTitle = "Compartment Value", 
-                                    lineThickness = lineThickness)
+    output$infectedExposedPlot <- renderPlotly({
+      p <- makePlot(
+        compartments = c("E", "I"), 
+        selectedCountry = input$selectedCountry, 
+        plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in \n", input$selectedCountry), 
+        xTitle = paste0("Day (from ", input$date, ")"), 
+        yTitle = "Compartment Value", 
+        lineThickness = lineThickness)
+      ggplotly(p)
+    })
     
-    output$cumulativePlot <- makePlot(
-                              compartments = c("D"), 
-                              selectedCountry = input$selectedCountry, 
-                              plotTitle = paste0("Estimated Cumulative Deaths in ", input$selectedCountry), 
-                              xTitle = paste0("Day (from ", input$date, ")"), 
-                              yTitle = "Cumulative Deaths", 
-                              lineThickness = lineThickness)
+    output$cumulativePlot <- renderPlotly({
+      p <- makePlot(
+        compartments = c("D"), 
+        selectedCountry = input$selectedCountry, 
+        plotTitle = paste0("Estimated Cumulative Deaths in ", input$selectedCountry), 
+        xTitle = paste0("Day (from ", input$date, ")"), 
+        yTitle = "Cumulative Deaths", 
+        lineThickness = lineThickness)
+      ggplotly(p)
+    })
     
-    if (input$modelSelect == "SVEIRD"){
-      output$fullPlot <- makePlot(
-                           compartments = c("S", "V", "E", "I", "R", "D"), 
-                           selectedCountry = input$selectedCountry, 
-                           plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
-                           xTitle = paste0("Day (from ", input$date, ")"), 
-                           yTitle = "Compartment Value", 
-                           lineThickness = lineThickness)
-    } else {
-      output$fullPlot <- makePlot(
-                           compartments = c("S", "E", "I", "R", "D"), 
-                           selectedCountry = input$selectedCountry, 
-                           plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
-                           xTitle = paste0("Day (from ", input$date, ")"), 
-                           yTitle = "Compartment Value", 
-                           lineThickness = lineThickness)
-    }
+    output$fullPlot <- renderPlotly({
+      if (input$modelSelect == "SVEIRD"){
+      
+        p <- makePlot(compartments = c("S", "V", "E", "I", "R", "D"), 
+                 selectedCountry = input$selectedCountry, 
+                 plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
+                 xTitle = paste0("Day (from ", input$date, ")"), 
+                 yTitle = "Compartment Value", 
+                 lineThickness = lineThickness)
+      
+      } else {
+        p <- makePlot(compartments = c("S", "E", "I", "R", "D"), 
+                 selectedCountry = input$selectedCountry, 
+                 plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
+                 xTitle = paste0("Day (from ", input$date, ")"), 
+                 yTitle = "Compartment Value", 
+                 lineThickness = lineThickness)
+      }
+      
+      ggplotly(p)
+    })
     
     # output$fracSusPlot <- renderImage({
     #   outfile <- tempfile(fileext = '.png')
