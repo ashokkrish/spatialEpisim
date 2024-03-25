@@ -2,7 +2,6 @@ makePlot <- function (compartments, selectedCountry, plotTitle, xTitle, yTitle, 
   
   compColors <- data.frame(row.names = c("S", "V", "E", "I", "R", "D"), val=c("yellow", "blue", "orange", "red", "green", "black"))
   
-  return(renderImage({
     outfile <- tempfile(fileext = '.png')
     png(outfile, width = 800, height = 600)
     df <- as.data.frame(read_xlsx(paste0("www/MP4/", countrycode(selectedCountry, "country.name", "iso3c"), "_summary.xlsx")))
@@ -44,7 +43,6 @@ makePlot <- function (compartments, selectedCountry, plotTitle, xTitle, yTitle, 
     
     plot(p)
     dev.off()
-    
-    list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Image not found")
-  }, deleteFile = TRUE))
+
+    return(p)
 }
