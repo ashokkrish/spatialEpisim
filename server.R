@@ -828,22 +828,22 @@ server <- function(input, output, session) {
       p <- makePlot(
         compartments = c("E", "I"), 
         selectedCountry = input$selectedCountry, 
-        plotTitle = paste0("Time-series plot of Exposed and Infectious compartments in \n", input$selectedCountry), 
+        plotTitle = paste0("Time-series plot of Exposed and Infectious \n compartments in ", input$selectedCountry), 
         xTitle = paste0("Day (from ", input$date, ")"), 
         yTitle = "Compartment Value", 
         lineThickness = lineThickness)
-      ggplotly(p)
+      ggplotly(p) 
     })
     
     output$cumulativePlot <- renderPlotly({
       p <- makePlot(
         compartments = c("D"), 
         selectedCountry = input$selectedCountry, 
-        plotTitle = paste0("Estimated Cumulative Deaths in ", input$selectedCountry), 
+        plotTitle = paste0("Estimated Cumulative Deaths \n in ", input$selectedCountry), 
         xTitle = paste0("Day (from ", input$date, ")"), 
         yTitle = "Cumulative Deaths", 
         lineThickness = lineThickness)
-      ggplotly(p)
+      ggplotly(p) 
     })
     
     output$fullPlot <- renderPlotly({
@@ -851,7 +851,7 @@ server <- function(input, output, session) {
       
         p <- makePlot(compartments = c("S", "V", "E", "I", "R", "D"), 
                  selectedCountry = input$selectedCountry, 
-                 plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
+                 plotTitle = paste0("Time-series plot of epidemic compartments \n in ", input$selectedCountry), 
                  xTitle = paste0("Day (from ", input$date, ")"), 
                  yTitle = "Compartment Value", 
                  lineThickness = lineThickness)
@@ -859,7 +859,7 @@ server <- function(input, output, session) {
       } else {
         p <- makePlot(compartments = c("S", "E", "I", "R", "D"), 
                  selectedCountry = input$selectedCountry, 
-                 plotTitle = paste0("Time-series plot of epidemic compartments in ", input$selectedCountry), 
+                 plotTitle = paste0("Time-series plot of epidemic compartments \n in ", input$selectedCountry), 
                  xTitle = paste0("Day (from ", input$date, ")"), 
                  yTitle = "Compartment Value", 
                  lineThickness = lineThickness)
