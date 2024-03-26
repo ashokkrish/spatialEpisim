@@ -1,23 +1,19 @@
-# rs <- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, c("Ituri", "Nord-Kivu"))
-# varCovarFunc <- "DBD"
-# QVar <- 2
-# QCorrLength <- 0.8
-# states_observable <- 2
-
+source("R/rasterWorldPop.R") 
 source("R/rasterStack.R") 
 
-genQ <- function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2) {
+genQ <- function(stack, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2) {
+
+  nrows <- nrow(stack$rasterStack)
+  print(nrows)
   
-  nrows <- nrow(rs$rasterStack)
-  #print(nrows)
-  
-  ncols <- ncol(rs$rasterStack)
-  #print(ncols)
+  ncols <- ncol(stack$rasterStack)
+  print(ncols)
   
   p <- nrows*ncols
-  #print(p)
+  print(p)
   
-  Q <- matrix(0,p,p)
+  Q <- matrix(0, p, p)
+  
   # uninhabitableCells <- c()
   # 
   # for (a in 1:nrows) {    
@@ -68,7 +64,7 @@ genQ <- function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 
   
   diag(Q) <- ifelse(diag(Q) == 0, QVar, diag(Q))
   
-  # print(dim(Q))
+  print(dim(Q))
   QFull <- Q
   
   if (states_observable == 2) {
@@ -84,15 +80,28 @@ genQ <- function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 
     QFull <- rbind(Qtop, Qbottom)
   }
     
-    #print(dim(QFull))
-    
-    #print(QFull[1:5, 1:5]) 
+    print(dim(QFull))
+    print(QFull[1:5, 1:5]) 
     
     return(list("Q" = Q, "QFull" = QFull))
 }
 
-# Qmat <- genQ(createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, c("Ituri", "Nord-Kivu")), "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 4, states_observable = 2)
-# 
+#------------------------#
+# Example Function Calls #
+#------------------------#
+
+# varCovarFunc <- "DBD"
+# QVar <- 2
+# QCorrLength <- 0.8
+# states_observable <- 2
+
+# stack <- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), createSusceptibleLayer("Democratic Republic of Congo", rasterAgg = 10))
+
+# nrow(stack$rasterStack)
+# ncol(stack$rasterStack)
+
+# Qmat <- genQ(stack, "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 4, states_observable = 2)
+
 # x <- 1:10
 # y <- 1:10
 # 
@@ -103,5 +112,3 @@ genQ <- function(rs, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 
 # persp3D(x = X, y = Y, z = Qmat$Q[1:10,1:10], theta = 90, expand = 0.5,
 #         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
 #         colkey = list(side = 1))
-# 
-#  plot(Qmat$Q[1775,1600:1900])
