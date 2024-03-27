@@ -152,22 +152,3 @@ createRasterStack <- function(selectedCountry, rasterAgg, isCropped = F, level1N
   
   return(returnList)
 }
-
-#------------------------#
-# Example Function Calls #
-#------------------------#
-# To test this function set working directory to the root folder
-# 
-# createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"))
-# createRasterStack("Nigeria", rasterAgg = 0, isCropped = T, level1Names = "Oyo")
-# createRasterStack("Czech Republic", rasterAgg = 0, isCropped = T, level1Names = c("Prague","Zlínský"))
-# 
-# createRasterStack("Nigeria", rasterAgg = 25, isCropped = F, level1Names = NULL)
-# createRasterStack("Italy", rasterAgg = 30, isCropped = F, level1Names = NULL)
-# createRasterStack("Latvia", rasterAgg = 0, isCropped = F, level1Names = NULL)
-# createRasterStack("Uganda", rasterAgg = 0, isCropped = F, level1Names = NULL)
-#
-# rs <- createRasterStack("Czech Republic", 10, isCropped = F, level1Names = NULL)
-# rs
-# names(rs)
-# rs$rasterStack$Susceptible
