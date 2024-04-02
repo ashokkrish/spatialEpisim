@@ -11,7 +11,7 @@ source("R/rasterWorldPop.R")
 # seedData <- "seeddata/COD_InitialSeedData.csv"
 # seedRadius <- 1
 
-createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL, susceptibleLayer, seedData, seedRadius = 0) {
+createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL, susceptibleLayer, seedDataPath, seedRadius = 0) {
   
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   
@@ -140,7 +140,7 @@ createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL
       #   seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
       #   seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header = T)
       # } else {
-        seedData <- read.csv(seedData, header = T)
+        seedData <- read.csv(seedDataPath, header = T)
       # }
       
       print(seedData)
@@ -169,7 +169,7 @@ createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL
       print(croppedInfected)
       print("Cropped Infected Seeded")
     
-      printCroppedSeedPlot(croppedInfected, level1Identifier)
+      printCroppedSeedPlot(selectedCountry, croppedInfected, level1Names)
     }
     else
     {
@@ -263,7 +263,7 @@ createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL
       midLongitude <-(LLCornerLongitude + ULCornerLongitude)/2
       midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
 
-      seedData <- read.csv(seedData, header = T)
+      seedData <- read.csv(seedDataPath, header = T)
       # }
       
       print(seedData)
@@ -306,14 +306,36 @@ createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL
       print(rasterStack[["Infected"]])
       print("InfectedSeededWholeCountry")
 
-      printCroppedSeedPlot(rasterStack[["Infected"]], level1Identifier)
+      printCroppedSeedPlot(selectedCountry, rasterStack[["Infected"]], level1Names)
     }
 }
 
-printCroppedSeedPlot <- function(infectedData, level1Identifier) {
+printCroppedSeedPlot <- function(selectedCountry, infectedData, level1Names) {
   
   #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  ramp <- c('#FFFFFF', 
+            '#D0D8FB', 
+            '#BAC5F7', 
+            '#8FA1F1', 
+            '#617AEC', 
+            '#0027E0', 
+            '#1965F0', 
+            '#0C81F8', 
+            '#18AFFF', 
+            '#31BEFF', 
+            '#43CAFF', 
+            '#60E1F0', 
+            '#69EBE1', 
+            '#7BEBC8', 
+            '#8AECAE', 
+            '#ACF5A8', 
+            '#CDFFA2', 
+            '#DFF58D', 
+            '#F0EC78', 
+            '#F7D767', 
+            '#FFBD56', 
+            '#FFA044', 
+            '#EE4F4D')
   pal <- colorRampPalette(ramp)
   
   # If you want a plot for the 28 reporting Health Zones set
@@ -322,31 +344,147 @@ printCroppedSeedPlot <- function(infectedData, level1Identifier) {
   # main = "Location of Health Zones", 
   # legend = FALSE,
   
-  terra::plot(infectedData, 
-              col = pal(8)[-2], 
-              axes = TRUE, 
-              cex.main = 1.5,
-              line.main = 1.25,
-              main = "Location of initial infections", 
-              xlab = expression(bold("Longitude")), 
-              ylab = expression(bold("Latitude")),
-              line.lab = 2.25,
-              cex.lab = 1.4,
-              plg = list(title = expression(bold("Persons")),
-                         title.cex = 1.25,
-                         loc = "bottom", 
-                         horiz = TRUE,
-                         yjust = 3.5, 
-                         x.intersp = 0.6, 
-                         inset = c(0, -0.2), 
-                         cex = 1.25),
-              pax = list(cex.axis = 1.7),
-              mar = c(8.5, 2.5, 2.5, 2.5))
+  createLeafletPlot(selectedCountry, level1Names, infectedData)
+  
+  # terra::plot(infectedData, 
+  #             col = pal(8)[-2], 
+  #             axes = TRUE, 
+  #             cex.main = 1.5,
+  #             line.main = 1.25,
+  #             main = "Location of initial infections", 
+  #             xlab = expression(bold("Longitude")), 
+  #             ylab = expression(bold("Latitude")),
+  #             line.lab = 2.25,
+  #             cex.lab = 1.4,
+  #             plg = list(title = expression(bold("Persons")),
+  #                        title.cex = 1.25,
+  #                        loc = "bottom", 
+  #                        horiz = TRUE,
+  #                        yjust = 3.5, 
+  #                        x.intersp = 0.6, 
+  #                        inset = c(0, -0.2), 
+  #                        cex = 1.25),
+  #             pax = list(cex.axis = 1.7),
+  #             mar = c(8.5, 2.5, 2.5, 2.5))
   
   #plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = TRUE, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15),
-  plot(level1Identifier, 
-       add = TRUE)#ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  # plot(level1Identifier, 
+  #      add = TRUE)#ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+}
+
+printCroppedBubbleSeedPlot <- function(selectedCountry, dataPath, level1Names = NULL, activeCol) {
+  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c')
+  gadmFileName <- paste0("gadm36_", inputISO, "_1_sp.rds")  # name of the .rds file
+  gadmFolder <- "gadm/"         # .rds files should be stored in local gadm/ folder
+  level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
+  
+  if(!is.null(level1Names)){
+    level1Identifier <- level1Identifier[which(level1Identifier$NAME_1 %in% level1Names), ]}
+  
+  seedData <- read.csv(dataPath, header = T)
+  
+  #ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  ramp <- c('#FFFFFF', 
+            '#D0D8FB', 
+            '#BAC5F7', 
+            '#8FA1F1', 
+            '#617AEC', 
+            '#0027E0', 
+            '#1965F0', 
+            '#0C81F8', 
+            '#18AFFF', 
+            '#31BEFF', 
+            '#43CAFF', 
+            '#60E1F0', 
+            '#69EBE1', 
+            '#7BEBC8', 
+            '#8AECAE', 
+            '#ACF5A8', 
+            '#CDFFA2', 
+            '#DFF58D', 
+            '#F0EC78', 
+            '#F7D767', 
+            '#FFBD56', 
+            '#FFA044', 
+            '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+  valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000)
+  colorPalette <- colorBin(pal(8)[-1], domain = valueRange, bins = valueRange)
+  # If you want a plot for the 28 reporting Health Zones set
+  # seedRadius <- 0
+  # seedData <- "seeddata/COD_InitialSeedData_28.csv"
+  # main = "Location of Health Zones", 
+  # legend = FALSE,
+  
+  # terra::plot(infectedData, 
+  #             col = pal(8)[-2], 
+  #             axes = TRUE, 
+  #             cex.main = 1.5,
+  #             line.main = 1.25,
+  #             main = "Location of initial infections", 
+  #             xlab = expression(bold("Longitude")), 
+  #             ylab = expression(bold("Latitude")),
+  #             line.lab = 2.25,
+  #             cex.lab = 1.4,
+  #             plg = list(title = expression(bold("Persons")),
+  #                        title.cex = 1.25,
+  #                        loc = "bottom", 
+  #                        horiz = TRUE,
+  #                        yjust = 3.5, 
+  #                        x.intersp = 0.6, 
+  #                        inset = c(0, -0.2), 
+  #                        cex = 1.25),
+  #             pax = list(cex.axis = 1.7),
+  #             mar = c(8.5, 2.5, 2.5, 2.5))
+  # 
+  # #plot(rasterStack[["Infected"]], col = pal(8)[-2], axes = TRUE, cex.main = 1, main = "Location of Initial Infections", legend=TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # # plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15),
+  # plot(level1Identifier, 
+  #      add = TRUE)#ramp <- c('#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  print(seedData)
+  print("-----------------------")
+  colnames(seedData)[activeCol] <- "Current"
+  
+  labelText <- paste0(
+    "Location: ", seedData$Location, "<br/>",
+    "Count: ", seedData$Current, "<br/>") %>%
+    lapply(htmltools::HTML)
+  
+  leafletPlot <- leaflet(seedData,
+                         width = 1024, 
+                         height = 768,
+                         options = leafletOptions(zoomSnap = 0.25, zoomDelta=0.25)) %>%
+    addProviderTiles("Esri.WorldGrayCanvas") %>%
+    addPolygons(data = level1Identifier,
+                color = "#444444", 
+                weight = 1.5, 
+                smoothFactor = 1,
+                opacity = 1.0, 
+                fillColor = "#F5F5F5",
+                fillOpacity = 0.75,
+                popup = paste(level1Identifier$NAME_1),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = FALSE)) %>%
+    addLegend(pal = colorBin(palette = pal(8)[-1],
+                             bins = valueRange,
+                             domain = valueRange),
+              values = valueRange,
+              opacity = 0.75,
+              title = "Obs. persons",
+              position = "topright") %>%
+    addCircles(lng = ~lon,
+               lat = ~lat,
+               radius = 5000,
+               weight = 1,
+               opacity = 1,
+               color = ~ifelse(Current > 0, "black", "transparent"),
+               fillColor = ~ifelse(Current > 0, colorPalette(Current), "transparent"),
+               fillOpacity = 0.8,
+               popup = labelText,
+               label = labelText)
+  
+  leafletPlot
 }
 
 #------------------------#
