@@ -1173,22 +1173,24 @@ server <- function(input, output, session) {
     # Output seed plot image to the app UI  #
     #---------------------------------------#
     
-    output$seedPlot <- renderImage({
+    output$seedPlot <- renderLeaflet({
       req(iv$is_valid())
-      outfile <- tempfile(fileext = '.png')
-      
-      png(outfile, width = 1024, height = 768)
-      createCroppedSeedPlot(selectedCountry = input$selectedCountry, 
-                            isCropped, 
-                            level1Names = input$level1List,
-                            susceptibleLayer = susceptible()$Aggregated,
-                            seedData = input$seedData$datapath, 
-                            seedRadius = as.numeric(input$seedRadius))  # print the seed plot direct to UI
-      dev.off()
-      
-      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
+      # outfile <- tempfile(fileext = '.png')
+      # 
+      # png(outfile, width = 1024, height = 768)
+      # createCroppedSeedPlot(selectedCountry = input$selectedCountry, 
+      #                       isCropped, 
+      #                       level1Names = input$level1List,
+      #                       susceptibleLayer = susceptible()$Aggregated,
+      #                       seedData = input$seedData$datapath, 
+      #                       seedRadius = as.numeric(input$seedRadius))  # print the seed plot direct to UI
+      # dev.off()
+      # 
+      # list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Seed plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
-    }, deleteFile = TRUE)
+      seedData <- read.csv(input$seedData$datapath, header = T)
+      printCroppedBubbleSeedPlot(input$selectedCountry, input$seedData$datapath, level1Names = input$level1List, 6)
+    })
     
     #--------------------------------------------------------------------------#    
     # Output the .mp4 video from www/ to the app UI                            #
