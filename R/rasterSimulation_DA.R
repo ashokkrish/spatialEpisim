@@ -69,7 +69,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
   nrows <- nrow(stack$rasterStack) #
   ncols <- ncol(stack$rasterStack) #
 
-  p <- stack$nCells
+  p <- nrows * ncols
 
   #------------------------#
   # Initial seed locations #
@@ -230,9 +230,9 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     #------------------#
 
     source("R/Q_matrix.R")
-
-    QMat <- genQ(stack, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  1) #states_observable = 2
-
+    
+    QMat <- genQ(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  1) #states_observable = 2
+    
     Q <- QMat$Q
     # plot(Q[1:101,1])
     # plot(Q[1,1:101])
@@ -484,9 +484,9 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           preDARecovered <- Recovered
           preDADead <- Dead
           
-          rat <- sum(as.matrix(Exposed))/(sum(as.matrix(Infected))+0.000000001)
+          rat <- sum(terra::as.matrix(Exposed, wide = TRUE))/(sum(terra::as.matrix(Infected, wide = TRUE))+0.000000001)
 
-          Infected <- as.matrix(Infected, byrow = T) # default is byrow = F
+          Infected <- terra::as.matrix(Infected, wide = TRUE) # default is byrow = F
           
           # print(dim(Infected)) 
           # Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
@@ -698,24 +698,25 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
           # For all uninhabitable cells set the number of infected and dead = 0. THIS IS VERY CRITICAL!!!
 
-          for(i in 1:nrows)
-          { 								# nrows
-            for(j in 1:ncols)
-            {							  # ncols
-              if (stack$rasterStack$Inhabitable[i,j] == 0)
-              {						  # Inhabitable
-                #I[i,j] <- D[i,j] <- 0
-                I[i,j] <- 0
-              }
-            }
-          }
+          # for(i in 1:nrows)
+          # { 								# nrows
+          #   for(j in 1:ncols)
+          #   {							  # ncols
+          #     if (stack$rasterStack$Inhabitable[i,j] == 0)
+          #     {						  # Inhabitable
+          #       #I[i,j] <- D[i,j] <- 0
+          #       I[i,j] <- 0
+          #     }
+          #   }
+          # }
+          # I[stack$rasterStack$Inhabitable[stack$rasterStack$Inhabitable == 0]] <- 0
+          I[valInhabitable == 0] <- 0
           
           values(stack$rasterStack$Infected) <- I
           # values(stack$rasterStack$Dead) <- D
           Infected <- stack$rasterStack$Infected
           # Dead <- stack$rasterStack$Dead
-          
-          cumInfected <- values(cumInfected) + sum(I - as.matrix(preDAInfected))
+          cumInfected <- cumInfected + sum(I - terra::as.matrix(preDAInfected, wide = TRUE))
           
           # cumDead <- cumDead + sum(D - as.matrix(preDADead))
           # print(sum(D - as.matrix(preDADead)))
