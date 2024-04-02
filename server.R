@@ -128,7 +128,7 @@ server <- function(input, output, session) {
     output$outputImage <- renderImage({
       
       outfile <- tempfile(fileext = '.png')
-      png(outfile, width = 1068, height = 768)
+      png(outfile, width = 768, height = 768)
       
       if(input$cropLev1) {
         req(input$level1List != "")
@@ -144,7 +144,7 @@ server <- function(input, output, session) {
       
       dev.off()
       
-      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 768, height = 768, alt = "Base plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
   })
@@ -272,7 +272,7 @@ server <- function(input, output, session) {
     validate(need(!is.null(input$selectedCountry), ""))
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(inputId = "dataAssim", label = strong("Include data assimilation?"), value = FALSE)
+      checkboxInput(inputId = "dataAssim", label = strong("Include Bayesian data assimilation?"), value = FALSE)
     }
   })
   
@@ -1023,6 +1023,7 @@ server <- function(input, output, session) {
       }
     })
     
+    ## seed data table ----
     output$tableSeed <- renderDT({ # print initial seed data to UI
       req(input$seedData)
       if(is.null(data())){
@@ -1040,6 +1041,7 @@ server <- function(input, output, session) {
                   scrollX = TRUE),)
     })
     
+    ## output summary table ----
     output$outputSummary <- renderDT({ # print output summary to UI
       outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"))
       datatable(outputSummaryTable,
@@ -1119,6 +1121,7 @@ server <- function(input, output, session) {
       isDeterministic <- FALSE
     }
     
+    ### model function call ----
     SpatialCompartmentalModelWithDA(model = input$modelSelect,
                                     stack = rs,
                                     startDate = input$date, 
@@ -1157,6 +1160,7 @@ server <- function(input, output, session) {
 
     values$df <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9, row10)
     
+    ## raster summary table ----
     output$summaryTable <- renderDT({
       datatable(values$df,
                 rownames = FALSE,
@@ -1173,6 +1177,7 @@ server <- function(input, output, session) {
     # Output seed plot image to the app UI  #
     #---------------------------------------#
     
+    ## seed data leaflet plot output ----
     output$seedPlot <- renderLeaflet({
       req(iv$is_valid())
       # outfile <- tempfile(fileext = '.png')
@@ -1195,6 +1200,7 @@ server <- function(input, output, session) {
     #--------------------------------------------------------------------------#    
     # Output the .mp4 video from www/ to the app UI                            #
     #--------------------------------------------------------------------------#  
+    ## mp4 video output ----
     output$outputVideo <- renderUI({
       
       tags$video(

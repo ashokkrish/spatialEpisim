@@ -297,7 +297,9 @@ ui <- fluidPage( # UI ----
                                                    DTOutput("summaryTable"),
                                                    br(),
                                                    br(),
-                                                   imageOutput("outputImage"),
+                                                   imageOutput("outputImage",
+                                                               height = "768px",
+                                                               width = "768px"),
                                                    #imageOutput("croppedOutputImage"),
                                                    #imageOutput("seededOutputImage"),
                                                    #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
@@ -329,6 +331,8 @@ ui <- fluidPage( # UI ----
                                           ),
                                           
                                           tabPanel(title = "MP4 Animation",
+                                                   br(),
+                                                   br(),
                                                    uiOutput("outputVideo")#,
                                                    #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
                                           ),
