@@ -323,7 +323,9 @@ ui <- fluidPage( # UI ----
                                           tabPanel(title = "Initial Seed Data", 
                                                    DTOutput("tableSeed"),
                                                    br(),
-                                                   imageOutput("seedPlot")
+                                                   leafletOutput("seedPlot",
+                                                                 width = 1024, 
+                                                                 height = 768)
                                           ),
                                           
                                           tabPanel(title = "MP4 Animation",
@@ -339,9 +341,13 @@ ui <- fluidPage( # UI ----
                                           tabPanel(title = "Plot", id = "plotTab",
                                                    plotlyOutput("infectedExposedPlot", width = 800, height = 600),
                                                    br(),
+                                                   br(),
                                                    plotlyOutput("cumulativePlot", width = 800, height = 600),
                                                    br(),
+                                                   br(),
                                                    plotlyOutput("fullPlot", width = 800, height = 600),
+                                                   br(),
+                                                   br()
                                                    # imageOutput("fracSusPlot"),
                                                    #downloadButton(outputId = "downloadPlot", label = "Save Image")
                                           )
