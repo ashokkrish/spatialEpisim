@@ -769,7 +769,8 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
                     rasterAgg = rasterAgg, 
                     fname = fname, 
                     maxVal = maxRasterLayerVal, 
-                    includeLabels = T)
+                    includeLabels = T,
+                    isCropped)
 
     # fname = paste0("MP4/", "paper/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), "_paper", ".png")
     # printStackLayer(rasterStack = allRasters[[t]]$rasterStack, rasterLayer = rasterLayer, directOutput = directOutput, Level1Identifier = stack$Level1Identifier, selectedCountry, rasterAgg = rasterAgg, fname = fname, maxVal = maxRasterLayerVal, includeLabels = F)

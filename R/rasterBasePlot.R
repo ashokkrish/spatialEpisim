@@ -95,7 +95,7 @@ createBasePlot <- function(selectedCountry, susceptible, directOutput) {
                          x.intersp = 0.6, 
                          inset = c(0, -0.2), 
                          cex = 1.25), 
-              pax = list(cex.axis = 1.7), 
+              pax = list(cex.axis = 1), 
               mar = c(8.5, 3.5, 4, 2.5))  
   terra::north(type = 2, xy = "bottomleft", cex = 1)
   

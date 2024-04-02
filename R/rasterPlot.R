@@ -56,13 +56,14 @@ aggrPopBreaks <- c(0, 5000, 10000, 25000, 50000, 75000, 100000, 250000, 500000) 
 # R Script Functions (for External Use)                                        #
 #------------------------------------------------------------------------------#
 
-printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identifier, selectedCountry, rasterAgg, fname, maxVal, includeLabels) {
+printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identifier, 
+                            selectedCountry, rasterAgg, fname, maxVal, includeLabels, isCropped) {
   # if(missing(fname)) {fname = stackLayerFileName} 
   setUp(isoCode, year, resKm, rasterAgg, fname)               # called to set www/ folder, stack should already be aggregated
   isoCode <<- countrycode(selectedCountry, origin = "country.name", destination = "iso3c")
   rasterAgg <<- rasterAgg
   layerName <<- toString(rasterLayer)                          # alters the plot title
-  createPlotPNG(rasterStack[[layerName]], Level1Identifier, directOutput, maxVal, includeLabels)
+  createPlotPNG(rasterStack[[layerName]], selectedCountry, Level1Identifier, directOutput, maxVal, includeLabels, isCropped)
 }
 
 # createMP4 <- function(isoCode, year, resKm, rasterAgg, fname, iterations) {
@@ -108,7 +109,7 @@ setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
 #------------------------------------------------------#
 # Creates the base plot .png and outputs to www folder #
 #------------------------------------------------------#
-createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal, includeLabels) {
+createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, directOutput, maxVal, includeLabels, isCropped) {
   is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
 
   x <- classify(rasterToPrint, c(0, 10, 25, 50, 100, 250, 1000, 100000))
@@ -119,17 +120,21 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
   pal <- colorRampPalette(colPalette)
 
   if (!directOutput){
-    png(PNGFileName, width = 1024, height = 768) # output the plot to the www/ image folder
+    png(PNGFileName, height = 768, width = 768) # output the plot to the www/ image folder
   }
   
   if (rasterAgg == 0 || rasterAgg == 1){
     basePlotTitle <- ""
     
     if(includeLabels){
-      basePlotTitle <- paste0(year, 
-                             " UN-Adjusted ", layerName, " Count \n for ", 
-                             countrycode(isoCode, origin = "iso3c", destination = "country.name"), 
+      basePlotTitle <- paste0(year," UN-Adjusted ", layerName, " Count \n for ")
+      if(isCropped) {
+        basePlotTitle <- paste0(basePlotTitle, "cropped selection(s) in ")
+      }
+      
+      basePlotTitle <- paste0(basePlotTitle, selectedCountry,
                              " (", resKm, " sq. km resolution)")
+      
     } else {
       par(bty = 'n')
     }
@@ -149,15 +154,22 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
                            loc = "topright",
                            xjust = -1,
                            cex = 1.25),
-                mar = c(8.5, 3.5, 4, 2.5))
+                pax = list(cex.axis = 1.7),
+                mar = c(4, 3.5, 9, 8.5))
   } else {
     aggrPlotTitle <- ""
     
     if (includeLabels){
       aggrPlotTitle <- paste0(year, 
-                             " UN-Adjusted Aggregated ", layerName, " Count \n for ", 
-                             countrycode(isoCode, origin = "iso3c", destination = "country.name"), 
-                             " (", rasterAgg^2 * resKm, " sq. km resolution)")
+                             " UN-Adjusted Aggregated ", layerName, " Count \n for ")
+      
+      if(isCropped) {
+        aggrPlotTitle <- paste0(aggrPlotTitle, "cropped selection(s) in ")
+      }
+      
+      aggrPlotTitle <- paste0(aggrPlotTitle, selectedCountry,
+                              " (", rasterAgg^2 * resKm, " sq. km resolution)")
+      
     } else {
       par(bty = 'n')
     }
@@ -177,7 +189,8 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
                            loc = "topright",
                            xjust = -1,
                            cex = 1.25),
-                mar = c(8, 3.5, 4, 5))
+                pax = list(cex.axis = 2),
+                mar = c(8.5, 3.5, 4, 2.5))
   }
   terra::plot(Level1Identifier, 
               add = TRUE)
@@ -186,7 +199,7 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
   if(includeLabels){
     title(xlab = expression(bold(Longitude)), 
           ylab = expression(bold(Latitude)),
-          line = 1,
+          line = 0,
           cex.lab = 1.5)
   }
   
@@ -196,7 +209,7 @@ createPlotPNG <- function(rasterToPrint, Level1Identifier, directOutput, maxVal,
       img <- image_read(PNGFileName)
       img <- image_trim(img)
       image_write(img, path=PNGFileName)
-    }
+    } 
   }
 }
 
