@@ -2,11 +2,40 @@ library(ggplot2)
 library(readr)
 library(readxl)
 
+#List of countries that need "the" prepended to their name
 prependList <- c("Czech Republic", 
                  "Democratic Republic of Congo",
                  "Gambia",
                  "Netherlands")
 
+# =========================================================================== #
+# plotLolliChart Function                                                     #
+# ------------------------                                                    #
+# Function for rendering a ggplot lollipop chart.                             #
+#                                                                             #
+# =========================================================================== #
+# Usage                                                                       #
+# ------                                                                      #
+# plotLolliChart("Democratic Republic of Congo",                              #
+#                "/observeddata/Ebola_Incidence_Data.xlsx")                   #
+#                                                                             #
+# =========================================================================== #
+# Arguments                                                                   #
+# ----------                                                                  #
+# selectedCountry: the name of the country associated with the data           #
+#                                                                             #
+# filename:        the pathname for the file containing desired data          #
+#                                                                             #
+# =========================================================================== #
+# Assumptions                                                                 #
+# ------------                                                                #
+# The datafile must contain data in a specific format where:                  #
+#   - Columns 1 and 2  can contain misc. data related to organizing the data  #
+#     (collection year, trip number, etc. They are unused for this plot).     #
+#   - Column(s) 3+ contain gathered data for individual locations, with each  #
+#     column representing individual locations.                               #
+#                                                                             #
+# =========================================================================== #
 plotLolliChart <- function(selectedCountry, filename) {
   
   file <- as.data.frame(openDataFile(filename))
@@ -55,11 +84,50 @@ plotLolliChart <- function(selectedCountry, filename) {
   plot
 }
 
+# =========================================================================== #
+# plotTimeSeries Function                                                     #
+# ------------------------                                                    #
+# Function for rendering a ggplot time-series plot.                           #
+#                                                                             #
+# =========================================================================== #
+# Usage                                                                       #
+# ------                                                                      #
+# plotTimeSeries("/observeddata/Ebola_Incidence_Data.xlsx",                   #
+#                "Democratic Republic of Congo")                              #
+#                                                                             #
+# =========================================================================== #
+# Arguments                                                                   #
+# ----------                                                                  #
+# filename:        the pathname for the file containing desired data          #
+#                                                                             #
+# selectedCountry: the name of the country associated with the data           #
+#                                                                             #
+# =========================================================================== #
+# Assumptions                                                                 #
+# ------------                                                                #
+# The datafile must contain data in a specific format where:                  #
+#   - Column 1 can contain misc. data related to organizing the data          #
+#     (collection year, trip number, etc. Column 1 is unused for this plot).  #
+#   - Column 2 contains the date for the data gathered in each row            #
+#   - Column(s) 3+ contain gathered data for individual locations, with each  #
+#     column representing individual locations.                               #
+#                                                                             #
+#   Sample datafile format:                                                   #
+#   --------------------------------------------------------                  #
+#   | Misc. | Date  | Location 1 | Location 2 | Location 3 |                  #
+#   --------------------------------------------------------                  #
+#   | 1     | 04/01 | 12         | 6          | 10         |                  #
+#   --------------------------------------------------------                  #
+#   | ...   | ...   | ...        | ...        | ...        |                  #
+#   --------------------------------------------------------                  #
+#                                                                             #
+# =========================================================================== #
 plotTimeSeries <- function(filename, selectedCountry) {
   
   file <- as.data.frame(openDataFile(filename))
-  plotData <- data.frame(x = ymd(file[,"Date"]),
-                          y = rowSums(file[,3:ncol(file)]))
+  plotData <- data.frame(x = file[,2],
+                         y = rowSums(file[,3:ncol(file)]))
+  print(plotData)
 
   plotTitle <- paste0("Time-Series Graph of Daily Incidence/Death Rates \nin ")
   if(selectedCountry %in% prependList) {
@@ -75,7 +143,7 @@ plotTimeSeries <- function(filename, selectedCountry) {
     labs(title = plotTitle, 
          x = "Date", 
          y = "Number of Persons") +
-    scale_x_date(date_breaks = "2 months", date_labels = "%d %b %Y") +
+    # scale_x_continuous(n.breaks = 8) +
     scale_y_continuous(minor_breaks = waiver()) +
     theme(
       plot.title = element_text(size = 18, 
@@ -98,16 +166,31 @@ plotTimeSeries <- function(filename, selectedCountry) {
   return(p)
 }
 
+# =========================================================================== #
+# openDataFile Function                                                       #
+# ------------------------                                                    #
+# Function for read data from a file.                                         #
+#                                                                             #
+# =========================================================================== #
+# Usage                                                                       #
+# ------                                                                      #
+# openDataFile("/observeddata/Ebola_Incidence_Data.xlsx")                     #
+#                                                                             #
+# =========================================================================== #
+# Arguments                                                                   #
+# ----------                                                                  #
+# filename: the pathname for the file to be read.                             #
+#                                                                             #
+# =========================================================================== #
 openDataFile <- function(filename) {
   ext <- tools::file_ext(filename)
   ext <- tolower(ext)
   
   switch(ext, 
-         csv = read_csv(filename, show_col_types = FALSE),
-         xls = read_xls(filename),
+         csv =  read_csv(filename, show_col_types = FALSE),
+         xls =  read_xls(filename),
          xlsx = read_xlsx(filename),
-         txt = read_tsv(filename, show_col_types = FALSE),
+         txt =  read_tsv(filename, show_col_types = FALSE),
   )
 }
 
-# plotLolliChart("observeddata/Ebola_Incidence_Data.xlsx")
