@@ -4,7 +4,7 @@ library(leaflet)
 library(terra)
 
 createLeafletBubblePlot <- function(selectedCountry, level1Names, plotData, activeCol) {
-  
+
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
   
   gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file 
@@ -14,7 +14,7 @@ createLeafletBubblePlot <- function(selectedCountry, level1Names, plotData, acti
   if(!is.null(level1Names)){
     level1Identifier <- level1Identifier[which(level1Identifier$NAME_1 %in% level1Names), ]}
   
-  valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000)
+  valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
   # x <- classify(susceptible, valueRange)
   
   # plot(x, col=pal(8)[-1], xlab = "Longitude", ylab = "Latitude")
@@ -49,11 +49,6 @@ createLeafletBubblePlot <- function(selectedCountry, level1Names, plotData, acti
             '#EE4F4D')
   pal <- colorRampPalette(ramp)
   
-  labelText <- paste0(
-    "Health Zone: ", plotData$HealthZone, "<br/>",
-    "Count: ", plotData[activeCol], "<br/>") %>%
-    lapply(htmltools::HTML)
-  
   leafletPlot <- leaflet(plotData,
                          width = 1024, 
                          height = 768,
@@ -68,8 +63,8 @@ createLeafletBubblePlot <- function(selectedCountry, level1Names, plotData, acti
                 fillOpacity = 0.75,
                 popup = paste(level1Identifier$NAME_1),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                    bringToFront = TRUE)) %>%
-    addLegend(pal = colorBin(palette = pal(8)[-1],
+                                                    bringToFront = FALSE)) %>%
+    addLegend(pal = colorBin(palette = pal(9)[-1],
                              bins = valueRange,
                              domain = valueRange),
               values = valueRange,
