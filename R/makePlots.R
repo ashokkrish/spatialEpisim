@@ -12,7 +12,7 @@ makePlot <- function (compartments, selectedCountry, plotTitle, xTitle, yTitle, 
       plotData[comp] <- df[,comp]
     }
     
-    plotData <- as.data.frame(pivot_longer(plotData, compartments, names_to = "Compartment", values_to = "Count"))    
+    plotData <- as.data.frame(pivot_longer(plotData, all_of(compartments), names_to = "Compartment", values_to = "Count"))    
     plotData$Compartment <- factor(plotData$Compartment, levels = compartments)
     
     # , mapping = aes_string("Date", compartments[1], group = 1)
