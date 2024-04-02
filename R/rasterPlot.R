@@ -154,7 +154,7 @@ createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, dire
                            loc = "topright",
                            xjust = -1,
                            cex = 1.25),
-                pax = list(cex.axis = 1.7),
+                pax = list(cex.axis = 2),
                 mar = c(4, 3.5, 9, 8.5))
   } else {
     aggrPlotTitle <- ""
