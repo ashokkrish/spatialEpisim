@@ -137,10 +137,10 @@ ui <- fluidPage( # UI ----
                                                  br(),
                                                  br()
                                                  ),
-                                        tabPanel(title = "Daily Incidence/Death",
+                                        tabPanel(title = "Time-Series Graph",
                                                  
                                                  br(),
-                                                 plotlyOutput("dailyIncidence",
+                                                 plotlyOutput("timeSeries",
                                                             height = 800),
                                                  br(),
                                                  br())
@@ -157,7 +157,7 @@ ui <- fluidPage( # UI ----
 
 server <- function(input, output, session){ # Server ----
   
-  valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000)
+  valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
   ramp <- c('#FFFFFF', 
             '#D0D8FB', 
             '#BAC5F7', 
@@ -182,7 +182,7 @@ server <- function(input, output, session){ # Server ----
             '#FFA044', 
             '#EE4F4D')
   pal <- colorRampPalette(ramp)
-  colorPalette <- colorBin(pal(8)[-1], domain = valueRange, bins = valueRange)
+  colorPalette <- colorBin(pal(9)[-1], domain = valueRange, bins = valueRange)
   
   #---------------------------------------#
   ##          Input Validators         ----
@@ -347,6 +347,7 @@ server <- function(input, output, session){ # Server ----
     incidence <- as.data.frame(t(incidenceData))
     incidenceCols <- incidence[2,]
     incidence <- incidence[3:nrow(incidence),]
+    colnames(latLonData) <- c("Location", "Latitude", "Longitude")
     colnames(incidence) <- incidenceCols
     
     plotData <- cbind(latLonData, lapply(incidence, as.numeric))
@@ -410,7 +411,7 @@ server <- function(input, output, session){ # Server ----
     ggplotly(p)
   })
   
-  output$dailyIncidence <- renderPlotly({
+  output$timeSeries <- renderPlotly({
     req(iv_dataupload$is_valid())
     
     p <- plotTimeSeries(input$incidenceData$datapath, input$selectedCountry)
@@ -436,8 +437,8 @@ server <- function(input, output, session){ # Server ----
     colnames(plotData)[colnames(plotData) == transDate] <- "Current"
     
     labelText <- paste0(
-      "Health Zone: ", plotData$HealthZone, "<br/>",
-      "Count: ", plotData["Current"], "<br/>") %>%
+      "Location: ", plotData$Location, "<br/>",
+      "Count: ", plotData$Current, "<br/>") %>%
       lapply(htmltools::HTML)
     
     # To update the map, clear out the old markers and draw new ones using the 
@@ -447,7 +448,7 @@ server <- function(input, output, session){ # Server ----
       clearMarkers() %>%
       addCircleMarkers(lng = ~Longitude,
                        lat = ~Latitude,
-                       radius = ~Current,
+                       radius = ~Current^0.35*2,
                        weight = 1,
                        opacity = 1,
                        color = ~ifelse(Current > 0, "black", "transparent"),
