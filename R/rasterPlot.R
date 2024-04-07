@@ -127,12 +127,7 @@ createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, dire
     basePlotTitle <- ""
     
     if(includeLabels){
-      basePlotTitle <- paste0(year," UN-Adjusted ", layerName, " Count \n for ")
-      if(isCropped) {
-        basePlotTitle <- paste0(basePlotTitle, "cropped selection(s) in ")
-      }
-      
-      basePlotTitle <- paste0(basePlotTitle, selectedCountry,
+      basePlotTitle <- paste0(layerName, " Count \n in", selectedCountry,
                              " (", resKm, " sq. km resolution)")
       
     } else {
@@ -160,15 +155,9 @@ createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, dire
     aggrPlotTitle <- ""
     
     if (includeLabels){
-      aggrPlotTitle <- paste0(year, 
-                             " UN-Adjusted Aggregated ", layerName, " Count \n for ")
-      
-      if(isCropped) {
-        aggrPlotTitle <- paste0(aggrPlotTitle, "cropped selection(s) in ")
-      }
-      
-      aggrPlotTitle <- paste0(aggrPlotTitle, selectedCountry,
-                              " (", rasterAgg^2 * resKm, " sq. km resolution)")
+      aggrPlotTitle <- paste0("Aggregated ", layerName, " Count \n in ", 
+                              selectedCountry, " (", rasterAgg^2 * resKm, 
+                              " sq. km resolution)")
       
     } else {
       par(bty = 'n')

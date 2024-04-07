@@ -114,20 +114,25 @@ plotLolliChart <- function(selectedCountry, filename) {
 #                                                                             #
 #   Sample datafile format:                                                   #
 #   --------------------------------------------------------                  #
-#   | Misc. | Date  | Location 1 | Location 2 | Location 3 |                  #
+##  | Misc. | Date  | Location 1 | Location 2 | Location 3 |                  #
 #   --------------------------------------------------------                  #
-#   | 1     | 04/01 | 12         | 6          | 10         |                  #
+##  | 1     | 04/01 | 12         | 6          | 10         |                  #
 #   --------------------------------------------------------                  #
-#   | ...   | ...   | ...        | ...        | ...        |                  #
+##  | ...   | ...   | ...        | ...        | ...        |                  #
 #   --------------------------------------------------------                  #
 #                                                                             #
 # =========================================================================== #
 plotTimeSeries <- function(filename, selectedCountry) {
   
   file <- as.data.frame(openDataFile(filename))
-  plotData <- data.frame(x = file[,2],
-                         y = rowSums(file[,3:ncol(file)]))
-  print(plotData)
+  
+  if(tools::file_ext(filename) == "csv") {
+    plotData <- data.frame(x = dmy(file[,2]),
+                           y = rowSums(file[,3:ncol(file)]))
+  } else {
+    plotData <- data.frame(x = ymd(file[,2]),
+                           y = rowSums(file[,3:ncol(file)]))
+  }
 
   plotTitle <- paste0("Time-Series Graph of Daily Incidence/Death Rates \nin ")
   if(selectedCountry %in% prependList) {
@@ -143,7 +148,7 @@ plotTimeSeries <- function(filename, selectedCountry) {
     labs(title = plotTitle, 
          x = "Date", 
          y = "Number of Persons") +
-    # scale_x_continuous(n.breaks = 8) +
+    scale_x_date(date_breaks = "6 months", date_labels = "%d %b %Y") +
     scale_y_continuous(minor_breaks = waiver()) +
     theme(
       plot.title = element_text(size = 18, 
@@ -156,6 +161,7 @@ plotTimeSeries <- function(filename, selectedCountry) {
       axis.title.y = element_text(size = 16, 
                                   face = "bold",
                                   margin = margin(0, 25, 0, 0)),
+      axis.text.x = element_text(angle = 90),
       axis.text.x.bottom = element_text(size = 14),
       axis.text.y.left = element_text(size = 14),
       axis.line = element_line(linewidth = 0.5),
