@@ -38,7 +38,7 @@ prependList <- c("Czech Republic",
 # =========================================================================== #
 plotLolliChart <- function(selectedCountry, filename) {
   
-  file <- as.data.frame(openDataFile(filename))
+  file <- as.data.frame(openFile(filename))
   data <- file[,3:ncol(file)]
   chartData <- data.frame(x = colnames(data),
                           y = colSums(data))
@@ -47,7 +47,7 @@ plotLolliChart <- function(selectedCountry, filename) {
   if(selectedCountry %in% prependList) {
     plotTitle <- paste0(plotTitle, "the ")
   }
-  plotTitle <- paste0(plotTitle, selectedCountry, "\nfrom ", file[1,"Date"], " to ", file[nrow(file), "Date"])
+  plotTitle <- paste0(plotTitle, selectedCountry)
   
   
   plot <- ggplot(chartData, aes(x=x, y=y)) +
@@ -74,8 +74,8 @@ plotLolliChart <- function(selectedCountry, filename) {
       axis.title.y = element_text(size = 16, 
                                   face = "bold",
                                   margin = margin(0, 10, 0, 0)),
-      axis.text.x.bottom = element_text(size = 14),
-      axis.text.y.left = element_text(size = 14),
+      axis.text.x.bottom = element_text(size = 16),
+      axis.text.y.left = element_text(size = 16),
       axis.ticks.y = element_blank(),
       axis.line = element_line(linewidth = 0.5)
     ) +
@@ -124,7 +124,7 @@ plotLolliChart <- function(selectedCountry, filename) {
 # =========================================================================== #
 plotTimeSeries <- function(filename, selectedCountry) {
   
-  file <- as.data.frame(openDataFile(filename))
+  file <- as.data.frame(openFile(filename))
   
   if(tools::file_ext(filename) == "csv") {
     plotData <- data.frame(x = dmy(file[,2]),
@@ -188,7 +188,7 @@ plotTimeSeries <- function(filename, selectedCountry) {
 # filename: the pathname for the file to be read.                             #
 #                                                                             #
 # =========================================================================== #
-openDataFile <- function(filename) {
+openFile <- function(filename) {
   ext <- tools::file_ext(filename)
   ext <- tolower(ext)
   
