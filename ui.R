@@ -23,8 +23,7 @@ ui <- fluidPage( # UI ----
 
   div(
     class = "navTitle",
-    # titlePanel("Mathematical Modelling of Infectious Diseases")
-    #titlePanel("Spatial Tracking of Infectious Diseases using Mathematical Models")
+
     span(
       class = "pageTitle",
       tags$em("spatialEpisim"), 
@@ -32,6 +31,10 @@ ui <- fluidPage( # UI ----
       br() 
     )
   ),
+  
+  add_busy_spinner(spin = "cube-grid",
+                   color = "#18536F",
+                   margins = c("50%","50%")),
   
   navbarPage(title = "",
     
@@ -183,180 +186,260 @@ ui <- fluidPage( # UI ----
                             # conditionalPanel( #### Spatial Modeling ----
                             #                   condition = "input.modellingApproach == '2'",
                                               
-                                              uiOutput("countryDropdown"),
+                            uiOutput("countryDropdown"),
+                                            
+                            # checkboxInput(
+                            #   inputId = "filterLMIC", 
+                            #   label = strong("Show LMIC only"), 
+                            #   value = FALSE),
                                               
-                                              # checkboxInput(
-                                              #   inputId = "filterLMIC", 
-                                              #   label = strong("Show LMIC only"), 
-                                              #   value = FALSE),
-                                              
-                                              uiOutput("cropStateCheckbox"),
-                                              
-                                              conditionalPanel(
-                                                condition = "input.cropLev1",  
+                            uiOutput("cropStateCheckbox"),
+                                            
+                            conditionalPanel(
+                              condition = "input.cropLev1",  
                                                 
-                                                uiOutput("Level1Ui")
-                                              ),
-                                              
-                                              uiOutput("aggInput"),
-                                              
-                                              uiOutput("modelRadio"),
-                                              
-                                              uiOutput("stochasticRadio"),
-                                              
-                                              conditionalPanel(
-                                                condition = "input.selectedCountry != ''",
-                                                
-                                                withMathJax(),
-                                                
-                                                h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
-                                                
-                                                conditionalPanel(
-                                                  id = "SVEIRD",
-                                                  withMathJax(),
-                                                  condition = "input.modelSelect == 'SVEIRD'", 
-                                                  
-                                                  uiOutput("alphaInput")
-                                                ),
-                                                
+                              uiOutput("Level1Ui")),
+                            
+                            radioButtons(inputId = "appMode",
+                                         label = strong("Mode"),
+                                         choices = list("Visualizer", 
+                                                        "Simulation"),
+                                         selected = "Simulation",
+                                         inline = TRUE),
+                            
+                            # -------------------------------------------- #
+                            # Visualizer Inputs                            #
+                            # -------------------------------------------- #
+                            conditionalPanel(
+                              condition = "input.appMode == 'Visualizer'",
+                              
+                              uiOutput("transPathFileInputs"),
+                              uiOutput("transPathDateInput"),
+                              br(),
+                              uiOutput("resetButton")
+                            ),
+                            
+                            # -------------------------------------------- #
+                            # Simulation Inputs                            #
+                            # -------------------------------------------- #
+                            conditionalPanel(
+                              condition = "input.appMode == 'Simulation'",
+                              
+                              uiOutput("aggInput"),
+                              uiOutput("modelRadio"),
+                              uiOutput("stochasticRadio"),
+                              
+                              conditionalPanel(
+                                condition = "input.selectedCountry != ''",
+                                
+                                withMathJax(),
+                                
+                                h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
+                                
+                                conditionalPanel(id = "SVEIRD",
+                                  withMathJax(),
+                                  condition = "input.modelSelect == 'SVEIRD'", 
                                                  
-                                                
-                                                uiOutput("betaInput"),
-                                                
-                                                uiOutput("gammaInput"),
-                                                
-                                                uiOutput("sigmaInput"),
-                                                
-                                                uiOutput("deltaInput"),
-                                                
-                                                uiOutput("lambdaInput"),
-                                                
-                                                br(),
-                                                
-                                                uiOutput("seedUpload"),
-                                                
-                                                uiOutput("seedDataButton"),
-                                                
-                                                uiOutput("seedRadiusInput"),
-                                                
-                                                br(),
-                                                
-                                                uiOutput("startDateInput"),
-                                                
-                                                uiOutput("timestepInput")
-                                              ),
+                                  uiOutput("alphaInput")),
+                                
+                                uiOutput("betaInput"),
+                                uiOutput("gammaInput"),
+                                uiOutput("sigmaInput"),
+                                uiOutput("deltaInput"),
+                                uiOutput("lambdaInput"),
+                                br(),
+                                uiOutput("seedUpload"),
+                                uiOutput("seedDataButton"),
+                                uiOutput("seedRadiusInput"),
+                                br(),
+                                uiOutput("startDateInput"),
+                                uiOutput("timestepInput")),
+                              
+                              # actionButton("go","Run Simulation", 
+                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                              # actionButton("resetAll","Reset Values", 
+                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                              
+                              br(),
+                              br(),
+                              
+                              uiOutput("dataAssimCheckbox"),
+                              
+                              # --------------------------------------------- #
+                              # Bayesian Assimilation Inputs                  #
+                              # --------------------------------------------- #
+                              conditionalPanel(
+                                condition = "input.dataAssim == '1'",  
+                                uiOutput("dataAssimCmpts"),
+                                uiOutput("dataAssimZones"),
+                                uiOutput("dataAssimFileI"),
+                                uiOutput("dataAssimFileD"),
+                                
+                                h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
+                                uiOutput("varCovarFunc"),
+                                uiOutput("selectRho"),
+                                uiOutput("selectSigma"),
+                                uiOutput("selectNbhd"),
+                                
+                                h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
+                                uiOutput("selectPsiDiag"),
+                                
+                                # actionButton("goDA","Run Simulation with DA",
+                                #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                              ),
+                              # br(),
+                              # actionButton("resetAllDA","Reset Values", 
+                              #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                              actionButton("go","Run Simulation", 
+                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                              actionButton("resetAll","Reset Values", 
+                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            ),
                                               
-                                              # actionButton("go","Run Simulation", 
-                                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              # actionButton("resetAll","Reset Values", 
-                                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              
-                                              br(),
-                                              br(),
-                                              
-                                              uiOutput("dataAssimCheckbox"),
-                                              
-                                              conditionalPanel(condition = "input.dataAssim == '1'",  
-                                                               uiOutput("dataAssimCmpts"),
-                                                               uiOutput("dataAssimZones"),
-                                                               uiOutput("dataAssimFileI"),
-                                                               uiOutput("dataAssimFileD"),
-                                                               
-                                                               h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
-                                                               
-                                                               uiOutput("varCovarFunc"),
-                                                               uiOutput("selectRho"),
-                                                               uiOutput("selectSigma"),
-                                                               uiOutput("selectNbhd"),
-                                                               
-                                                               h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
-                                                               
-                                                               uiOutput("selectPsiDiag"),
-                                                               
-                                                               # actionButton("goDA","Run Simulation with DA",
-                                                               #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-                                              ),
-                                              # br(),
-                                              # actionButton("resetAllDA","Reset Values", 
-                                              #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              actionButton("go","Run Simulation", 
-                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              actionButton("resetAll","Reset Values", 
-                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            
                             # ), # "input.modellingApproach == '2'",
-                          ),
-                        ), 
+                          ), # div "dashboard"
+                        ), # sidebarPanel
                         
                         mainPanel( ## main panel ----
-                          div(id = "tabsetContainer",
-                              tabsetPanel(id = "tabSet", selected = "Input Summary",
-                                          
-                                          tabPanel(title = "Input Summary",
-                                                   verbatimTextOutput("summary"),
-                                                   br(),
-                                                   DTOutput("summaryTable"),
-                                                   br(),
-                                                   br(),
-                                                   imageOutput("outputImage",
-                                                               height = "768px",
-                                                               width = "768px"),
-                                                   #imageOutput("croppedOutputImage"),
-                                                   #imageOutput("seededOutputImage"),
-                                                   #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
-                                          ),
-                                          
-                                          tabPanel(title = "Model", id = "modelTab",
-                                                   h3("Schematic Diagram"),
-                                                   br(),
-                                                   imageOutput("flowchartImg",
-                                                               height = "400px"),
-                                                   br(),
-                                                   br(),
-                                                   h3("Mathematical Model"),
-                                                   br(),
-                                                   imageOutput("modelImg",
-                                                               height = "400px")
-                                          ),
-                                          
-                                          # tabPanel(title = "Schematic Diagram", id = "flowchartTab",
-                                          #          
-                                          # ),
-                                          
-                                          tabPanel(title = "Initial Seed Data", 
-                                                   DTOutput("tableSeed"),
-                                                   br(),
-                                                   leafletOutput("seedPlot",
-                                                                 width = 1024, 
-                                                                 height = 768)
-                                          ),
-                                          
-                                          tabPanel(title = "MP4 Animation",
-                                                   br(),
-                                                   br(),
-                                                   uiOutput("outputVideo")#,
-                                                   #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
-                                          ),
-                                          
-                                          tabPanel(title = "Output Summary",
-                                                   DTOutput("outputSummary") ,
-                                                   # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
-                                          ),
-                                          
-                                          tabPanel(title = "Plot", id = "plotTab",
-                                                   plotlyOutput("infectedExposedPlot", width = 800, height = 600),
-                                                   br(),
-                                                   br(),
-                                                   plotlyOutput("cumulativePlot", width = 800, height = 600),
-                                                   br(),
-                                                   br(),
-                                                   plotlyOutput("fullPlot", width = 800, height = 600),
-                                                   br(),
-                                                   br()
-                                                   # imageOutput("fracSusPlot"),
-                                                   #downloadButton(outputId = "downloadPlot", label = "Save Image")
-                                          )
-                              ) # tabsetPanel
-                          )
+                                   
+                          conditionalPanel(
+                            condition = "input.appMode == 'Visualizer'",
+
+                            div(id = "maptabPanels",
+                                tabsetPanel(id = 'vizTabSet',
+                                            tabPanel(id = "main",
+                                                     title ="Leaflet Plot",
+
+                                                     br(),
+                                                     leafletOutput("leafletMap",
+                                                                   width = 1024,
+                                                                   height = 768),
+                                                     br(),
+                                                     br()
+                                                     #downloadButton('downloadPlot', 'Save Image')
+                                            ),
+                                            tabPanel(title = "Leaflet Cropped Plot",
+                                                     value = "Leaflet Cropped Plot",
+
+                                                     br(),
+                                                     leafletOutput("croppedLeafletMap",
+                                                                   width = 1024,
+                                                                   height = 768),
+                                                     br(),
+                                                     br()
+                                            ),
+                                            tabPanel(title = "terra Plot",
+
+                                                     br(),
+                                                     imageOutput("terraOutputImage"),
+                                                     br(),
+                                                     br()
+                                            ),
+                                            tabPanel(title = "Transmission Path",
+
+                                                     br(),
+                                                     leafletOutput("transmission",
+                                                                   width = 1024,
+                                                                   height = 768),
+                                                     br(),
+                                                     br()
+                                            ),
+                                            tabPanel(title = "Lollipop Chart",
+
+                                                     br(),
+                                                     plotlyOutput("lollipop",
+                                                                  height = 1000),
+                                                     br(),
+                                                     br()
+                                            ),
+                                            tabPanel(title = "Time-Series Graph",
+
+                                                     br(),
+                                                     plotlyOutput("timeSeries",
+                                                                  height = 800),
+                                                     br(),
+                                                     br())
+                                            # tabPanel(title ="Population Count by State/Province",
+                                            #          DT::dataTableOutput("aggTable")
+                                            #          )
+                                ) # tabSet
+                            ), # maptabPanels
+                          ),
+                                   
+                          conditionalPanel(
+                            condition = "input.appMode == 'Simulation'",
+                            
+                            div(id = "tabsetContainer",
+                                tabsetPanel(id = "tabSet", selected = "Input Summary",
+                                            
+                                            tabPanel(title = "Input Summary",
+                                                     verbatimTextOutput("summary"),
+                                                     br(),
+                                                     DTOutput("summaryTable"),
+                                                     br(),
+                                                     br(),
+                                                     imageOutput("outputImage",
+                                                                 height = "768px",
+                                                                 width = "768px"),
+                                                     #imageOutput("croppedOutputImage"),
+                                                     #imageOutput("seededOutputImage"),
+                                                     #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
+                                            ),
+                                            
+                                            tabPanel(title = "Model", id = "modelTab",
+                                                     h3("Schematic Diagram"),
+                                                     br(),
+                                                     imageOutput("flowchartImg",
+                                                                 height = "400px"),
+                                                     br(),
+                                                     br(),
+                                                     h3("Mathematical Model"),
+                                                     br(),
+                                                     imageOutput("modelImg",
+                                                                 height = "400px")
+                                            ),
+                                            
+                                            # tabPanel(title = "Schematic Diagram", id = "flowchartTab",
+                                            #          
+                                            # ),
+                                            
+                                            tabPanel(title = "Initial Seed Data", 
+                                                     DTOutput("tableSeed"),
+                                                     br(),
+                                                     leafletOutput("seedPlot",
+                                                                   width = 1024, 
+                                                                   height = 768)
+                                            ),
+                                            
+                                            tabPanel(title = "MP4 Animation",
+                                                     br(),
+                                                     br(),
+                                                     uiOutput("outputVideo")#,
+                                                     #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
+                                            ),
+                                            
+                                            tabPanel(title = "Output Summary",
+                                                     DTOutput("outputSummary") ,
+                                                     # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
+                                            ),
+                                            
+                                            tabPanel(title = "Plot", id = "plotTab",
+                                                     plotlyOutput("infectedExposedPlot", width = 800, height = 600),
+                                                     br(),
+                                                     br(),
+                                                     plotlyOutput("cumulativePlot", width = 800, height = 600),
+                                                     br(),
+                                                     br(),
+                                                     plotlyOutput("fullPlot", width = 800, height = 600),
+                                                     br(),
+                                                     br()
+                                                     # imageOutput("fracSusPlot"),
+                                                     #downloadButton(outputId = "downloadPlot", label = "Save Image")
+                                            )
+                                ) # tabsetPanel
+                            )
+                          )       
                         ), # mainPanel
                       ) # sidebarLayout
              ), # Model tabPanel

@@ -54,17 +54,33 @@ server <- function(input, output, session) {
   iv_seeddataupload$add_rule("seedData", ~ if(is.null(fileInputs$smStatus) || fileInputs$smStatus == 'reset') "Required")
   
   iv_alpha$condition(~ isTRUE(input$modelSelect == "SVEIRD"))
-  
   iv_cropped$condition(~ isTRUE(input$cropLev1))
+  iv_seeddataupload$condition(~ isTRUE(input$appMode == "Simulation"))
   
   iv$add_validator(iv_alpha)
   iv$add_validator(iv_cropped)
   iv$add_validator(iv_seeddataupload)
   
+  #------------------------------------------#
+  ## Visualizer Input Validators         ----
+  #------------------------------------------#
+  # iv <- InputValidator$new()
+  iv_dataupload <- InputValidator$new()
+
+  iv_dataupload$add_rule("latLonData", sv_required())
+  iv_dataupload$add_rule("latLonData", ~ if(is.null(fileInputs$latLonStatus) || fileInputs$latLonStatus == 'reset') "Required")
+  iv_dataupload$add_rule("incidenceData", sv_required())
+  iv_dataupload$add_rule("incidenceData", ~ if(is.null(fileInputs$incidenceStatus) || fileInputs$incidenceStatus == 'reset') "Required")
+
+  iv_dataupload$condition(~ isTRUE(input$appMode == "Visualizer"))
+
+  iv$add_validator(iv_dataupload)
+  
   iv$enable()
   iv_alpha$enable()
   iv_cropped$enable()
   iv_seeddataupload$enable()
+  iv_dataupload$enable()
   
   observe({
     if(iv$is_valid()){
@@ -91,7 +107,9 @@ server <- function(input, output, session) {
   values$allow_simulation_run <- TRUE
   
   fileInputs <- reactiveValues(
-    smStatus = NULL
+    smStatus = NULL,
+    latLonStatus = NULL,
+    incidenceStatus = NULL
   )
 
   # output$table <- renderTable(values$df)
@@ -101,6 +119,262 @@ server <- function(input, output, session) {
     
     createSusceptibleLayer(input$selectedCountry, input$agg)
   })
+  
+  
+  #==========================================================================#
+  # World Pop Visualizer Components                                       ----
+  #==========================================================================#
+  
+  #--------------------------------------------------------------------------#    
+  # Display the file inputs for generating the transmission path             #
+  #--------------------------------------------------------------------------#
+  output$transPathFileInputs <- renderUI({
+    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
+    
+    tagList(
+      fileInput(inputId = "latLonData", 
+                label = strong("Upload Lat-Lon Data:"), 
+                placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx")),
+      fileInput(inputId = "incidenceData", 
+                label = strong("Upload Incidence/Death Data:"), 
+                placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv",
+                  ".xls",
+                  ".xlsx"))
+    )
+  })
+  
+  #--------------------------------------------------------------------------#    
+  # Dynamically generate a date slider that contains the dates for all the 
+  # observed data in the incidence/death file
+  #--------------------------------------------------------------------------# 
+  output$transPathDateInput <- renderUI({
+    req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
+    
+    dateInfo <- colnames(transPathData())[4:length(colnames(transPathData()))]
+    
+    sliderTextInput(
+      inputId = "transPathDate",
+      label = strong("Date"),
+      choices = dateInfo,
+      selected = dateInfo[1],
+      animate = animationOptions(interval = 250, loop = FALSE))
+  })
+  
+  
+  output$resetButton <- renderUI({ ## resetButton ----
+    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
+      actionButton(
+        inputId = "visReset",
+        label = "Reset Values",
+        style ="color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      )
+    }
+  })
+  
+  output$leafletMap <- renderLeaflet({
+    req(!is.null(input$selectedCountry))
+    
+    susc <- susceptible()$Susceptible
+    level1Names <- NULL
+    
+    createLeafletPlot(input$selectedCountry, level1Names, susc)
+  })
+  
+  output$croppedLeafletMap <- renderLeaflet({
+    req(!is.null(input$selectedCountry) && !is.null(input$level1List))
+    
+    susc <- susceptible()$Susceptible
+    level1Names <- input$level1List
+    
+    createLeafletPlot(input$selectedCountry, level1Names, susc)
+  })
+  
+  output$terraOutputImage <- renderImage({ ## outputImage ----
+    validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
+    
+    if (input$selectedCountry == ""){
+      list(src = "", width = 0, height = 0)
+    } else {
+      outfile <- tempfile(fileext = '.png')
+      
+      # createBasePlot(input$selectedCountry, 1, FALSE) # print the susceptible plot to www/
+      
+      # png(outfile, width = 800, height = 600)
+      png(outfile, width = 1024, height = 768)
+      createBasePlot(input$selectedCountry, susceptible()$Susceptible, TRUE)   # print the susceptible plot direct to UI
+      dev.off()
+      
+      # list(src = outfile, contentType = 'image/png', width = 800, height = 600, alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
+    }
+  }, deleteFile = TRUE)
+  
+  output$transmission <- renderLeaflet({
+    req(!is.null(input$selectedCountry))
+    req(iv_dataupload$is_valid())
+    
+    level1Names <- NULL
+    
+    if(input$cropLev1 == TRUE){
+      
+      if(!is.null(input$level1List) && !("" %in% input$level1List)){
+        level1Names <- input$level1List
+      }
+    }
+    
+    createLeafletBubblePlot(input$selectedCountry, level1Names, transPathData(), 1)
+  })
+  
+  #--------------------------------------------------------------------------#    
+  # Proxy map for the leaflet plot to dynamically update the transmission
+  # path data
+  #--------------------------------------------------------------------------# 
+  observe({
+    req(!is.null(input$transPathDate))
+    
+    # which date (column of data) to plot
+    transDate <- input$transPathDate
+    
+    plotData <- transPathData()
+    
+    # To access a column inside the leafletProxy function the column name must 
+    # be called directly (can't use a variable storing the column name) so we
+    # must set the column we want to a known name ("Current")
+    colnames(plotData)[colnames(plotData) == transDate] <- "Current"
+    
+    labelText <- paste0(
+      "Location: ", plotData$Location, "<br/>",
+      "Count: ", plotData$Current, "<br/>") %>%
+      lapply(htmltools::HTML)
+    
+    # To update the map, clear out the old markers and draw new ones using the 
+    # data from the newly selected date
+    leafletProxy("transmission",
+                 data = plotData) %>%
+      clearMarkers() %>%
+      addCircleMarkers(lng = ~Longitude,
+                       lat = ~Latitude,
+                       radius = ~Current^0.35*2,
+                       weight = 1,
+                       opacity = 1,
+                       color = ~ifelse(Current > 0, "black", "transparent"),
+                       fillColor = ~ifelse(Current > 0, colorPalette(Current), "transparent"),
+                       fillOpacity = 0.8,
+                       label = labelText)
+  })
+  
+  output$lollipop <- renderPlotly({
+    req(iv_dataupload$is_valid())
+    
+    p <- plotLolliChart(input$selectedCountry, input$incidenceData$datapath)
+    ggplotly(p)
+  })
+  
+  output$timeSeries <- renderPlotly({
+    req(iv_dataupload$is_valid())
+    
+    p <- plotTimeSeries(input$incidenceData$datapath, input$selectedCountry)
+    ggplotly(p)
+  })
+  
+  
+  #---------------------------------------------------------------------------#    
+  # Combine the lat/long data with the observed infection into a single table #
+  #---------------------------------------------------------------------------# 
+  transPathData <- reactive({
+    req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
+    
+    incidenceData <- openDataFile(input$incidenceData)
+    latLonData <- openDataFile(input$latLonData)
+    
+    incidence <- as.data.frame(t(incidenceData))
+    incidenceCols <- incidence[2,]
+    incidence <- incidence[3:nrow(incidence),]
+    colnames(latLonData) <- c("Location", "Latitude", "Longitude")
+    colnames(incidence) <- incidenceCols
+    
+    plotData <- cbind(latLonData, lapply(incidence, as.numeric))
+  })
+  
+  #--------------------------------------------------------------------------#    
+  # Checks to see that files have been uploaded (helper func)                #
+  #--------------------------------------------------------------------------# 
+  observeEvent(input$latLonData, {
+    fileInputs$latLonStatus <- 'uploaded'
+  })
+  
+  observeEvent(input$incidenceData, {
+    fileInputs$incidenceStatus <- 'uploaded'
+  })
+  
+  
+  observeEvent(input$appMode == "Visualizer", {
+    if(!is.null(input$selectedCountry) && input$selectedCountry != "" && input$appMode == "Visualizer") {
+      shinyjs::show(id = "maptabPanels")
+    } else {
+      shinyjs::hide(id = "maptabPanels")
+    }
+    
+    fileInputs$latLonStatus <- 'reset'
+    fileInputs$incidenceStatus <- 'reset'
+  })
+  
+  observeEvent({(input$cropLev1 == FALSE || is.null(input$level1List))
+                 input$selectedCountry}, priority = 10, {
+    if(input$appMode == "Visualizer") {
+      hideTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
+    }
+  })
+  
+  observeEvent(input$cropLev1, {
+    req(!is.null(input$level1List))
+    if(input$cropLev1  == TRUE && input$appMode == "Visualizer") {
+      showTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
+    }
+  })
+  
+  observeEvent(input$visReset, {
+    
+    updateCheckboxInput(
+      inputId = "cropLev1",
+      value = FALSE
+    )
+    updatePickerInput(
+      inputId = "selectedCountry",
+      selected = ""
+    )
+    
+    fileInputs$latLonStatus <- 'reset'
+    fileInputs$incidenceStatus <- 'reset'
+  })
+  
+  observe({
+    if(input$appMode == "Visualizer") {
+      if(iv_dataupload$is_valid()) {
+        showTab(inputId = 'vizTabSet', target = "Transmission Path")
+        showTab(inputId = 'vizTabSet', target = "Lollipop Chart")
+        showTab(inputId = 'vizTabSet', target = "Time-Series Graph")
+      } else {
+        hideTab(inputId = 'vizTabSet', target = "Transmission Path")
+        hideTab(inputId = 'vizTabSet', target = "Lollipop Chart")
+        hideTab(inputId = 'vizTabSet', target = "Time-Series Graph")
+      }
+    }
+  })
+  
+  #==========================================================================#
+  # Model Simulation Components                                           ----
+  #==========================================================================#
   
   #--------------------------------------------------------------------------#    
   # Create a country plot cropped by level1Identifier and output to UI       #
@@ -986,11 +1260,11 @@ server <- function(input, output, session) {
   #--------------------------------------------------------------------------# 
   observeEvent(input$go, {
     req(iv$is_valid())
-    show_modal_spinner(spin = "cube-grid",
-                       color = "#18536F",
-                       text = p("   Calculating...   ",
-                                br(),
-                                "This may take several minutes."))
+    # show_modal_spinner(spin = "cube-grid",
+    #                    color = "#18536F",
+    #                    text = p("   Calculating...   ",
+    #                             br(),
+    #                             "This may take several minutes."))
     isCropped <- input$cropLev1
     
     # if(input$cropLev1 == TRUE)
@@ -1210,7 +1484,7 @@ server <- function(input, output, session) {
         controls = "controls"
       )
     })
-    remove_modal_spinner()
+    # remove_modal_spinner()
   })
   
   # observeEvent(input$filterLMIC,{
