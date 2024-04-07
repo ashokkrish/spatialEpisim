@@ -115,30 +115,3 @@ genQ <- function(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_obs
     
     return(list("Q" = Q, "QFull" = QFull))
 }
-
-#------------------------#
-# Example Function Calls #
-#------------------------#
-
-# varCovarFunc <- "DBD"
-# QVar <- 2
-# QCorrLength <- 0.8
-# states_observable <- 2
-
-# stack <- createRasterStack("Democratic Republic of Congo", rasterAgg = 10, isCropped = T, level1Names = c("Ituri", "Nord-Kivu"), createSusceptibleLayer("Democratic Republic of Congo", rasterAgg = 10))
-
-# nrow(stack$rasterStack)
-# ncol(stack$rasterStack)
-
-# Qmat <- genQ(stack, "DBD", QVar = 1, QCorrLength = 0.8, nbhd = 4, states_observable = 2)
-
-# x <- 1:10
-# y <- 1:10
-# 
-# X <- matrix(x, nrow = 10, ncol = 10, byrow = TRUE)
-# Y <- matrix(y, nrow = 10, ncol = 10, byrow = FALSE)
-# 
-# library(plot3D)
-# persp3D(x = X, y = Y, z = Qmat$Q[1:10,1:10], theta = 90, expand = 0.5,
-#         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
-#         colkey = list(side = 1))
