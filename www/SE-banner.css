@@ -1,3 +1,31 @@
+:root {
+  --main-color: #18536F;
+  --main-color-shadow: rgba(24,83,111,0.6);
+  --off-white: #F5F5F5;
+}
+
+input[type = "checkbox"],
+input[type = "radio"] {
+  accent-color: var(--main-color)!important;
+}
+
+.js-irs-0 .irs-single, 
+.js-irs-0 .irs-bar-edge, 
+.js-irs-0 .irs-bar {
+  background: var(--main-color)!important;
+  border-top: 1px solid var(--main-color)!important;
+  border-bottom: 1px solid var(--main-color)!important;
+  
+}
+
+/* changes the colour of the number tags */
+.irs-from, 
+.irs-to, 
+.irs-single { 
+  background: var(--main-color)!important; 
+  
+}
+
 /* Header menu styles ------------------------------------------------- */
 .nav {                                                                /**/
   align-items: center;                                                /**/
@@ -66,3 +94,34 @@ table.dataTable {                                           /**/
   margin: 0!important;                                      /**/
 }                                                           /**/
 /* ---------------------------------------------------------- */
+
+/* ------------------------------------------- */
+/* 'Calculate' and 'Reset' button styles       */
+/* ------------------------------------------- */
+.act-btn,                                    /**/
+.act-btn:focus {                             /**/
+  color: var(--off-white);                   /**/
+  font-weight: bold;                         /**/
+  background-color: var(--main-color);       /**/
+  border-color: var(--main-color);           /**/
+}                                            /**/
+.act-btn:hover {                             /**/
+  color: var(--off-white);                   /**/
+  font-eight: bold;                          /**/
+  background-color: var(--main-color-shadow);/**/
+  border-color: var(--main-color);           /**/
+}                                            /**/
+/*---------------------------------------------*/
+  
+/* ------------------------------------------------- */
+/* graph options dropdown menu icon styles           */
+/* ------------------------------------------------- */
+.bttn-jelly.bttn-primary {                         /**/
+  background-color: var(--main-color)!important;   /**/
+}                                                  /**/
+                                                   /**/
+.btn-primary{                                      /**/
+  background-color: var(--main-color)!important;   /**/
+  border-color: var(--main-color)!important;       /**/
+}                                                  /**/
+/* ------------------------------------------------- */
