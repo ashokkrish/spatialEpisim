@@ -17,9 +17,9 @@ shortlist <- filter(population, shortList == "TRUE")
 
 source("R/cropBaseRasterHaxby.R")
 source("R/rasterBasePlot.R")
-source("R/rasterLeafletPlot.R")
+source("R/rasterLeafletPlots.R")
 source("R/rasterStack.R")
-source("R/seedDataBubblePlot.R")
+# source("R/seedDataBubblePlot.R")
 source("R/WorldPopPlots.R")
 
 ui <- fluidPage( # UI ----
