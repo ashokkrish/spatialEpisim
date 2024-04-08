@@ -61,6 +61,8 @@ plotLolliChart <- function(selectedCountry, filename) {
     theme_light() +
     coord_flip() +
     theme(
+      text = element_text(size = 16,
+                          face = "bold"),
       plot.title = element_text(size = 24, 
                                 face = "bold", 
                                 hjust = 0.5,
@@ -74,8 +76,10 @@ plotLolliChart <- function(selectedCountry, filename) {
       axis.title.y = element_text(size = 16, 
                                   face = "bold",
                                   margin = margin(0, 10, 0, 0)),
-      axis.text.x.bottom = element_text(size = 16),
-      axis.text.y.left = element_text(size = 16),
+      axis.text.x.bottom = element_text(size = 16,
+                                        face = "bold"),
+      axis.text.y.left = element_text(size = 16,
+                                      face = "bold"),
       axis.ticks.y = element_blank(),
       axis.line = element_line(linewidth = 0.5)
     ) +
