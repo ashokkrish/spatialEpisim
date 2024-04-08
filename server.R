@@ -341,7 +341,8 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$appMode == "Visualizer", {
+  observeEvent({input$selectedCountry
+                input$appMode}, {
     if(!is.null(input$selectedCountry) && input$selectedCountry != "" && input$appMode == "Visualizer") {
       shinyjs::show(id = "maptabPanels")
     } else {
