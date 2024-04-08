@@ -277,11 +277,11 @@ server <- function(input, output, session) {
     req(iv_dataupload$is_valid())
     
     p <- plotLolliChart(input$selectedCountry, input$incidenceData$datapath)
-    ggplotly(p)
+    ggplotly(p) 
   })
   
   output$timeSeriesOptions <- renderUI({
-    plotTitle <- paste0("Cumulative Cases in ")
+    plotTitle <- paste0("Time-Series Graph of Incidence/Death in ")
     if(input$selectedCountry %in% prependList) {
       plotTitle <- paste0(plotTitle, "the ")
     }
@@ -293,7 +293,8 @@ server <- function(input, output, session) {
       title = plotTitle,
       xlab = "Date",
       ylab = "Number of Persons",
-      colour = "#22031F"
+      colour = "#22031F",
+      includeFlip = FALSE
     )
   })
   
@@ -307,7 +308,7 @@ server <- function(input, output, session) {
                         input[["timeSeriesMenu-Ylab"]],
                         input[["timeSeriesMenu-Colour"]],
                         input[["timeSeriesMenu-TSstyle"]])
-    ggplotly(p)
+    ggplotly(p) 
   })
   
   
