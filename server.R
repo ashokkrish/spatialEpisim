@@ -192,10 +192,11 @@ server <- function(input, output, session) {
   
   output$croppedLeafletMap <- renderLeaflet({
     req(!is.null(input$selectedCountry) && !is.null(input$level1List))
+    req(input$selectedCountry == level1Country())
     
     susc <- susceptible()$Susceptible
     level1Names <- input$level1List
-    
+
     createLeafletPlot(input$selectedCountry, level1Names, susc)
   })
   
@@ -329,17 +330,21 @@ server <- function(input, output, session) {
     fileInputs$incidenceStatus <- 'reset'
   })
   
-  observeEvent({(input$cropLev1 == FALSE || is.null(input$level1List))
-                 input$selectedCountry}, priority = 10, {
+  observeEvent({input$selectedCountry
+                input$appMode}, priority = 100, {
     if(input$appMode == "Visualizer") {
-      hideTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
+      updateTabsetPanel(inputId = "vizTabSet", selected = "Leaflet Plot")
     }
   })
   
-  observeEvent(input$cropLev1, {
-    req(!is.null(input$level1List))
-    if(input$cropLev1  == TRUE && input$appMode == "Visualizer") {
+  observeEvent({input$cropLev1
+                input$selectedCountry
+                input$level1List
+                input$appMode}, priority = 100, {
+    if(input$cropLev1  == TRUE && input$appMode == "Visualizer" && !is.null(input$level1List)) {
       showTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
+    } else if((input$cropLev1  == FALSE && input$appMode == "Visualizer") || is.null(input$level1List)) {
+      hideTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
     }
   })
   
@@ -565,13 +570,17 @@ server <- function(input, output, session) {
       level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1 
     }
     
-    selectizeInput(inputId = "level1List", 
+      selectizeInput(inputId = "level1List", 
                    label = NULL,
                    choices = level1Options,
                    selected = c("Ituri", "Nord-Kivu"),
                    multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
-    
+
+  })
+  
+  level1Country <- reactiveVal({
+    value = NULL
   })
   
   #--------------------------------------------------------------------------#     
@@ -1244,12 +1253,12 @@ server <- function(input, output, session) {
         }
       )
       
-      if(input$selectedCountry != "Democratic Republic of Congo") {
-        updateCheckboxInput(
-          inputId = "cropLev1",
-          value = FALSE
-        )
-      }
+      # if(input$selectedCountry != "Democratic Republic of Congo") {
+      #   updateCheckboxInput(
+      #     inputId = "cropLev1",
+      #     value = FALSE
+      #   )
+      # }
     }
     
     fileInputs$smStatus <- 'reset'
@@ -1487,6 +1496,23 @@ server <- function(input, output, session) {
     # remove_modal_spinner()
   })
   
+  observeEvent(input$selectedCountry, {
+    if(input$selectedCountry != "Democratic Republic of Congo") {
+      updateSelectizeInput(
+        inputId = "level1List",
+        selected = ""
+      )
+      
+      # updateCheckboxInput(
+      #   inputId = "cropLev1",
+      #   value = FALSE
+      # )
+    }
+  })
+  
+  observeEvent(input$level1List, {
+    level1Country(input$selectedCountry)
+  })
   # observeEvent(input$filterLMIC,{
   #   updateCheckboxInput(session, inputId = "cropLev1", value = FALSE) # uncheck the crop box first
   #   if(input$filterLMIC){
