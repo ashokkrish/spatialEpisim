@@ -122,8 +122,7 @@ plotLolliChart <- function(selectedCountry, filename) {
 #   --------------------------------------------------------                  #
 #                                                                             #
 # =========================================================================== #
-plotTimeSeries <- function(filename, selectedCountry) {
-  
+plotTimeSeries <- function(filename, plotTitle, xlab, ylab, plotColour, plotStyle) {
   file <- as.data.frame(openFile(filename))
   
   if(tools::file_ext(filename) == "csv") {
@@ -133,21 +132,15 @@ plotTimeSeries <- function(filename, selectedCountry) {
     plotData <- data.frame(x = ymd(file[,2]),
                            y = rowSums(file[,3:ncol(file)]))
   }
-
-  plotTitle <- paste0("Time-Series Graph of Daily Incidence/Death Rates \nin ")
-  if(selectedCountry %in% prependList) {
-    plotTitle <- paste0(plotTitle, "the ")
-  }
-  plotTitle <- paste0(plotTitle, selectedCountry)
   
   p = ggplot(plotData,
              aes(x = x, y = y)) +
-    geom_line(color="#22031F", linewidth = 2) +
-    geom_point(color="#22031F") +
+    geom_line(color=plotColour, linewidth = 2) +
+    geom_point(color=plotColour) +
     # geom_area(fill = "#22031F", alpha = 0.3) +
     labs(title = plotTitle, 
-         x = "Date", 
-         y = "Number of Persons") +
+         x = xlab, 
+         y = ylab) +
     scale_x_date(date_breaks = "6 months", date_labels = "%d %b %Y") +
     scale_y_continuous(minor_breaks = waiver()) +
     theme(
@@ -165,9 +158,11 @@ plotTimeSeries <- function(filename, selectedCountry) {
       axis.text.x.bottom = element_text(size = 14),
       axis.text.y.left = element_text(size = 14),
       axis.line = element_line(linewidth = 0.5),
-      plot.margin = unit(c(3, 2, 2, 2),"cm")
-    ) 
-    # scale_color_gradient(low="#9E929D", high="#22031F") 
+      plot.margin = unit(c(3, 2, 2, 2),"cm")) 
+  
+  if(plotStyle == "Area"){
+    p = p + geom_area(fill = plotColour, alpha = 0.3)
+  }
   
   return(p)
 }
