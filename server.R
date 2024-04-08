@@ -176,8 +176,7 @@ server <- function(input, output, session) {
       actionButton(
         inputId = "visReset",
         label = "Reset Values",
-        style ="color: #fff; background-color: #337ab7; border-color: #2e6da4"
-      )
+        class = "act-btn")
     }
   })
   
@@ -281,10 +280,33 @@ server <- function(input, output, session) {
     ggplotly(p)
   })
   
+  output$timeSeriesOptions <- renderUI({
+    plotTitle <- paste0("Cumulative Cases in ")
+    if(input$selectedCountry %in% prependList) {
+      plotTitle <- paste0(plotTitle, "the ")
+    }
+    plotTitle <- paste0(plotTitle, input$selectedCountry)
+    
+    plotOptionsMenuUI(
+      id = "timeSeriesMenu",
+      plotType = "Time-Series",
+      title = plotTitle,
+      xlab = "Date",
+      ylab = "Number of Persons",
+      colour = "#22031F"
+    )
+  })
+  
   output$timeSeries <- renderPlotly({
     req(iv_dataupload$is_valid())
+    req(!is.null(input[["timeSeriesMenu-Colour"]]))
     
-    p <- plotTimeSeries(input$incidenceData$datapath, input$selectedCountry)
+    p <- plotTimeSeries(file = input$incidenceData$datapath,
+                        input[["timeSeriesMenu-Title"]],
+                        input[["timeSeriesMenu-Xlab"]],
+                        input[["timeSeriesMenu-Ylab"]],
+                        input[["timeSeriesMenu-Colour"]],
+                        input[["timeSeriesMenu-TSstyle"]])
     ggplotly(p)
   })
   
