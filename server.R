@@ -294,7 +294,8 @@ server <- function(input, output, session) {
       xlab = "Date",
       ylab = "Number of Persons",
       colour = "#22031F",
-      includeFlip = FALSE
+      includeFlip = FALSE,
+      includeGridlines = FALSE
     )
   })
   
