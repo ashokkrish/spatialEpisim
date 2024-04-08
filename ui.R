@@ -203,8 +203,8 @@ ui <- fluidPage( # UI ----
                             radioButtons(inputId = "appMode",
                                          label = strong("Mode"),
                                          choices = list("Visualizer", 
-                                                        "Simulation"),
-                                         selected = "Simulation",
+                                                        "Simulator"),
+                                         selected = "Simulator",
                                          inline = TRUE),
                             
                             # -------------------------------------------- #
@@ -223,7 +223,7 @@ ui <- fluidPage( # UI ----
                             # Simulation Inputs                            #
                             # -------------------------------------------- #
                             conditionalPanel(
-                              condition = "input.appMode == 'Simulation'",
+                              condition = "input.appMode == 'Simulator'",
                               
                               uiOutput("aggInput"),
                               uiOutput("modelRadio"),
@@ -368,7 +368,7 @@ ui <- fluidPage( # UI ----
                           ),
                                    
                           conditionalPanel(
-                            condition = "input.appMode == 'Simulation'",
+                            condition = "input.appMode == 'Simulator'",
                             
                             div(id = "tabsetContainer",
                                 tabsetPanel(id = "tabSet", selected = "Input Summary",

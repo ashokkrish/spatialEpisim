@@ -55,7 +55,7 @@ server <- function(input, output, session) {
   
   iv_alpha$condition(~ isTRUE(input$modelSelect == "SVEIRD"))
   iv_cropped$condition(~ isTRUE(input$cropLev1))
-  iv_seeddataupload$condition(~ isTRUE(input$appMode == "Simulation"))
+  iv_seeddataupload$condition(~ isTRUE(input$appMode == "Simulator"))
   
   iv$add_validator(iv_alpha)
   iv$add_validator(iv_cropped)
@@ -345,6 +345,7 @@ server <- function(input, output, session) {
       showTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
     } else if((input$cropLev1  == FALSE && input$appMode == "Visualizer") || is.null(input$level1List)) {
       hideTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
+      updateTabsetPanel(inputId = "vizTabSet", selected = "Leaflet Plot")
     }
   })
   
