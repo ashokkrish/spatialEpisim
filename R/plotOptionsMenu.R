@@ -54,9 +54,10 @@ library(shinyWidgets)
 #   - box widths
 #
 # ================================================================ #
-plotOptionsMenuUI <- function(id, plotType = NULL, title = "Plot", xlab = "", ylab = "", colour = "#7293AD") {
+plotOptionsMenuUI <- function(id, plotType = NULL, title = "Plot", xlab = "", ylab = "", colour = "#7293AD", includeFlip = TRUE) {
   ns <- NS(id)
   
+  flip <- addFlipCheckbox(includeFlip)
   extraOptions <- tagList()
   
   # if(!is.null(plotType)) {
@@ -147,19 +148,14 @@ plotOptionsMenuUI <- function(id, plotType = NULL, title = "Plot", xlab = "", yl
         )
       ),
       
+      flip,
+      
       checkboxGroupInput(
         inputId = ns("Gridlines"),
         label = strong("Add Gridlines"),
         choices = c("Major", "Minor"),
         selected = NULL,
         inline = TRUE
-      ),
-      
-      p(strong("Orientation")),
-      checkboxInput(
-        inputId = ns("Flip"),
-        label = "Plot Vertically",
-        value = FALSE
       ),
       
       extraOptions,
@@ -173,6 +169,21 @@ plotOptionsMenuUI <- function(id, plotType = NULL, title = "Plot", xlab = "", yl
         exit = animations$fading_exits$fadeOutUp)
     )
   )
+}
+
+addFlipCheckbox <- function(includeFlip) {
+  flip <- tagList()
+  
+  if(includeFlip){
+    flip <- tagList(
+      p(strong("Orientation")),
+      checkboxInput(
+        inputId = ns("Flip"),
+        label = "Plot Vertically",
+        value = FALSE
+      )
+    )
+  }
 }
 
 BoxplotOptions <- function(ns) {
