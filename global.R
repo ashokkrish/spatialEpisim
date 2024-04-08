@@ -38,13 +38,13 @@ shhh(library(tinytex))
 
 source("R/cropBaseRasterHaxby.R")
 source("R/makePlots.R")
+source("R/plotOptionsMenu.R")
 source("R/rasterBasePlot.R")
 source("R/rasterCropSeedPlot.R")
 source("R/rasterLeafletPlots.R")
 #source("R/rasterSimulation.R")
 source("R/rasterSimulation_DA.R")
 source("R/rasterStack.R")
-# source("R/seedDataBubblePlot.R")
 source("R/WorldPopPlots.R")
 
 options(scipen = 999)
@@ -52,6 +52,12 @@ options(scipen = 999)
 population <- read_excel("misc/population.xlsx", 1)
 shortlist <- filter(population, shortList == "TRUE")
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
+
+#List of countries that need "the" prepended to their name
+prependList <- c("Czech Republic", 
+                 "Democratic Republic of Congo",
+                 "Gambia",
+                 "Netherlands")
 #print(epiparms)
 
 fieldsMandatory <- c("selectedCountry", "seedData")
