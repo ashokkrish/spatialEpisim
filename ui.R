@@ -290,10 +290,12 @@ ui <- fluidPage( # UI ----
                               # br(),
                               # actionButton("resetAllDA","Reset Values", 
                               #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                              actionButton("go","Run Simulation", 
-                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                              actionButton("resetAll","Reset Values", 
-                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                              actionButton(inputId = "go",
+                                           label = "Run Simulation", 
+                                           class = "act-btn"),
+                              actionButton(inputId = "resetAll",
+                                           label = "Reset Values", 
+                                           class = "act-btn"),
                             ),
                                               
                             
@@ -355,6 +357,8 @@ ui <- fluidPage( # UI ----
                                             ),
                                             tabPanel(title = "Time-Series Graph",
 
+                                                     br(),
+                                                     uiOutput("timeSeriesOptions"),
                                                      br(),
                                                      plotlyOutput("timeSeries",
                                                                   height = 800),
