@@ -1152,6 +1152,12 @@ server <- function(input, output, session) {
         xTitle = paste0("Day (from ", input$date, ")"), 
         yTitle = "Cumulative Deaths", 
         lineThickness = lineThickness)
+      
+      countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+      png(paste0("www/MP4/", countryISO, "_CumulativeDeaths.png"), width = 800, height = 600)
+      print(p)
+      dev.off()
+      
       ggplotly(p) 
     })
     
