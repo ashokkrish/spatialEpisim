@@ -1144,7 +1144,7 @@ server <- function(input, output, session) {
       ggplotly(p) 
     })
     
-    output$cumulativePlot <- renderPlotly({
+    output$cumDeathsPlot <- renderPlotly({
       p <- makePlot(
         compartments = c("D"), 
         selectedCountry = input$selectedCountry, 
@@ -1159,6 +1159,20 @@ server <- function(input, output, session) {
       dev.off()
       
       ggplotly(p) 
+    })
+    
+    output$cumIPlot <- renderPlotly({
+      countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+      filename <- paste0("www/MP4/",countryISO, "_summary.xlsx")
+      plotTitle <- paste0("Estimated Cumulative Infections \n in ", input$selectedCountry)
+      xTitle <- paste0("Day (from ", input$date, ")")
+      p <- PrintCumulativePlot(filename, "cumI", plotTitle, xTitle)
+      
+      png(paste0("www/MP4/", countryISO, "_CumulativeCases.png"), width = 800, height = 600)
+      print(p)
+      dev.off()
+      
+      ggplotly(p)
     })
     
     output$fullPlot <- renderPlotly({
