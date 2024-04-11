@@ -1144,35 +1144,182 @@ server <- function(input, output, session) {
       ggplotly(p) 
     })
     
+    # output$cumDeathsPlot <- renderPlotly({
+    #   p <- makePlot(
+    #     compartments = c("D"),
+    #     selectedCountry = input$selectedCountry,
+    #     plotTitle = paste0("Estimated Cumulative Deaths \n in ", input$selectedCountry),
+    #     xTitle = paste0("Day (from ", input$date, ")"),
+    #     yTitle = "Cumulative Deaths",
+    #     lineThickness = lineThickness)
+    # 
+    #   countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+    #   png(paste0("www/MP4/", countryISO, "_CumulativeDeaths.png"), width = 800, height = 600)
+    #   print(p)
+    #   dev.off()
+    # 
+    #   ggplotly(p)
+    # })
+    
     output$cumDeathsPlot <- renderPlotly({
-      p <- makePlot(
-        compartments = c("D"), 
-        selectedCountry = input$selectedCountry, 
-        plotTitle = paste0("Estimated Cumulative Deaths \n in ", input$selectedCountry), 
-        xTitle = paste0("Day (from ", input$date, ")"), 
-        yTitle = "Cumulative Deaths", 
-        lineThickness = lineThickness)
+      est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
+      obs_df <- as.data.frame(read_xlsx(paste0("observeddata/Ebola_Death_Data.xlsx")))
+      cod_est_cum <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"D"])
+      cod_obs_df <- data.frame(x = ymd(obs_df[1:63,2]), y = rowSums(obs_df[1:63,3:ncol(obs_df)]))
+      # cod_est_cum <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"D"])
+      cod_obs_cum <- data.frame(x = 1:nrow(cod_obs_df))
+      cod_obs_cum[1,1] <- cod_obs_df[1,2]
+      for(i in 2:nrow(cod_obs_df)){cod_obs_cum[i,1] <- cod_obs_cum[i-1,1] + cod_obs_df[i,2] }
+      cod_obs_cum <- cbind(ymd(obs_df[1:63,2]),cod_obs_cum)
+      colnames(cod_obs_cum) <- c("x", "y")
       
-      countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-      png(paste0("www/MP4/", countryISO, "_CumulativeDeaths.png"), width = 800, height = 600)
-      print(p)
-      dev.off()
       
-      ggplotly(p) 
+      q <- ggplot(cod_est_cum, aes(x, y)) +
+        labs(title = "Estimated Vs. Observed Cumulative Deaths \nin the Democratic Republic of Congo", 
+             x = "Date", 
+             y = "Number of persons") +
+        # scale_x_date(date_labels = "%d %b %Y") +
+        geom_line(linewidth=2, color="black") +
+        # geom_line(data = cod_obs_cum, aes(x, y), linewidth = 1.5, color = "black") +
+        geom_point(data = cod_obs_cum, aes(x, y), color = "#18536F") +
+        theme(
+          plot.title = element_text(size = 18, 
+                                    face = "bold",
+                                    margin = margin(0, 0, 25, 0),
+                                    hjust = 0.5),
+          axis.title.x = element_text(size = 14, 
+                                      face = "bold",
+                                      margin = margin(25, 0, 0, 0)),
+          axis.title.y = element_text(size = 14, 
+                                      face = "bold",
+                                      margin = margin(0, 25, 0, 0)),
+          axis.text.x.bottom = element_text(size = 14),
+          axis.text.y.left = element_text(size = 14),
+          axis.line = element_line(linewidth = 0.5),
+          plot.margin = unit(c(1, 1, 1, 0),"cm"),
+          legend.title = element_text(size = 10,
+                                      face = "bold"),
+          legend.box = "horizontal"
+        ) +
+        # scale_color_manual(
+        #   values = c(
+        #     "Estimated" = "black",
+        #     "Observed" = "#18536F"
+        #   )
+        # ) +
+        coord_cartesian(clip="off")
+      
+      ggplotly(q)
     })
     
-    output$cumIPlot <- renderPlotly({
-      countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-      filename <- paste0("www/MP4/",countryISO, "_summary.xlsx")
-      plotTitle <- paste0("Estimated Cumulative Infections \n in ", input$selectedCountry)
-      xTitle <- paste0("Day (from ", input$date, ")")
-      p <- PrintCumulativePlot(filename, "cumI", plotTitle, xTitle)
+    output$dailyIncidence <- renderPlotly({
       
-      png(paste0("www/MP4/", countryISO, "_CumulativeCases.png"), width = 800, height = 600)
-      print(p)
-      dev.off()
+      est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
+      cod_est_df <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"I"])
+      obs_df <- as.data.frame(read_xlsx(paste0("observeddata/Ebola_Incidence_Data.xlsx")))
+      cod_obs_df <- data.frame(x = ymd(obs_df[1:63,2]), y = rowSums(obs_df[1:63,3:ncol(obs_df)]))
+      
+      p <- ggplot(cod_est_df, aes(x, y)) +
+        labs(title = "Estimated vs. Observed Daily Incidence \nin the Democratic Republic of Congo", 
+             x = "Date", 
+             y = "Number of persons") +
+        # scale_x_date(date_labels = "%d %b %Y") +
+        geom_line(linewidth=2, color="red") +
+        # geom_line(data = cod_obs_df, aes(x, y), linewidth = 1.5, color = "black") +
+        geom_point(data = cod_obs_df, aes(x, y), color = "#18536F") +
+        theme(
+          plot.title = element_text(size = 18, 
+                                    face = "bold",
+                                    margin = margin(0, 0, 25, 0),
+                                    hjust = 0.5),
+          axis.title.x = element_text(size = 14, 
+                                      face = "bold",
+                                      margin = margin(25, 0, 0, 0)),
+          axis.title.y = element_text(size = 14, 
+                                      face = "bold",
+                                      margin = margin(0, 25, 0, 0)),
+          axis.text.x.bottom = element_text(size = 14),
+          axis.text.y.left = element_text(size = 14),
+          axis.line = element_line(linewidth = 0.5),
+          plot.margin = unit(c(1, 1, 1, 0),"cm"),
+          legend.title = element_text(size = 10,
+                                      face = "bold"),
+          legend.box = "horizontal"
+        ) +
+        # scale_color_manual(
+        #   values = c(
+        #     "Estimated" = "red",
+        #     "Observed" = "#18536F"
+        #   )
+        # ) +
+        coord_cartesian(clip="off")
       
       ggplotly(p)
+    })
+    
+    # output$cumIPlot <- renderPlotly({
+    #   countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+    #   filename <- paste0("www/MP4/",countryISO, "_summary.xlsx")
+    #   plotTitle <- paste0("Estimated Cumulative Infections \n in ", input$selectedCountry)
+    #   xTitle <- paste0("Day (from ", input$date, ")")
+    #   p <- PrintCumulativePlot(filename, "cumI", plotTitle, xTitle)
+    #   
+    #   png(paste0("www/MP4/", countryISO, "_CumulativeCases.png"), width = 800, height = 600)
+    #   print(p)
+    #   dev.off()
+    #   
+    #   ggplotly(p)
+    # })
+    
+    output$cumIPlot <- renderPlotly({
+      est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
+      obs_df <- as.data.frame(read_xlsx(paste0("observeddata/Ebola_Incidence_Data.xlsx")))
+      cod_est_df <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"newI"])
+      cod_obs_df <- data.frame(x = ymd(obs_df[1:63,2]), y = rowSums(obs_df[1:63,3:ncol(obs_df)]))
+      cod_est_cum <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"cumI"])
+      cod_obs_cum <- data.frame(x = 1:nrow(cod_obs_df))
+      cod_obs_cum[1,1] <- cod_obs_df[1,2]
+      for(i in 2:nrow(cod_obs_df)){cod_obs_cum[i,1] <- cod_obs_cum[i-1,1] + cod_obs_df[i,2] }
+      cod_obs_cum <- cbind(ymd(obs_df[1:63,2]),cod_obs_cum)
+      colnames(cod_obs_cum) <- c("x", "y")
+      
+      
+      q <- ggplot(cod_est_cum, aes(x, y)) +
+        labs(title = "Estimated vs. Observed Cumulative Infections \nin the Democratic Republic of Congo", 
+             x = "Date", 
+             y = "Number of persons") +
+        # scale_x_date(date_labels = "%d %b %Y") +
+        geom_line(linewidth=2, color="red") +
+        # geom_line(data = cod_obs_cum, aes(x, y), linewidth = 1.5, color = "black") +
+        geom_point(data = cod_obs_cum, aes(x, y), color = "#18536F") +
+        theme(
+          plot.title = element_text(size = 18, 
+                                    face = "bold",
+                                    margin = margin(0, 0, 25, 0),
+                                    hjust = 0.5),
+          axis.title.x = element_text(size = 14, 
+                                      face = "bold",
+                                      margin = margin(25, 0, 0, 0)),
+          axis.title.y = element_text(size = 14, 
+                                      face = "bold",
+                                      margin = margin(0, 25, 0, 0)),
+          axis.text.x.bottom = element_text(size = 14),
+          axis.text.y.left = element_text(size = 14),
+          axis.line = element_line(linewidth = 0.5),
+          plot.margin = unit(c(1, 1, 1, 0),"cm"),
+          legend.title = element_text(size = 10,
+                                      face = "bold"),
+          legend.box = "horizontal"
+        ) +
+        # scale_color_manual(
+        #   values = c(
+        #     "Estimated" = "red",
+        #     "Observed" = "#18536F"
+        #   )
+        # ) +
+        coord_cartesian(clip="off")
+      
+      ggplotly(q)
     })
     
     output$fullPlot <- renderPlotly({
