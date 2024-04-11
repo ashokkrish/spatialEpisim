@@ -112,7 +112,7 @@ setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
 createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, directOutput, maxVal, includeLabels, isCropped) {
   is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
 
-  x <- classify(rasterToPrint, c(0, 10, 25, 50, 100, 250, 1000, 100000))
+  x <- classify(rasterToPrint, c(0, 5, 10, 20, 35, 50, 100, 250, 1000, 100000))
   levs <- levels(x)[[1]]
   levels(x) <- levs
   
@@ -134,7 +134,7 @@ createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, dire
       par(bty = 'n')
     }
     terra::plot(x, 
-                col=pal(8)[-1], 
+                col=pal(10)[-1], 
                 main = basePlotTitle, 
                 axes = includeLabels,
                 buffer = TRUE,
@@ -163,7 +163,7 @@ createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, dire
       par(bty = 'n')
     }
     terra::plot(x, 
-                col=pal(9)[-1], 
+                col=pal(10)[-1], 
                 main = aggrPlotTitle, 
                 axes = includeLabels,
                 buffer = TRUE,
