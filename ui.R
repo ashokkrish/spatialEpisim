@@ -472,7 +472,7 @@ ui <- fluidPage( # UI ----
                       
                       br(),
                       
-                      p(span("Michael Myer, Tobias Wondwossen, Khanh Le, Michael Walsh, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
+                      p(span("Michael Myer, Tobias Wondwossen, Khanh Le, Bryce Carson, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
                       
                       br(), 
