@@ -62,12 +62,7 @@ plotOptionsMenuUI <- function(id, plotType = NULL, title = "Plot", xlab = "",
   flip <- addFlipCheckbox(includeFlip)
   grid <- addGridlines(includeGridlines)
   extraOptions <- tagList()
-  
-  # if(!is.null(plotType)) {
-  #   if(plotType == 'Boxplot'){
-  #     extraOptions <- BoxplotOptions(ns)
-  #   }
-  # }
+
   if(!is.null(plotType)) {
     extraOptions <- switch(
       plotType, 
