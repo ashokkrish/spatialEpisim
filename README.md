@@ -4,9 +4,11 @@
 
 **spatialEpisim** is an open-source platform-independent browser-based interface for tracking the spatial spread of infectious diseases (ex: COVID-19, Ebola, Measles etc.). 
 
-Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io/spatialepisim>
+Run the app on Shinyapp.io server by clicking <http://spatialepisim.shinyapps.io/spatialepisim>.
 
-Alternatively you can send a pull request to download all the files in this repository and run the app by loading `global.R` and clicking `Run App`. Note that the ``spatialEpisim`` project is not on CRAN, just on github.
+To run the application locally you'll need a copy of the software. Download an archived version of the repository or a release (if available) from the GitHub web interface, or clone the repository using Git or your IDE tools, then run the app locally. To run the Shiny application follow whatever procedure is correct for your environment (in RStudio you may use the "Run App" button) after loading `global.R`. 
+
+Note that the *spatialEpisim* project is not available on CRAN, Bioconductor, or r-forge: it is only distributed through GitHub.
 
 ## Key features
 
@@ -40,6 +42,7 @@ Alternatively you can send a pull request to download all the files in this repo
 <sub> Note: Setting &alpha; = 0 and &delta; = 0 would default to a SEIR model while setting only &alpha; = 0 would default to a SEIRD model.</sub>
 
 ## Directory structure
+<!-- TODO: update this information and reorganize it. -->
 
     /
     |---R/
@@ -83,6 +86,6 @@ Website: <https://bit.ly/2YKrXjX>
 
 We welcome questions, insights, and feedback. We accept contributions via pull request. You can also open an issue if you find a bug, or have a suggestion.
  
-## Terms of use
+## License
 
------
+See the LICENSE file for instructions on copying, redistribution, and your rights concerning the aas a user.
