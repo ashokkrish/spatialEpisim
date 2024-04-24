@@ -46,26 +46,26 @@ ui <- fluidPage( # UI ----
                           div(
                             id = "dashboard",
                             
-                            # radioButtons(inputId = "modellingApproach",
-                            #              label = strong("Modelling Approach"),
-                            #              choiceValues = list("1", "2"),
-                            #              choiceNames = list("Non-spatial Modelling", "Spatial Modelling"),
-                            #              selected = "2",
-                            #              inline = TRUE),
+                            radioButtons(inputId = "modellingApproach",
+                                         label = strong("Modelling Approach"),
+                                         choiceValues = list("1", "2"),
+                                         choiceNames = list("Non-spatial Modelling", "Spatial Modelling"),
+                                         selected = "2",
+                                         inline = TRUE),
                             
-                            # conditionalPanel( #### Non-spatial Modeling ----
-                            #                   condition = "input.modellingApproach == '1'",
-                            #                   
-                            #                   pickerInput(
-                            #                     inputId = "nonspatialmodelSelect",
-                            #                     label = strong(("Epidemic Model")),
-                            #                     choices = list("SIR", "SIRD", "SEIR", "SEIRD", "SIR-Stochastic"),
-                            #                     multiple = FALSE,
-                            #                     selected = "SIR", #NULL,
-                            #                     options = pickerOptions(
-                            #                       actionsBox = TRUE,
-                            #                       title = "Please select a model")
-                            #                   ),
+                            conditionalPanel( #### Non-spatial Modeling ----
+                                              condition = "input.modellingApproach == '1'",
+
+                                              pickerInput(
+                                                inputId = "nonspatialmodelSelect",
+                                                label = strong(("Epidemic Model")),
+                                                choices = list("SIR", "SIRD", "SEIR", "SEIRD", "SIR-Stochastic"),
+                                                multiple = FALSE,
+                                                selected = "SIR", #NULL,
+                                                options = pickerOptions(
+                                                  actionsBox = TRUE,
+                                                  title = "Please select a model")
+                                              ),
                                               
                                               # radioButtons(inputId = "qValue",
                                               #              label = strong("Model Formulation"),
@@ -118,73 +118,73 @@ ui <- fluidPage( # UI ----
                                               #   withMathJax(),
                                               #   condition = "input.nonspatialmodelSelect == 'SIR'", 
                                               
-                                              # withMathJax(),
-                                              # h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
-                                              # 
-                                              # numericInput(
-                                              #   inputId = "betaSIR",
-                                              #   label = "Transmission Rate (\\( \\beta\\))",
-                                              #   min = 0,
-                                              #   #max = 1,
-                                              #   step = 0.00001,
-                                              #   value = 0.001,
-                                              # ),
-                                              # 
-                                              # numericInput(
-                                              #   inputId = "gammaSIR",
-                                              #   label = "Removal Rate  (\\( \\gamma\\))",
-                                              #   min = 0,
-                                              #   #max = 5,
-                                              #   step = 0.00001,
-                                              #   value = 0.1,
-                                              # ),
-                                              # 
-                                              # h5("Model Inputs:", style="font-weight: bold; font-size:11.5pt"),
+                                              withMathJax(),
+                                              h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
+
+                                              numericInput(
+                                                inputId = "betaSIR",
+                                                label = "Transmission Rate (\\( \\beta\\))",
+                                                min = 0,
+                                                #max = 1,
+                                                step = 0.00001,
+                                                value = 0.001,
+                                              ),
+
+                                              numericInput(
+                                                inputId = "gammaSIR",
+                                                label = "Removal Rate  (\\( \\gamma\\))",
+                                                min = 0,
+                                                #max = 5,
+                                                step = 0.00001,
+                                                value = 0.1,
+                                              ),
+
+                                              h5("Model Inputs:", style="font-weight: bold; font-size:11.5pt"),
                                               
-                                              # numericInput(
-                                              #   inputId = "populationSIR",
-                                              #   label = "Total Population (N)",
-                                              #   value = 500,
-                                              #   min = 1,
-                                              #   #max = maxPopulation,
-                                              #   step = 1,
+                                              numericInput(
+                                                inputId = "populationSIR",
+                                                label = "Total Population (N)",
+                                                value = 500,
+                                                min = 1,
+                                                #max = maxPopulation,
+                                                step = 1,
+                                              ),
+                                              numericInput(
+                                                inputId = "susceptibleSIR",
+                                                label = "Susceptible (S)",
+                                                value = 499,
+                                                min = 1,
+                                                #max = maxPopulation,
+                                                step = 1,
+                                              ),
+                                              numericInput(
+                                                inputId = "infectedSIR",
+                                                label = "Infected (I)",
+                                                value = 1,
+                                                min = 1,
+                                                #max = maxPopulation,
+                                                step = 1,
+                                              ),
+                                              numericInput(
+                                                inputId = "recoveredSIR",
+                                                label = "Recovered (R)",
+                                                value = 0,
+                                                min = 0,
+                                                #max = maxPopulation,
+                                                step = 1,
+                                              ),
                                               # ),
-                                              # numericInput(
-                                              #   inputId = "susceptibleSIR",
-                                              #   label = "Susceptible (S)",
-                                              #   value = 499,
-                                              #   min = 1,
-                                              #   #max = maxPopulation,
-                                              #   step = 1,
                                               # ),
-                                              # numericInput(
-                                              #   inputId = "infectedSIR",
-                                              #   label = "Infected (I)",
-                                              #   value = 1,
-                                              #   min = 1,
-                                              #   #max = maxPopulation,
-                                              #   step = 1,
-                                              # ),
-                                              # numericInput(
-                                              #   inputId = "recoveredSIR",
-                                              #   label = "Recovered (R)",
-                                              #   value = 0,
-                                              #   min = 0,
-                                              #   #max = maxPopulation,
-                                              #   step = 1,
-                                              # ),
-                                              #),
-                                              #),
                                               
-                                              # actionButton("nonspatialgo","Run Simulation", 
-                                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              # actionButton("nonspatialresetAll","Reset Values", 
-                                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              
-                            # ), #"input.modellingApproach == '1'"
+                                              actionButton("nonspatialgo","Run Simulation",
+                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                              actionButton("nonspatialresetAll","Reset Values",
+                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+
+                            ), #"input.modellingApproach == '1'"
                             
-                            # conditionalPanel( #### Spatial Modeling ----
-                            #                   condition = "input.modellingApproach == '2'",
+                            conditionalPanel( #### Spatial Modeling ----
+                                              condition = "input.modellingApproach == '2'",
                                               
                             uiOutput("countryDropdown"),
                                             
@@ -299,7 +299,7 @@ ui <- fluidPage( # UI ----
                             ),
                                               
                             
-                            # ), # "input.modellingApproach == '2'",
+                            ), # "input.modellingApproach == '2'",
                           ), # div "dashboard"
                         ), # sidebarPanel
                         
