@@ -9,9 +9,9 @@ input[type = "radio"] {
   accent-color: var(--main-color)!important;
 }
 
-.js-irs-0 .irs-single, 
-.js-irs-0 .irs-bar-edge, 
-.js-irs-0 .irs-bar {
+.irs-single, 
+.irs-bar-edge, 
+.irs-bar {
   background: var(--main-color)!important;
   border-top: 1px solid var(--main-color)!important;
   border-bottom: 1px solid var(--main-color)!important;
@@ -95,23 +95,26 @@ table.dataTable {                                           /**/
 }                                                           /**/
 /* ---------------------------------------------------------- */
 
-/* ------------------------------------------- */
-/* 'Calculate' and 'Reset' button styles       */
-/* ------------------------------------------- */
-.act-btn,                                    /**/
-.act-btn:focus {                             /**/
-  color: var(--off-white);                   /**/
-  font-weight: bold;                         /**/
-  background-color: var(--main-color);       /**/
-  border-color: var(--main-color);           /**/
-}                                            /**/
-.act-btn:hover {                             /**/
-  color: var(--off-white);                   /**/
-  font-eight: bold;                          /**/
-  background-color: var(--main-color-shadow);/**/
-  border-color: var(--main-color);           /**/
-}                                            /**/
-/*---------------------------------------------*/
+/* ----------------------------------------------- */
+/* 'Calculate' and 'Reset' button styles           */
+/* ----------------------------------------------- */
+.act-btn,                                        /**/
+.act-btn:focus,                                  /**/
+.btn-default,                                    /**/
+.btn-default:focus {                              /**/
+  color: var(--off-white)!important;             /**/
+  font-weight: bold!important;                   /**/
+  background-color: var(--main-color)!important; /**/
+  border-color: var(--main-color)!important;     /**/
+}                                                /**/
+.act-btn:hover,                                  /**/
+.btn-default:hover {                             /**/
+  color: var(--off-white);                       /**/
+  font-eight: bold;                              /**/
+  background-color: var(--main-color-shadow);    /**/
+  border-color: var(--main-color);               /**/
+}                                                /**/
+/*-------------------------------------------------*/
   
 /* ------------------------------------------------- */
 /* graph options dropdown menu icon styles           */
