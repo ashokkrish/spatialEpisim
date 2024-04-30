@@ -1179,7 +1179,7 @@ server <- function(input, output, session) {
              x = "Date", 
              y = "Number of persons") +
         # scale_x_date(date_labels = "%d %b %Y") +
-        geom_line(linewidth=2, color="black") +
+        geom_line(linewidth=2, color="red") +
         # geom_line(data = cod_obs_cum, aes(x, y), linewidth = 1.5, color = "black") +
         geom_point(data = cod_obs_cum, aes(x, y), color = "#18536F") +
         theme(
@@ -1376,8 +1376,7 @@ server <- function(input, output, session) {
     validate(need(!is.null(input$selectedCountry), "Loading App...")) # catches UI warning
     
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      downloadButton('downloadData', label = "Generate Seed Data Template", 
-                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+      downloadButton('downloadData', label = "Generate Seed Data Template",
                      style = "length:800px")
     }
   })
@@ -1696,10 +1695,10 @@ server <- function(input, output, session) {
         selected = ""
       )
       
-      # updateCheckboxInput(
-      #   inputId = "cropLev1",
-      #   value = FALSE
-      # )
+      updateCheckboxInput(
+        inputId = "cropLev1",
+        value = FALSE
+      )
     }
   })
   
