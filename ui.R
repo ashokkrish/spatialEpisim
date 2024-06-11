@@ -7,17 +7,17 @@ ui <- fluidPage( # UI ----
       .label-text {
         font-size: 16px; /* Adjust label font size as needed */
       }
-      
+
       .option-text {
         font-size: 12px; /* Adjust option font size as needed */
       }
     "))
   ),
-  theme = bs_theme(version = 4, 
+  theme = bs_theme(version = 4,
                    primary = "#18536F"),
   tags$head(
-    tags$link(rel = "stylesheet", 
-              type="text/css", 
+    tags$link(rel = "stylesheet",
+              type="text/css",
               href="SE-banner.css")
   ),
 
@@ -26,18 +26,18 @@ ui <- fluidPage( # UI ----
 
     span(
       class = "pageTitle",
-      tags$em("spatialEpisim"), 
-      ": Spatial Tracking of Infectious Diseases using Mathematical Models", 
-      br() 
+      tags$em("spatialEpisim"),
+      ": Spatial Tracking of Infectious Diseases using Mathematical Models",
+      br()
     )
   ),
-  
+
   add_busy_spinner(spin = "cube-grid",
                    color = "#18536F",
                    margins = c("50%","50%")),
-  
+
   navbarPage(title = "",
-    
+
              tabPanel(title = "Model",
                       sidebarLayout(
                         sidebarPanel( ## sidebar panel ----
@@ -45,14 +45,14 @@ ui <- fluidPage( # UI ----
                           shinyjs::inlineCSS(appCSS),
                           div(
                             id = "dashboard",
-                            
+
                             radioButtons(inputId = "modellingApproach",
                                          label = strong("Modelling Approach"),
                                          choiceValues = list("1", "2"),
                                          choiceNames = list("Non-spatial Modelling", "Spatial Modelling"),
                                          selected = "2",
                                          inline = TRUE),
-                            
+
                             conditionalPanel( #### Non-spatial Modeling ----
                                               condition = "input.modellingApproach == '1'",
 
@@ -66,7 +66,7 @@ ui <- fluidPage( # UI ----
                                                   actionsBox = TRUE,
                                                   title = "Please select a model")
                                               ),
-                                              
+
                                               # radioButtons(inputId = "qValue",
                                               #              label = strong("Model Formulation"),
                                               #              choiceValues = list("1", "2"),
@@ -74,7 +74,7 @@ ui <- fluidPage( # UI ----
                                               #              selected = "2",
                                               #              inline = TRUE,
                                               #              width = "1000px"),
-                                              # 
+                                              #
                                               # radioButtons(inputId = "nonspatialstochasticSelect",
                                               #              label = strong("Model Stochasticity"),
                                               #              choiceValues = list("Deterministic", "Stochastic"),
@@ -82,13 +82,13 @@ ui <- fluidPage( # UI ----
                                               #              selected = "Deterministic",
                                               #              inline = TRUE,
                                               #              width = "1000px"),
-                                              
+
                                               # checkboxInput(
                                               #   inputId = "muValue",
                                               #   label = strong("Include Vital Dynamics"),
                                               #   value = FALSE,
                                               # ),
-                                              # 
+                                              #
                                               # withMathJax(),
                                               # conditionalPanel(
                                               #   condition = "input.muValue == '1'",
@@ -100,7 +100,7 @@ ui <- fluidPage( # UI ----
                                               #           step = 0.0001,
                                               #           value = 0.00,
                                               #         ),
-                                              #   
+                                              #
                                               #         numericInput(
                                               #           inputId = "muDeath",
                                               #           label = "Death Rate due to Natural Causes (\\( \\mu_D\\))",
@@ -110,14 +110,14 @@ ui <- fluidPage( # UI ----
                                               #           value = 0.00,
                                               #         )
                                               # ),
-                                              
+
                                               # conditionalPanel(
                                               #   id = "SI_versus_SEI",
-                                              
+
                                               # conditionalPanel(
                                               #   withMathJax(),
-                                              #   condition = "input.nonspatialmodelSelect == 'SIR'", 
-                                              
+                                              #   condition = "input.nonspatialmodelSelect == 'SIR'",
+
                                               withMathJax(),
                                               h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
 
@@ -140,7 +140,7 @@ ui <- fluidPage( # UI ----
                                               ),
 
                                               h5("Model Inputs:", style="font-weight: bold; font-size:11.5pt"),
-                                              
+
                                               numericInput(
                                                 inputId = "populationSIR",
                                                 label = "Total Population (N)",
@@ -175,73 +175,73 @@ ui <- fluidPage( # UI ----
                                               ),
                                               # ),
                                               # ),
-                                              
+
                                               actionButton("nonspatialgo","Run Simulation",
                                                            style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                                               actionButton("nonspatialresetAll","Reset Values",
                                                            style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
 
                             ), #"input.modellingApproach == '1'"
-                            
+
                             conditionalPanel( #### Spatial Modeling ----
                                               condition = "input.modellingApproach == '2'",
-                                              
+
                             uiOutput("countryDropdown"),
-                                            
+
                             # checkboxInput(
-                            #   inputId = "filterLMIC", 
-                            #   label = strong("Show LMIC only"), 
+                            #   inputId = "filterLMIC",
+                            #   label = strong("Show LMIC only"),
                             #   value = FALSE),
-                                              
+
                             uiOutput("cropStateCheckbox"),
-                                            
+
                             conditionalPanel(
-                              condition = "input.cropLev1",  
-                                                
+                              condition = "input.cropLev1",
+
                               uiOutput("Level1Ui")),
-                            
+
                             radioButtons(inputId = "appMode",
                                          label = strong("Mode"),
-                                         choices = list("Visualizer", 
+                                         choices = list("Visualizer",
                                                         "Simulator"),
                                          selected = "Simulator",
                                          inline = TRUE),
-                            
+
                             # -------------------------------------------- #
                             # Visualizer Inputs                            #
                             # -------------------------------------------- #
                             conditionalPanel(
                               condition = "input.appMode == 'Visualizer'",
-                              
+
                               uiOutput("transPathFileInputs"),
                               uiOutput("transPathDateInput"),
                               br(),
                               uiOutput("resetButton")
                             ),
-                            
+
                             # -------------------------------------------- #
                             # Simulation Inputs                            #
                             # -------------------------------------------- #
                             conditionalPanel(
                               condition = "input.appMode == 'Simulator'",
-                              
+
                               uiOutput("aggInput"),
                               uiOutput("modelRadio"),
                               uiOutput("stochasticRadio"),
-                              
+
                               conditionalPanel(
                                 condition = "input.selectedCountry != ''",
-                                
+
                                 withMathJax(),
-                                
+
                                 h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
-                                
+
                                 conditionalPanel(id = "SVEIRD",
                                   withMathJax(),
-                                  condition = "input.modelSelect == 'SVEIRD'", 
-                                                 
+                                  condition = "input.modelSelect == 'SVEIRD'",
+
                                   uiOutput("alphaInput")),
-                                
+
                                 uiOutput("betaInput"),
                                 uiOutput("gammaInput"),
                                 uiOutput("sigmaInput"),
@@ -254,57 +254,57 @@ ui <- fluidPage( # UI ----
                                 br(),
                                 uiOutput("startDateInput"),
                                 uiOutput("timestepInput")),
-                              
-                              # actionButton("go","Run Simulation", 
+
+                              # actionButton("go","Run Simulation",
                               #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                              # actionButton("resetAll","Reset Values", 
+                              # actionButton("resetAll","Reset Values",
                               #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                              
+
                               br(),
                               br(),
-                              
+
                               uiOutput("dataAssimCheckbox"),
-                              
+
                               # --------------------------------------------- #
                               # Bayesian Assimilation Inputs                  #
                               # --------------------------------------------- #
                               conditionalPanel(
-                                condition = "input.dataAssim == '1'",  
+                                condition = "input.dataAssim == '1'",
                                 uiOutput("dataAssimCmpts"),
                                 uiOutput("dataAssimZones"),
                                 uiOutput("dataAssimFileI"),
                                 uiOutput("dataAssimFileD"),
-                                
+
                                 h5("Model error covariance matrix (Q) formulation", style="font-weight: bold; font-size:11.5pt"),
                                 uiOutput("varCovarFunc"),
                                 uiOutput("selectRho"),
                                 uiOutput("selectSigma"),
                                 uiOutput("selectNbhd"),
-                                
+
                                 h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
                                 uiOutput("selectPsiDiag"),
-                                
+
                                 # actionButton("goDA","Run Simulation with DA",
                                 #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                               ),
                               # br(),
-                              # actionButton("resetAllDA","Reset Values", 
+                              # actionButton("resetAllDA","Reset Values",
                               #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                               actionButton(inputId = "go",
-                                           label = "Run Simulation", 
+                                           label = "Run Simulation",
                                            class = "act-btn"),
                               actionButton(inputId = "resetAll",
-                                           label = "Reset Values", 
+                                           label = "Reset Values",
                                            class = "act-btn"),
                             ),
-                                              
-                            
+
+
                             ), # "input.modellingApproach == '2'",
                           ), # div "dashboard"
                         ), # sidebarPanel
-                        
+
                         mainPanel( ## main panel ----
-                                   
+
                           conditionalPanel(
                             condition = "input.appMode == 'Visualizer'",
 
@@ -370,13 +370,13 @@ ui <- fluidPage( # UI ----
                                 ) # tabSet
                             ), # maptabPanels
                           ),
-                                   
+
                           conditionalPanel(
                             condition = "input.appMode == 'Simulator'",
-                            
+
                             div(id = "tabsetContainer",
                                 tabsetPanel(id = "tabSet", selected = "Input Summary",
-                                            
+
                                             tabPanel(title = "Input Summary",
                                                      verbatimTextOutput("summary"),
                                                      br(),
@@ -390,7 +390,7 @@ ui <- fluidPage( # UI ----
                                                      #imageOutput("seededOutputImage"),
                                                      #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
                                             ),
-                                            
+
                                             tabPanel(title = "Model", id = "modelTab",
                                                      h3("Schematic Diagram"),
                                                      br(),
@@ -403,31 +403,31 @@ ui <- fluidPage( # UI ----
                                                      imageOutput("modelImg",
                                                                  height = "400px")
                                             ),
-                                            
+
                                             # tabPanel(title = "Schematic Diagram", id = "flowchartTab",
-                                            #          
+                                            #
                                             # ),
-                                            
-                                            tabPanel(title = "Initial Seed Data", 
+
+                                            tabPanel(title = "Initial Seed Data",
                                                      DTOutput("tableSeed"),
                                                      br(),
                                                      leafletOutput("seedPlot",
-                                                                   width = 1024, 
+                                                                   width = 1024,
                                                                    height = 768)
                                             ),
-                                            
+
                                             tabPanel(title = "MP4 Animation",
                                                      br(),
                                                      br(),
                                                      uiOutput("outputVideo")#,
                                                      #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
                                             ),
-                                            
+
                                             tabPanel(title = "Output Summary",
                                                      DTOutput("outputSummary") ,
                                                      # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
                                             ),
-                                            
+
                                             tabPanel(title = "Plot", id = "plotTab",
                                                      plotlyOutput("infectedExposedPlot", width = 800, height = 600),
                                                      br(),
@@ -449,54 +449,54 @@ ui <- fluidPage( # UI ----
                                             )
                                 ) # tabsetPanel
                             )
-                          )       
+                          )
                         ), # mainPanel
                       ) # sidebarLayout
              ), # Model tabPanel
-             
+
              tabPanel("Authors",
                       h3("Research Team", style= "font-weight:bold"),
-                      br(),   
+                      br(),
                       p(span("Ashok Krishnamurthy, PhD", style= "font-weight:bold")),
                       p("Project PI,"),
                       p("Associate Professor, Department of Mathematics and Computing,"),
                       p("Faculty of Science and Technology,"),
-                      p("Mount Royal University,"), 
+                      p("Mount Royal University,"),
                       p("Calgary, AB, CANADA"),
-                      
+
                       br(),
-                      
-                      p("Email:",a("akrishnamurthy@mtroyal.ca", href="mailto:akrishnamurthy@mtroyal.ca")), 
+
+                      p("Email:",a("akrishnamurthy@mtroyal.ca", href="mailto:akrishnamurthy@mtroyal.ca")),
                       p("Website:", a(href="https://bit.ly/2YKrXjX","https://bit.ly/2YKrXjX", target="_blank")),
                       p("GitHub:", a(href="https://github.com/ashokkrish/spatialEpisim","https://github.com/ashokkrish/spatialEpisim", target="_blank")),
-                      
+
                       br(),
-                      
-                      p(span("Michael Myer, Tobias Wondwossen, Khanh Le, Bryce Carson, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),    
+
+                      p(span("Michael Myer, Tobias Wondwossen, Khanh Le, Bryce Carson, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),
                       p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
-                      
-                      br(), 
-                      
-                      p(span("Tom Bayliss White", style= "font-weight:bold" )),    
+
+                      br(),
+
+                      p(span("Tom Bayliss White", style= "font-weight:bold" )),
                       p("Undergraduate Student, University of Exeter, Exeter, Devon, UK"),
                       p("Mitacs Globalink Research Intern (2023)"),
-                      
+
                       br(),
-                      
+
                       p(span("Jake Doody", style= "font-weight:bold" )),
                       p("Undergraduate Student, University of Maryland Baltimore County, MD, USA"),
-                      
+
                       br(),
-                      
+
                       p(span("Acknowledgement", style= "font-weight:bold" )),
                       p("Dr. Loren Cobb, Dr. Bedrich Sousedik"),
-                      
+
                       br(),
-                      
+
                       p("This interactive R Shiny app is maintained by Dr. Ashok Krishnamurthy. We welcome questions, insights, and feedback."),
-                      
+
                       br(),
-                      
+
                       h3("Disclaimer"),
                       p("This tool uses a mathematical model to simulate a variety of COVID-19/Ebola/Measles outcomes based on user-defined parameters.
                            The output of the model depends on model assumptions, parameter choices, and human mobility patterns.
