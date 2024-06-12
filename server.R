@@ -2,6 +2,12 @@
 #     Server Components
 #--------------------------#
 server <- function(input, output, session) {
+  selectedCountryISO3C <-
+    reactive(countrycode(sourcevar = input$selectedCountry,
+                         "country.name",
+                         "iso3c"))
+
+  observe_helpers(help_dir = "helpfiles", withMathJax = TRUE)
 
   iv <- InputValidator$new()
   iv_alpha <- InputValidator$new()
@@ -546,28 +552,14 @@ server <- function(input, output, session) {
   output$countryDropdown <- renderUI({
     pickerInput(
       inputId = "selectedCountry",
-      label = (strong("Country")),
+      label = strong("Country"),
       choices = shortlist$Country,
       multiple = FALSE,
-      selected = "Democratic Republic of Congo", #
+      selected = NA,
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country")
     )
-  })
-
-  #--------------------------------------------------------------------------#
-  # Dynamically display the checkbox option to select for states/provinces   #
-  #--------------------------------------------------------------------------#
-  output$cropStateCheckbox <- renderUI({
-    validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
-
-    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      checkboxInput(
-        inputId = "cropLev1",
-        label = strong("Crop State(s)/Province(s)"),
-        value = TRUE)
-    }
   })
 
   #--------------------------------------------------------------------------#
@@ -588,18 +580,20 @@ server <- function(input, output, session) {
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
     validate(need(input$cropLev1 == TRUE, "")) # catches UI warning
 
-    isoCode <- countrycode(input$selectedCountry, origin = "country.name", destination = "iso3c")
+    upperISO3C <- toupper(selectedCountryISO3C())
 
-    if (file.exists(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))){
-      level1Options <<- readRDS(paste0("gadm/", "gadm36_", toupper(isoCode), "_1_sp.rds"))$NAME_1
+    ## FIXME NOTE: What does 36 mean?
+    if (file.exists(paste0("gadm/", "gadm36_", upperISO3C, "_1_sp.rds"))){
+      level1Options <<- readRDS(paste0("gadm/", "gadm36_", upperISO3C, "_1_sp.rds"))$NAME_1
     } else {
-      level1Options <<- getData("GADM", download = TRUE, level = 1, country = toupper(isoCode))$NAME_1
+      level1Options <<- raster::getData("GADM", download = TRUE, level = 1, country = upperISO3C)$NAME_1
     }
 
-      selectizeInput(inputId = "level1List",
+    selectizeInput(inputId = "level1List",
                    label = NULL,
                    choices = level1Options,
-                   selected = c("Ituri", "Nord-Kivu"),
+                   ## selected = c("Ituri", "Nord-Kivu"),
+                   selected = NA,
                    multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
 
@@ -864,9 +858,11 @@ server <- function(input, output, session) {
           lambdaValue <- as.numeric(filter(epiparms, ISONumeric == "COD" & model == "SVEIRD")[1,"lambda"])}
       }
 
-      numericInput(inputId = "lambda",
-                   label = HTML(paste("Distance Parameter (&#955)")),
-                   value = lambdaValue,min = 1, max = 50, step = 1)
+      withMathJax(
+        numericInput("lambda",
+                     HTML(r"[Distance Parameter (&#955;; \(\frac{\Delta \overline{km}}{day}\))]"),
+                     lambdaValue, 1, 50, 1)
+      )
     }
   })
 
@@ -880,7 +876,7 @@ server <- function(input, output, session) {
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
 
       fileInput(inputId = "seedData",
-                label = "Upload Seed Data:",
+                label = "Upload Seed Data",
                 placeholder = "Upload seed data (.csv or .xls or .xlsx)",
                 accept = c(
                   "text/csv",
@@ -923,7 +919,7 @@ server <- function(input, output, session) {
       else if (input$selectedCountry == "Democratic Republic of Congo") {
         startDateInput <- "2018-08-01"}
 
-      dateInput('date', "Choose simulation start date:", value = startDateInput, max = Sys.Date(),
+      dateInput('date', "Choose simulation start date", value = startDateInput, max = Sys.Date(),
                 format = "yyyy-mm-dd", startview = "month", weekstart = 0,
                 language = "en", width = NULL)
     }
@@ -1031,7 +1027,7 @@ server <- function(input, output, session) {
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       selectInput(inputId = "covarianceSelect",
-                  label = HTML("<span class='label-text'>Choose variance-covariance function:</span>"),
+                  label = HTML("<span class='label-text'>Choose variance-covariance function</span>"),
                   choices = list("DBD", "Balgovind", "Exponential", "Gaussian", "Spherical"),
                   # HTML("<span class='option-text'>Distance-Based Decay</span>"),
                   # HTML("<span class='option-text'>Balgovind</span>"),
@@ -1054,7 +1050,7 @@ server <- function(input, output, session) {
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       numericInput(inputId = "QCorrLength",
-                   label = "Choose correlation length parameter for generating Q:",
+                   label = "Choose correlation length parameter for generating Q",
                    value = 0.675,
                    step = 0.001,
                    min = 0)
@@ -1066,7 +1062,7 @@ server <- function(input, output, session) {
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       numericInput(inputId = "QVar",
-                   label = "Choose variance parameter for generating Q:",
+                   label = "Choose variance parameter for generating Q",
                    value = 0.55,
                    step = 0.01,
                    min = 0)
@@ -1078,7 +1074,7 @@ server <- function(input, output, session) {
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       numericInput(inputId = "nbhd",
-                   label = "Choose neighborhood parameter for generating Q:",
+                   label = "Choose neighborhood parameter for generating Q",
                    value = 3,
                    step = 1,
                    min = 0)
@@ -1089,11 +1085,12 @@ server <- function(input, output, session) {
     validate(need(!is.null(input$selectedCountry), "")) # catches UI warning
 
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      numericInput(inputId = "psidiag",
-                   label = HTML(paste("Choose a value for the zero elements of", TeX("&#936"), "to be set to:")),
-                   value = 0.001,
-                   step = 0.001,
-                   min = 0)
+      helper(numericInput(inputId = "psidiag",
+                          label = HTML("Choose a value to use for the zero elements of &#936;"),
+                          value = 0.001,
+                          step = 0.001,
+                          min = 0),
+             content = "psi")
     }
   })
 
@@ -1106,7 +1103,7 @@ server <- function(input, output, session) {
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       sliderInput(inputId = "agg",
                   label = "Aggregation Factor",
-                  min = 0, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
+                  min = 1, max = 100, step = 1, value = population$reco_rasterAgg[match(input$selectedCountry, population$Country)])
     }
   })
 
@@ -1161,153 +1158,65 @@ server <- function(input, output, session) {
     #   ggplotly(p)
     # })
 
-    output$cumDeathsPlot <- renderPlotly({
-      est_df <- read_xlsx("www/MP4/COD_summary.xlsx")
-      cod_est_cum <- data.frame(x = ymd(est_df[, "Date"]),
-                                y = est_df[, "D"])
-
-      q <- ggplot(cod_est_cum, aes(x, y)) +
-        labs(title = "Estimated Vs. Observed Cumulative Deaths \nin the Democratic Republic of Congo",
-             x = "Date",
-             y = "Number of persons") +
-        geom_line(linewidth=2, color="red") +
-        theme(
-          plot.title = element_text(size = 18,
-                                    face = "bold",
-                                    margin = margin(0, 0, 25, 0),
-                                    hjust = 0.5),
-          axis.title.x = element_text(size = 14,
+    spatialEpisimThemeAndOptions <-
+      theme(plot.title = element_text(size = 18,
                                       face = "bold",
-                                      margin = margin(25, 0, 0, 0)),
-          axis.title.y = element_text(size = 14,
-                                      face = "bold",
-                                      margin = margin(0, 25, 0, 0)),
-          axis.text.x.bottom = element_text(size = 14),
-          axis.text.y.left = element_text(size = 14),
-          axis.line = element_line(linewidth = 0.5),
-          plot.margin = unit(c(1, 1, 1, 0),"cm"),
-          legend.title = element_text(size = 10,
-                                      face = "bold"),
-          legend.box = "horizontal"
-        ) +
-        coord_cartesian(clip="off")
+                                      margin = margin(0, 0, 25, 0),
+                                      hjust = 0.5),
+            axis.title.x = element_text(size = 14,
+                                        face = "bold",
+                                        margin = margin(25, 0, 0, 0)),
+            axis.title.y = element_text(size = 14,
+                                        face = "bold",
+                                        margin = margin(0, 25, 0, 0)),
+            axis.text.x.bottom = element_text(size = 14),
+            axis.text.y.left = element_text(size = 14),
+            axis.line = element_line(linewidth = 0.5),
+            plot.margin = unit(c(1, 1, 1, 0),"cm"),
+            legend.title = element_text(size = 10, face = "bold"),
+            legend.box = "horizontal")
 
-      ggplotly(q)
+    simulationSummaryPath <-
+      reactive(here("www", "MP4", paste(sep = "_",
+                                        selectedCountryISO3C(),
+                                        "summary.xlsx")))
+
+    simulationSummary <- reactive({
+      shiny::validate(need(file.exists(simulationSummaryPath()),
+                           message = "Waiting for simulation summary XLSX."))
+      read_xlsx(simulationSummaryPath())
     })
 
-    output$cumDeathsPlot <- renderPlotly({
-      ggplot()
-    })
-    
-    ## output$dailyIncidence <- renderPlotly({
+    plotSimulationSummaryVariable <-
+      function(colour, variableExpression, titling) {
+        variableExpression <- enquo(variableExpression)
+        ggplotly(ggplot(simulationSummary()) +
+                 labs(title = titling,
+                      subtitle = paste("in", isolate(input$selectedCountry)),
+                      x = "Date",
+                      y = "Number of persons") +
+                 geom_line(linewidth = 2,
+                           color = colour,
+                           mapping = aes(x = ymd(Date),
+                                         y = !!variableExpression)) +
+                 spatialEpisimThemeAndOptions +
+                 coord_cartesian(clip="off"))
+      }
 
-    ##   est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
-    ##   cod_est_df <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"I"])
-    ##   obs_df <- as.data.frame(read_xlsx(paste0("observeddata/Ebola_Incidence_Data.xlsx")))
-    ##   cod_obs_df <- data.frame(x = ymd(obs_df[1:63,2]), y = rowSums(obs_df[1:63,3:ncol(obs_df)]))
+    output$cumulativeDeaths <-
+      renderPlotly(
+        plotSimulationSummaryVariable("red", D,
+                                      "Estimated Cumulative Deaths"))
 
-    ##   p <- ggplot(cod_est_df, aes(x, y)) +
-    ##     labs(title = "Estimated vs. Observed Daily Incidence \nin the Democratic Republic of Congo",
-    ##          x = "Date",
-    ##          y = "Number of persons") +
-    ##     # scale_x_date(date_labels = "%d %b %Y") +
-    ##     geom_line(linewidth=2, color="red") +
-    ##     # geom_line(data = cod_obs_df, aes(x, y), linewidth = 1.5, color = "black") +
-    ##     geom_point(data = cod_obs_df, aes(x, y), color = "#18536F") +
-    ##     theme(
-    ##       plot.title = element_text(size = 18,
-    ##                                 face = "bold",
-    ##                                 margin = margin(0, 0, 25, 0),
-    ##                                 hjust = 0.5),
-    ##       axis.title.x = element_text(size = 14,
-    ##                                   face = "bold",
-    ##                                   margin = margin(25, 0, 0, 0)),
-    ##       axis.title.y = element_text(size = 14,
-    ##                                   face = "bold",
-    ##                                   margin = margin(0, 25, 0, 0)),
-    ##       axis.text.x.bottom = element_text(size = 14),
-    ##       axis.text.y.left = element_text(size = 14),
-    ##       axis.line = element_line(linewidth = 0.5),
-    ##       plot.margin = unit(c(1, 1, 1, 0),"cm"),
-    ##       legend.title = element_text(size = 10,
-    ##                                   face = "bold"),
-    ##       legend.box = "horizontal"
-    ##     ) +
-    ##     # scale_color_manual(
-    ##     #   values = c(
-    ##     #     "Estimated" = "red",
-    ##     #     "Observed" = "#18536F"
-    ##     #   )
-    ##     # ) +
-    ##     coord_cartesian(clip="off")
+    output$dailyIncidence <-
+      renderPlotly(
+        plotSimulationSummaryVariable("blue", newI,
+                                      "Estimated Daily Incidence"))
 
-    ##   ggplotly(p)
-    ## })
-
-    # output$cumIPlot <- renderPlotly({
-    #   countryISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-    #   filename <- paste0("www/MP4/",countryISO, "_summary.xlsx")
-    #   plotTitle <- paste0("Estimated Cumulative Infections \n in ", input$selectedCountry)
-    #   xTitle <- paste0("Day (from ", input$date, ")")
-    #   p <- PrintCumulativePlot(filename, "cumI", plotTitle, xTitle)
-    #
-    #   png(paste0("www/MP4/", countryISO, "_CumulativeCases.png"), width = 800, height = 600)
-    #   print(p)
-    #   dev.off()
-    #
-    #   ggplotly(p)
-    # })
-
-    ## output$cumIPlot <- renderPlotly({
-    ##   est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
-    ##   obs_df <- as.data.frame(read_xlsx(paste0("observeddata/Ebola_Incidence_Data.xlsx")))
-    ##   cod_est_df <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"newI"])
-    ##   cod_obs_df <- data.frame(x = ymd(obs_df[1:63,2]), y = rowSums(obs_df[1:63,3:ncol(obs_df)]))
-    ##   cod_est_cum <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"cumI"])
-    ##   cod_obs_cum <- data.frame(x = 1:nrow(cod_obs_df))
-    ##   cod_obs_cum[1,1] <- cod_obs_df[1,2]
-    ##   for(i in 2:nrow(cod_obs_df)){cod_obs_cum[i,1] <- cod_obs_cum[i-1,1] + cod_obs_df[i,2] }
-    ##   cod_obs_cum <- cbind(ymd(obs_df[1:63,2]),cod_obs_cum)
-    ##   colnames(cod_obs_cum) <- c("x", "y")
-
-
-    ##   q <- ggplot(cod_est_cum, aes(x, y)) +
-    ##     labs(title = "Estimated vs. Observed Cumulative Infections \nin the Democratic Republic of Congo",
-    ##          x = "Date",
-    ##          y = "Number of persons") +
-    ##     # scale_x_date(date_labels = "%d %b %Y") +
-    ##     geom_line(linewidth=2, color="red") +
-    ##     # geom_line(data = cod_obs_cum, aes(x, y), linewidth = 1.5, color = "black") +
-    ##     geom_point(data = cod_obs_cum, aes(x, y), color = "#18536F") +
-    ##     theme(
-    ##       plot.title = element_text(size = 18,
-    ##                                 face = "bold",
-    ##                                 margin = margin(0, 0, 25, 0),
-    ##                                 hjust = 0.5),
-    ##       axis.title.x = element_text(size = 14,
-    ##                                   face = "bold",
-    ##                                   margin = margin(25, 0, 0, 0)),
-    ##       axis.title.y = element_text(size = 14,
-    ##                                   face = "bold",
-    ##                                   margin = margin(0, 25, 0, 0)),
-    ##       axis.text.x.bottom = element_text(size = 14),
-    ##       axis.text.y.left = element_text(size = 14),
-    ##       axis.line = element_line(linewidth = 0.5),
-    ##       plot.margin = unit(c(1, 1, 1, 0),"cm"),
-    ##       legend.title = element_text(size = 10,
-    ##                                   face = "bold"),
-    ##       legend.box = "horizontal"
-    ##     ) +
-    ##     # scale_color_manual(
-    ##     #   values = c(
-    ##     #     "Estimated" = "red",
-    ##     #     "Observed" = "#18536F"
-    ##     #   )
-    ##     # ) +
-    ##     coord_cartesian(clip="off")
-
-    ##   ggplotly(q)
-    ## })
+    output$cumulativeIncidence <-
+      renderPlotly(
+        plotSimulationSummaryVariable("cyan", cumI,
+                                      "Estimated Cumulative Daily Incidence"))
 
     output$fullPlot <- renderPlotly({
       if (input$modelSelect == "SVEIRD"){
@@ -1331,6 +1240,7 @@ server <- function(input, output, session) {
       ggplotly(p)
     })
 
+    ## NOTE: fraction of Susceptible
     # output$fracSusPlot <- renderImage({
     #   outfile <- tempfile(fileext = '.png')
     #
@@ -1503,13 +1413,25 @@ server <- function(input, output, session) {
                   scrollX = TRUE),)
     })
 
-    ## output summary table ----
-    output$outputSummary <- renderDT({ # print output summary to UI
-      outputSummaryTable <- read_excel(paste0("www/MP4/", countrycode(input$selectedCountry, "country.name", "iso3c"), "_summary.xlsx"))
-      datatable(outputSummaryTable,
-                options = list(
-                  autoWidth = FALSE,
-                  scrollX = TRUE)) %>%
+    ## FIXME (№20): the simulationSummary reactive cannot be found inside a call
+    ## to renderDT; the reactive chain is reforged (inlined) herein (that is,
+    ## all the programmer-defined reactives used [simulationSummary,
+    ## simmulationSummaryPath, etc.] are inlined).
+    output$outputSummary <- renderDT({
+      file <- here("www",
+                   "MP4",
+                   paste(sep = "_",
+                         countrycode(sourcevar = input$selectedCountry,
+                                     "country.name",
+                                     "iso3c"),
+                         "summary.xlsx"))
+
+      file.exists(file) |>
+      need(message = "Waiting for simulation summary XLSX.") |>
+      shiny::validate()
+
+      read_xlsx(file) |>
+        datatable(options = list(autoWidth = FALSE, scrollX = TRUE)) |>
         formatRound(columns = 2:15, digits = 0)
     })
 
@@ -1659,12 +1581,7 @@ server <- function(input, output, session) {
       printCroppedBubbleSeedPlot(input$selectedCountry, input$seedData$datapath, level1Names = input$level1List, 6)
     })
 
-    #--------------------------------------------------------------------------#
-    # Output the .mp4 video from www/ to the app UI                            #
-    #--------------------------------------------------------------------------#
-    ## mp4 video output ----
     output$outputVideo <- renderUI({
-
       tags$video(
         id = "video",
         type = "video/mp4",
@@ -1672,21 +1589,6 @@ server <- function(input, output, session) {
         controls = "controls"
       )
     })
-    # remove_modal_spinner()
-  })
-
-  observeEvent(input$selectedCountry, {
-    if(input$selectedCountry != "Democratic Republic of Congo") {
-      updateSelectizeInput(
-        inputId = "level1List",
-        selected = ""
-      )
-
-      updateCheckboxInput(
-        inputId = "cropLev1",
-        value = FALSE
-      )
-    }
   })
 
   observeEvent(input$level1List, {
@@ -1700,15 +1602,6 @@ server <- function(input, output, session) {
   #     population <- population #[population$LMIC == 'TRUE' || population$LMIC == 'FALSE']
   #   }
   #   updatePickerInput(session, inputId = 'selectedCountry', choices = population$Country, selected = "Nigeria")
-  # })
-
-  # observeEvent(input$modellingApproach, {
-  #
-  #   updatePickerInput(
-  #     session,
-  #     inputId = 'selectedCountry',
-  #     choices = shortlist$Country,
-  #     selected = "Democratic Republic of Congo")
   # })
 
   #--------------#

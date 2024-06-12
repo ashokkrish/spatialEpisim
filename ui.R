@@ -45,167 +45,24 @@ ui <- fluidPage( # UI ----
                           shinyjs::inlineCSS(appCSS),
                           div(
                             id = "dashboard",
-
-                            radioButtons(inputId = "modellingApproach",
-                                         label = strong("Modelling Approach"),
-                                         choiceValues = list("1", "2"),
-                                         choiceNames = list("Non-spatial Modelling", "Spatial Modelling"),
-                                         selected = "2",
-                                         inline = TRUE),
-
-                            conditionalPanel( #### Non-spatial Modeling ----
-                                              condition = "input.modellingApproach == '1'",
-
-                                              pickerInput(
-                                                inputId = "nonspatialmodelSelect",
-                                                label = strong(("Epidemic Model")),
-                                                choices = list("SIR", "SIRD", "SEIR", "SEIRD", "SIR-Stochastic"),
-                                                multiple = FALSE,
-                                                selected = "SIR", #NULL,
-                                                options = pickerOptions(
-                                                  actionsBox = TRUE,
-                                                  title = "Please select a model")
-                                              ),
-
-                                              # radioButtons(inputId = "qValue",
-                                              #              label = strong("Model Formulation"),
-                                              #              choiceValues = list("1", "2"),
-                                              #              choiceNames = list("True-Mass Action", "Pseudo-Mass Action"),
-                                              #              selected = "2",
-                                              #              inline = TRUE,
-                                              #              width = "1000px"),
-                                              #
-                                              # radioButtons(inputId = "nonspatialstochasticSelect",
-                                              #              label = strong("Model Stochasticity"),
-                                              #              choiceValues = list("Deterministic", "Stochastic"),
-                                              #              choiceNames = list("Deterministic", "Stochastic"),
-                                              #              selected = "Deterministic",
-                                              #              inline = TRUE,
-                                              #              width = "1000px"),
-
-                                              # checkboxInput(
-                                              #   inputId = "muValue",
-                                              #   label = strong("Include Vital Dynamics"),
-                                              #   value = FALSE,
-                                              # ),
-                                              #
-                                              # withMathJax(),
-                                              # conditionalPanel(
-                                              #   condition = "input.muValue == '1'",
-                                              #         numericInput(
-                                              #           inputId = "muBirth",
-                                              #           label = "Birth Rate (\\( \\mu_B\\))",
-                                              #           min = 0,
-                                              #           #max = 1,
-                                              #           step = 0.0001,
-                                              #           value = 0.00,
-                                              #         ),
-                                              #
-                                              #         numericInput(
-                                              #           inputId = "muDeath",
-                                              #           label = "Death Rate due to Natural Causes (\\( \\mu_D\\))",
-                                              #           min = 0,
-                                              #           #max = 1,
-                                              #           step = 0.0001,
-                                              #           value = 0.00,
-                                              #         )
-                                              # ),
-
-                                              # conditionalPanel(
-                                              #   id = "SI_versus_SEI",
-
-                                              # conditionalPanel(
-                                              #   withMathJax(),
-                                              #   condition = "input.nonspatialmodelSelect == 'SIR'",
-
-                                              withMathJax(),
-                                              h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
-
-                                              numericInput(
-                                                inputId = "betaSIR",
-                                                label = "Transmission Rate (\\( \\beta\\))",
-                                                min = 0,
-                                                #max = 1,
-                                                step = 0.00001,
-                                                value = 0.001,
-                                              ),
-
-                                              numericInput(
-                                                inputId = "gammaSIR",
-                                                label = "Removal Rate  (\\( \\gamma\\))",
-                                                min = 0,
-                                                #max = 5,
-                                                step = 0.00001,
-                                                value = 0.1,
-                                              ),
-
-                                              h5("Model Inputs:", style="font-weight: bold; font-size:11.5pt"),
-
-                                              numericInput(
-                                                inputId = "populationSIR",
-                                                label = "Total Population (N)",
-                                                value = 500,
-                                                min = 1,
-                                                #max = maxPopulation,
-                                                step = 1,
-                                              ),
-                                              numericInput(
-                                                inputId = "susceptibleSIR",
-                                                label = "Susceptible (S)",
-                                                value = 499,
-                                                min = 1,
-                                                #max = maxPopulation,
-                                                step = 1,
-                                              ),
-                                              numericInput(
-                                                inputId = "infectedSIR",
-                                                label = "Infected (I)",
-                                                value = 1,
-                                                min = 1,
-                                                #max = maxPopulation,
-                                                step = 1,
-                                              ),
-                                              numericInput(
-                                                inputId = "recoveredSIR",
-                                                label = "Recovered (R)",
-                                                value = 0,
-                                                min = 0,
-                                                #max = maxPopulation,
-                                                step = 1,
-                                              ),
-                                              # ),
-                                              # ),
-
-                                              actionButton("nonspatialgo","Run Simulation",
-                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                              actionButton("nonspatialresetAll","Reset Values",
-                                                           style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-
-                            ), #"input.modellingApproach == '1'"
-
-                            conditionalPanel( #### Spatial Modeling ----
-                                              condition = "input.modellingApproach == '2'",
-
                             uiOutput("countryDropdown"),
-
-                            # checkboxInput(
-                            #   inputId = "filterLMIC",
-                            #   label = strong("Show LMIC only"),
-                            #   value = FALSE),
-
                             uiOutput("cropStateCheckbox"),
+                            conditionalPanel("input.selectedCountry != ''",
+                                             helper(checkboxInput(
+                                               inputId = "cropLev1",
+                                               label = strong("Limit simulation to state(s)/province(s) (crop to selection)"),
+                                               value = FALSE),
+                                               content = "cropSelectedCountry"),
+                                             conditionalPanel(
+                                               condition = "input.cropLev1",
+                                               uiOutput("Level1Ui")),
 
-                            conditionalPanel(
-                              condition = "input.cropLev1",
-
-                              uiOutput("Level1Ui")),
-
-                            radioButtons(inputId = "appMode",
-                                         label = strong("Mode"),
-                                         choices = list("Visualizer",
-                                                        "Simulator"),
-                                         selected = "Simulator",
-                                         inline = TRUE),
+                                             radioButtons(inputId = "appMode",
+                                                          label = strong("Application mode"),
+                                                          choices = list("Visualizer",
+                                                                         "Simulator"),
+                                                          selected = "Simulator",
+                                                          inline = TRUE)),
 
                             # -------------------------------------------- #
                             # Visualizer Inputs                            #
@@ -225,7 +82,8 @@ ui <- fluidPage( # UI ----
                             conditionalPanel(
                               condition = "input.appMode == 'Simulator'",
 
-                              uiOutput("aggInput"),
+                              helper(uiOutput("aggInput"),
+                                     content = "rasterAggregationFactor"),
                               uiOutput("modelRadio"),
                               uiOutput("stochasticRadio"),
 
@@ -234,24 +92,25 @@ ui <- fluidPage( # UI ----
 
                                 withMathJax(),
 
-                                h5("Model Parameters:", style="font-weight: bold; font-size:11.5pt"),
+                                wellPanel(h5("Model Parameters", style="font-weight: bold; font-size:11.5pt"),
 
-                                conditionalPanel(id = "SVEIRD",
-                                  withMathJax(),
-                                  condition = "input.modelSelect == 'SVEIRD'",
+                                          conditionalPanel(id = "SVEIRD",
+                                                           withMathJax(),
+                                                           condition = "input.modelSelect == 'SVEIRD'",
 
-                                  uiOutput("alphaInput")),
+                                                           uiOutput("alphaInput")),
 
-                                uiOutput("betaInput"),
-                                uiOutput("gammaInput"),
-                                uiOutput("sigmaInput"),
-                                uiOutput("deltaInput"),
-                                uiOutput("lambdaInput"),
-                                br(),
-                                uiOutput("seedUpload"),
-                                uiOutput("seedDataButton"),
-                                uiOutput("seedRadiusInput"),
-                                br(),
+                                          uiOutput("betaInput"),
+                                          uiOutput("gammaInput"),
+                                          uiOutput("sigmaInput"),
+                                          uiOutput("deltaInput"),
+                                          helper(uiOutput("lambdaInput"), content = "lambda")),
+
+                                wellPanel(helper(uiOutput("seedUpload"),
+                                                 content = "seedData"),
+                                          uiOutput("seedDataButton"),
+                                          uiOutput("seedRadiusInput")),
+
                                 uiOutput("startDateInput"),
                                 uiOutput("timestepInput")),
 
@@ -281,7 +140,7 @@ ui <- fluidPage( # UI ----
                                 uiOutput("selectSigma"),
                                 uiOutput("selectNbhd"),
 
-                                h5(HTML(paste0("Model error covariance matrix (", TeX("&#936"), ") formulation")), style="font-weight: bold; font-size:11.5pt"),
+                                h5(HTML("Model error covariance matrix (&#936;) formulation"), style="font-weight: bold; font-size:11.5pt"),
                                 uiOutput("selectPsiDiag"),
 
                                 # actionButton("goDA","Run Simulation with DA",
@@ -296,11 +155,7 @@ ui <- fluidPage( # UI ----
                               actionButton(inputId = "resetAll",
                                            label = "Reset Values",
                                            class = "act-btn"),
-                            ),
-
-
-                            ), # "input.modellingApproach == '2'",
-                          ), # div "dashboard"
+                            )), # div "dashboard"
                         ), # sidebarPanel
 
                         mainPanel( ## main panel ----
@@ -430,20 +285,10 @@ ui <- fluidPage( # UI ----
 
                                             tabPanel(title = "Plot", id = "plotTab",
                                                      plotlyOutput("infectedExposedPlot", width = 800, height = 600),
-                                                     br(),
-                                                     br(),
-                                                     ## plotlyOutput("cumDeathsPlot", width = 800, height = 600),
-                                                     ## br(),
-                                                     ## br(),
-                                                     ## plotlyOutput("dailyIncidence", width = 800, height = 600),
-                                                     ## br(),
-                                                     ## br(),
-                                                     ## plotlyOutput("cumIPlot", width = 800, height = 600),
-                                                     ## br(),
-                                                     ## br(),
+                                                     plotlyOutput("cumulativeDeaths", width = 800, height = 600),
+                                                     plotlyOutput("dailyIncidence", width = 800, height = 600),
+                                                     plotlyOutput("cumulativeIncidence", width = 800, height = 600),
                                                      plotlyOutput("fullPlot", width = 800, height = 600),
-                                                     br(),
-                                                     br()
                                                      # imageOutput("fracSusPlot"),
                                                      #downloadButton(outputId = "downloadPlot", label = "Save Image")
                                             )
