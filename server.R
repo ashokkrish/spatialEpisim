@@ -1161,57 +1161,44 @@ server <- function(input, output, session) {
     #   ggplotly(p)
     # })
 
-    ## output$cumDeathsPlot <- renderPlotly({
-    ##   est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
-    ##   obs_df <- as.data.frame(read_xlsx(paste0("observeddata/Ebola_Death_Data.xlsx")))
-    ##   cod_est_cum <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"D"])
-    ##   cod_obs_df <- data.frame(x = ymd(obs_df[1:63,2]), y = rowSums(obs_df[1:63,3:ncol(obs_df)]))
-    ##   # cod_est_cum <- data.frame(x = ymd(est_df[,"Date"]), y = est_df[,"D"])
-    ##   cod_obs_cum <- data.frame(x = 1:nrow(cod_obs_df))
-    ##   cod_obs_cum[1,1] <- cod_obs_df[1,2]
-    ##   for(i in 2:nrow(cod_obs_df)){cod_obs_cum[i,1] <- cod_obs_cum[i-1,1] + cod_obs_df[i,2] }
-    ##   cod_obs_cum <- cbind(ymd(obs_df[1:63,2]),cod_obs_cum)
-    ##   colnames(cod_obs_cum) <- c("x", "y")
+    output$cumDeathsPlot <- renderPlotly({
+      est_df <- read_xlsx("www/MP4/COD_summary.xlsx")
+      cod_est_cum <- data.frame(x = ymd(est_df[, "Date"]),
+                                y = est_df[, "D"])
 
+      q <- ggplot(cod_est_cum, aes(x, y)) +
+        labs(title = "Estimated Vs. Observed Cumulative Deaths \nin the Democratic Republic of Congo",
+             x = "Date",
+             y = "Number of persons") +
+        geom_line(linewidth=2, color="red") +
+        theme(
+          plot.title = element_text(size = 18,
+                                    face = "bold",
+                                    margin = margin(0, 0, 25, 0),
+                                    hjust = 0.5),
+          axis.title.x = element_text(size = 14,
+                                      face = "bold",
+                                      margin = margin(25, 0, 0, 0)),
+          axis.title.y = element_text(size = 14,
+                                      face = "bold",
+                                      margin = margin(0, 25, 0, 0)),
+          axis.text.x.bottom = element_text(size = 14),
+          axis.text.y.left = element_text(size = 14),
+          axis.line = element_line(linewidth = 0.5),
+          plot.margin = unit(c(1, 1, 1, 0),"cm"),
+          legend.title = element_text(size = 10,
+                                      face = "bold"),
+          legend.box = "horizontal"
+        ) +
+        coord_cartesian(clip="off")
 
-    ##   q <- ggplot(cod_est_cum, aes(x, y)) +
-    ##     labs(title = "Estimated Vs. Observed Cumulative Deaths \nin the Democratic Republic of Congo",
-    ##          x = "Date",
-    ##          y = "Number of persons") +
-    ##     # scale_x_date(date_labels = "%d %b %Y") +
-    ##     geom_line(linewidth=2, color="red") +
-    ##     # geom_line(data = cod_obs_cum, aes(x, y), linewidth = 1.5, color = "black") +
-    ##     geom_point(data = cod_obs_cum, aes(x, y), color = "#18536F") +
-    ##     theme(
-    ##       plot.title = element_text(size = 18,
-    ##                                 face = "bold",
-    ##                                 margin = margin(0, 0, 25, 0),
-    ##                                 hjust = 0.5),
-    ##       axis.title.x = element_text(size = 14,
-    ##                                   face = "bold",
-    ##                                   margin = margin(25, 0, 0, 0)),
-    ##       axis.title.y = element_text(size = 14,
-    ##                                   face = "bold",
-    ##                                   margin = margin(0, 25, 0, 0)),
-    ##       axis.text.x.bottom = element_text(size = 14),
-    ##       axis.text.y.left = element_text(size = 14),
-    ##       axis.line = element_line(linewidth = 0.5),
-    ##       plot.margin = unit(c(1, 1, 1, 0),"cm"),
-    ##       legend.title = element_text(size = 10,
-    ##                                   face = "bold"),
-    ##       legend.box = "horizontal"
-    ##     ) +
-    ##     # scale_color_manual(
-    ##     #   values = c(
-    ##     #     "Estimated" = "black",
-    ##     #     "Observed" = "#18536F"
-    ##     #   )
-    ##     # ) +
-    ##     coord_cartesian(clip="off")
+      ggplotly(q)
+    })
 
-    ##   ggplotly(q)
-    ## })
-
+    output$cumDeathsPlot <- renderPlotly({
+      ggplot()
+    })
+    
     ## output$dailyIncidence <- renderPlotly({
 
     ##   est_df <- as.data.frame(read_xlsx(paste0("www/MP4/COD_summary.xlsx")))
