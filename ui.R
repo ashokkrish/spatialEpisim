@@ -18,7 +18,7 @@ ui <- fluidPage( # UI ----
   tags$head(
     tags$link(rel = "stylesheet",
               type="text/css",
-              href="SE-banner.css")
+              href="spatialEpisimBanner.css")
   ),
 
   div(
