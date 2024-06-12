@@ -1,4 +1,5 @@
-options(conflicts.policy = list(warn = FALSE))
+options(conflicts.policy = list(warn = FALSE),
+        shiny.reactlog = TRUE)
 shhh <- suppressPackageStartupMessages # It's a library, so shhh!
 shhh(library(av))
 shhh(library(bslib))
@@ -35,6 +36,9 @@ shhh(library(stringr))
 shhh(library(terra, warn.conflicts=FALSE))  # suppressWarnings(suppressMessages(library(terra)))
 shhh(library(tidyverse))
 shhh(library(tinytex))
+shhh(library(here))
+
+here::i_am("global.R")
 
 source("R/cropBaseRasterHaxby.R")
 source("R/makePlots.R")
