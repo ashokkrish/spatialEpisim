@@ -943,81 +943,44 @@ server <- function(input, output, session) {
   }
   )
 
-  #--------------------------------------------------------------------------#
-  # Data Assimilation settings                                               #
-  #--------------------------------------------------------------------------#
+  ## FIXME: why was the code that Ashok, Michael, and others wrote printing
+  ## these information on this event? What did they want to know about the files
+  ## uploaded that they didn't already know when they made the file?
+  observe({
+    print(paste("DEBUG:", read.csv(input$dataAssimZones$datapath)))
+    print(paste("DEBUG:", as.character(input$dataAssimZones[1])))
+  }) |>
+    bindEvent(input$dataAssimZones)
 
-  output$dataAssimCmpts <- renderUI({
-    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-
-    checkboxGroupInput(inputId = "selectedCompartments",
-                       "Select observable compartment(s)",
-                       choices = c("V", "E", "I", "R", "D"),
-                       selected = c("I"),
-                       inline = TRUE,
-    )
-  })
-  showI <- reactive({
-    "I" %in% input$selectedCompartments
-  })
-
-  showD <- reactive({
-    "D" %in% input$selectedCompartments
-  })
-
-  output$dataAssimZones <- renderUI({
-    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-    if (!is.null(input$selectedCountry) && input$selectedCountry != "") {
-      fileInput(inputId = "dataAssimZones",
-                label = ("Upload the lat/lon coordinates of reporting health zones (.csv or .xls or .xlsx)"),
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv",
-                  ".xls",
-                  ".xlsx"),)
-    }
-  })
-
-  observeEvent(input$dataAssimZones, {
-    print(read.csv(input$dataAssimZones$datapath))
-    print(as.character(input$dataAssimZones[1]))})
-
-  output$dataAssimFileI <- renderUI({
-    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-    if (showI()) {
-      fileInput(inputId = "assimIData",
-                label = ("Upload infection data to be assimilated with the model (.csv or .xls or .xlsx)"),
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv",
-                  ".xls",
-                  ".xlsx"), )
-    }
-  })
-  output$dataAssimFileD <- renderUI({
-    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-    if (showD()) {
-      fileInput(inputId = "assimDData",
-                label = ("Upload death data to be assimilated with the model (.csv or .xls or .xlsx)"),
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv",
-                  ".xls",
-                  ".xlsx"),
+  ## MAYBE FIXME: I anticipate that if a user uploads some compartment's data
+  ## then decides they want another compartment, their upload will be removed if
+  ## they change the compartments. I fear any change will likely overwrite and
+  ## discard the upload.
+  output$dataAssimilationCompartmentDataUploaders <-
+    renderUI({
+      div(
+        lapply(input$selectedCompartments,
+               function(compartment) {
+                 fileInput(inputId = paste("dataAssimilation",
+                                           compartment,
+                                           sep = "_"),
+                           label = paste("Upload",
+                                         switch(compartment,
+                                                V = "vaccination/vaccinated",
+                                                E = "exposure/exposed",
+                                                I = "infection/infected",
+                                                R = "recovery/recovered",
+                                                D = "death/dead"),
+                                         "data to be assimilated with the model"),
+                           accept = c("text/csv",
+                                      "text/comma-separated-values",
+                                      "text/plain",
+                                      ".csv",
+                                      ".xls",
+                                      ".xlsx",
+                                      ".txt"))})
       )
-    }
-  })
-  # output$dataAssimCmpts <- renderUI({
-  #   validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-  #
-  #   selectizeInput(inputId = "level1List", "Select observable compartments",
-  #                  choices = c("V", "E", "I", "R", "D"),
-  #                  selected = "", multiple = TRUE,
-  #                  options = list(placeholder = ""))
-  #})
+    })
 
   #--------------------------------------------------------------------------#
   # Change the function which generates the Q matrix     #

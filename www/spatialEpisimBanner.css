@@ -1,3 +1,11 @@
+.label-text {
+    font-size: 16px;
+}
+
+.option-text {
+    font-size: 12px;
+}
+
 :root {
   --main-color: #18536F;
   --main-color-shadow: rgba(24,83,111,0.6);
