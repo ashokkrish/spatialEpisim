@@ -95,9 +95,9 @@ plot(Level1Identifier, main = "Level 1 Administrative Boundaries")
 
 suscLayer <- createSusceptibleLayer(selectedCountry, 0)
 
-#createBasePlot(selectedCountry = selectedCountry, susceptible = suscLayer$Susceptible, directOutput = TRUE) 
+createBasePlot(selectedCountry = selectedCountry, susceptible = suscLayer$Susceptible, directOutput = TRUE) 
 
-createBasePlot(selectedCountry = selectedCountry, susceptible = suscLayer$Susceptible, directOutput = FALSE) 
+#createBasePlot(selectedCountry = selectedCountry, susceptible = suscLayer$Susceptible, directOutput = FALSE) 
 
 #----------------------------------------#
 # Switch back to PowerPoint Presentation #
@@ -131,10 +131,10 @@ cellStats(WorldPop_aggr, sum)
 # EXPORTING A RASTER #
 #--------------------#
 
-writeRaster(WorldPop, filename = paste(inputISO, "_unaggregated.nc", sep = ""), format = "CDF",  varname = "Susceptible", varunit = "Persons", longname = "Susceptible", overwrite = TRUE)
- 
-writeRaster(WorldPop_aggr, filename = paste(inputISO, "_aggr_0000.nc", sep = ""), format = "CDF",  varname = "Susceptible", varunit = "Persons", longname = "Susceptible", overwrite = TRUE)
- 
+# writeRaster(WorldPop, filename = paste(inputISO, "_unaggregated.nc", sep = ""), format = "CDF",  varname = "Susceptible", varunit = "Persons", longname = "Susceptible", overwrite = TRUE)
+#  
+# writeRaster(WorldPop_aggr, filename = paste(inputISO, "_aggr_0000.nc", sep = ""), format = "CDF",  varname = "Susceptible", varunit = "Persons", longname = "Susceptible", overwrite = TRUE)
+#  
 writeRaster(WorldPop_aggr, filename = paste(inputISO, "_aggr_0000.tif", sep = ""), format = "GTiff",  varname = "Susceptible", varunit = "Persons", longname = "Susceptible", overwrite = TRUE)
 
 #----------------------------------------#
