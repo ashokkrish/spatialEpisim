@@ -12,7 +12,7 @@ library(shinyjs)
 library(shinyvalidate)
 library(shinyWidgets)
 
-population <- read_excel("misc/population.xlsx", 1)
+population <- read_excel("misc/population.xlsx")
 shortlist <- filter(population, shortList == "TRUE")
 
 source("R/cropBaseRasterHaxby.R")
