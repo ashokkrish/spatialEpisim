@@ -18,7 +18,13 @@ shhh(library(maps))
 shhh(library(markdown))
 shhh(library(plotly))
 shhh(library(purrr))
+
+## MAYBE TODO: https://rgdal.r-forge.r-project.org/reference/showWKT.html.
+## Investigate the consequences of this option and document why it is set. Why
+## are warnings on exportToProj4 disabled? Why were warnings encountered
+## (presumably) when this option was originally set?
 options("rgdal_show_exportToProj4_warnings"="none")
+
 shhh(library(rasterVis))
 shhh(library(readr))
 shhh(library(readxl))
@@ -54,79 +60,80 @@ source("R/WorldPopPlots.R")
 
 options(scipen = 999)
 
-population <- read_excel("misc/population.xlsx", 1)
-shortlist <- filter(population, shortList == "TRUE")
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
 
-#List of countries that need "the" prepended to their name
-prependList <- c("Czech Republic", 
+## List of countries that need "the" prepended to their name
+prependList <- c("Czech Republic",
                  "Democratic Republic of Congo",
                  "Gambia",
                  "Netherlands")
-#print(epiparms)
-
-fieldsMandatory <- c("selectedCountry", "seedData")
 
 valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
-ramp <- c('#FFFFFF', 
-          '#D0D8FB', 
-          '#BAC5F7', 
-          '#8FA1F1', 
-          '#617AEC', 
-          '#0027E0', 
-          '#1965F0', 
-          '#0C81F8', 
-          '#18AFFF', 
-          '#31BEFF', 
-          '#43CAFF', 
-          '#60E1F0', 
-          '#69EBE1', 
-          '#7BEBC8', 
-          '#8AECAE', 
-          '#ACF5A8', 
-          '#CDFFA2', 
-          '#DFF58D', 
-          '#F0EC78', 
-          '#F7D767', 
-          '#FFBD56', 
-          '#FFA044', 
-          '#EE4F4D')
+ramp <- c("#FFFFFF",
+          "#D0D8FB",
+          "#BAC5F7",
+          "#8FA1F1",
+          "#617AEC",
+          "#0027E0",
+          "#1965F0",
+          "#0C81F8",
+          "#18AFFF",
+          "#31BEFF",
+          "#43CAFF",
+          "#60E1F0",
+          "#69EBE1",
+          "#7BEBC8",
+          "#8AECAE",
+          "#ACF5A8",
+          "#CDFFA2",
+          "#DFF58D",
+          "#F0EC78",
+          "#F7D767",
+          "#FFBD56",
+          "#FFA044",
+          "#EE4F4D")
 pal <- colorRampPalette(ramp)
 colorPalette <- colorBin(pal(9)[-1], domain = valueRange, bins = valueRange)
 
-#hoverDrop <- "selectedCountry"
+highlightDrop <- \(menu) tagList(menu, span(class = "dropDown"))
 
-# labelMandatory <- function(label) {
-#   tagList(
-#     label,
-#     span("*", class = "mandatory_star")
-#   )
-# }
-
-highlightDrop <- function(menu) {
-  tagList(
-    menu, 
-    span(class = "dropDown")
-  )
-}
-
-#--------------------------------------------------------------------#
-# Helper function to open different files based on their format      #
-#--------------------------------------------------------------------#
+## MAYBE TODO: replace with read_table?
 openDataFile <- function(datafile) {
   ext <- tools::file_ext(datafile$name)
   ext <- tolower(ext)
-  
-  switch(ext, 
+
+  switch(ext,
          csv = read_csv(datafile$datapath, show_col_types = FALSE),
          xls = read_xls(datafile$datapath),
          xlsx = read_xlsx(datafile$datapath),
          txt = read_tsv(datafile$datapath, show_col_types = FALSE),
-         
-         validate("Improper file format.")
-  )
+
+         validate("Improper file format."))
 }
 
-appCSS <- ".mandatory_star {color: red;}"
-appCSS <- ".invisible {display:none;}"
-appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
+## TODO: move to the CSS file in www/.
+appCSS <-
+  list(".mandatory_star { color: red; }",
+       ".invisible { display:none; }",
+       ".dropDown:hover { color:ADD8E6; background-color: #000000; }") |>
+  reduce(\(...) paste(..., sep = ""))
+
+acceptedFileTypes <- c("text/csv",
+                       "text/comma-separated-values",
+                       "text/plain",
+                       ".csv",
+                       ".xls",
+                       ".xlsx",
+                       ".txt")
+
+updateNumericInputs <- function(defaults, session) {
+  if (any(is.null(dim(defaults)), dim(defaults)[1] != 1)) {
+    warning("The `defaults` dataframe is not a single row!")
+    warning(defaults) # DONT remove this. It's intentional, not for development.
+  }
+  iwalk(defaults, \(value, inputId) {
+    updateNumericInput(session, inputId, value = value)
+  })
+}
+
+population <- read_xlsx("misc/population.xlsx")
