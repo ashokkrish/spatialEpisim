@@ -102,9 +102,8 @@ sidebar <-
                        HTML("Daily Death Rate (&#948;)"),
                        1.5e-3, 0, 1, 0.00001),
           ## LAMBDA λ
-          sprintf("%s; %s",
-                  "Distance Parameter (&#955;",
-                  r"--[\(\frac{\Delta \overline{km}}{day}\))]--") %>%
+          sprintf(r"--[Distance Parameter (&#955; %s)]--",
+                  r"--[\(\frac{\Delta \overline{km}}{day}\)]--") %>%
           HTML() %>%
           numericInput("lambda", ., 1.5e1, 1, 50, 1) %>%
           withMathJax() %>%
