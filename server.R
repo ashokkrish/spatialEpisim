@@ -605,7 +605,7 @@ server <- function(input, output, session) {
           coordinates = coordinates(readRDS(here("gadm",
                                                  paste0("gadm36_",
                                                         selectedCountryISO3C(),
-                                                        "_1_sp.rds"))))
+                                                        "_1_sp.rds")))),
           Location = coordinates$NAME_1,
           lat = coordinates[, 2], # TODO: these indices need to be verified.
           lat = coordinates[, 1], # TODO: these indices need to be verified.
@@ -764,24 +764,22 @@ server <- function(input, output, session) {
                  src = "MP4/Infected_MP4.mp4",
                  controls = "controls")
     })
-  }) |>
-  bindEvent(input$go)
+  }) |> bindEvent(input$go)
 
-  observeEvent(input$resetAll,{
+  observe({
     shinyjs::hide(id = "tabsetContainer")
     fileInputs$smStatus <- 'reset'
-  })
+  }) |> bindEvent(input$resetAll)
 
-  observeEvent(!iv$is_valid(),{
-    shinyjs::hide(id = "tabsetContainer")
-  })
+  observe({ if(!iv$is_valid()) shinyjs::hide(id = "tabsetContainer") })
 
-  observeEvent(input$go,{
+  observe({
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
     runjs("window.scrollTo(0, 0)")
-  })
+  }) |> bindEvent(input$go)
 
+  ## TODO: change the template to be shown in a helper modal, and show the 
   observe({
     if(iv_seeddataupload$is_valid()) {
       shinyjs::hide(id = "downloadData")
@@ -790,6 +788,5 @@ server <- function(input, output, session) {
       shinyjs::hide(id = "seedRadius")
       shinyjs::show(id = "downloadData")
     }
-  }) |>
-    bindEvent(input$seedData)
+  }) |> bindEvent(input$seedData)
 }
