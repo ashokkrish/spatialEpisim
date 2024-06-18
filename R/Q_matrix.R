@@ -1,17 +1,25 @@
-source("R/rasterWorldPop.R") 
-source("R/rasterStack.R") 
+## DONT: neither of these functions are used in this file; don't load them!
+## source("R/rasterWorldPop.R") # createSusceptibleLayer()
+## source("R/rasterStack.R") # createRasterStack()
+
+## DONT: removing the other commented code in this file is not advisable, since
+## Ashok spent time ensuring a suitable allgorithm was followed to generate
+## accurate results. It may not be fast, it may not be pretty, but if it works
+## it is worth preserving in the current version as a comment. Michael Myer
+## refactored the code using his knowlege of Linear Algebra to increase
+## efficiency; that's why Ashok's code is now a comment.
 
 genQ <- function(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_observable = 2) {
-  
+
   p <- nrows*ncols
   print(p)
-  
+
   Q <- matrix(0, p, p)
-  
+
   # uninhabitableCells <- c()
-  # 
-  # for (a in 1:nrows) {    
-  #   for (b in 1:ncols){    
+  #
+  # for (a in 1:nrows) {
+  #   for (b in 1:ncols){
   #     if (rs$rasterStack[["Inhabitable"]][a,b] == 0){
   #       uninhabitableCells <- append(uninhabitableCells, cellFromRowCol(rs$rasterStack, a, b))
   #     }
@@ -20,7 +28,7 @@ genQ <- function(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_obs
 
   rows <- rep(1:(p / ncols), each = ncols)
   cols <- rep(1:ncols, times = (p / ncols))
-  
+
   irow <- matrix(rep(rows, length(rows)), nrow = p, byrow = TRUE)
   icol <- matrix(rep(cols, length(cols)), nrow = p, byrow = TRUE)
   jrow <- t(irow)  # Transpose of irow matrix
@@ -47,7 +55,7 @@ genQ <- function(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_obs
 
   Q[d < nbhd] <- varMatrix[d < nbhd]
 
-  
+
   # for (i in 1:p){
   #   #if (!(i %in% uninhabitableCells)) {
   #     icol <- ceiling(i/ncols)
@@ -62,7 +70,7 @@ genQ <- function(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_obs
   #         print(paste("jrow =", jrow))
   #         d <- sqrt((irow-jrow)^2 + (icol - jcol)^2)
   #         print(d)
-  # 
+  #
   #         if (d < nbhd) {
   #           if (varCovarFunc == "DBD"){
   #             val <- QVar*QCorrLength^d
@@ -93,25 +101,25 @@ genQ <- function(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_obs
   # }
 
   diag(Q) <- ifelse(diag(Q) == 0, QVar, diag(Q))
-  
+
   print(dim(Q))
   QFull <- Q
-  
+
   if (states_observable == 2) {
-    
+
     Q0 <- matrix(0, p, p)
-    
+
     Qtop <- cbind(QFull, Q0)
     #print(dim(Qtop))
-    
+
     Qbottom <- cbind(Q0, QFull)
     #print(dim(Qbottom))
-    
+
     QFull <- rbind(Qtop, Qbottom)
   }
-    
+
     print(dim(QFull))
-    print(QFull[1:5, 1:5]) 
-    
+    print(QFull[1:5, 1:5])
+
     return(list("Q" = Q, "QFull" = QFull))
 }
