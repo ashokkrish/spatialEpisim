@@ -130,35 +130,6 @@ server <- function(input, output, session) {
   #==========================================================================#
   # World Pop Visualizer Components                                       ----
   #==========================================================================#
-
-  #--------------------------------------------------------------------------#
-  # Display the file inputs for generating the transmission path             #
-  #--------------------------------------------------------------------------#
-  output$transPathFileInputs <- renderUI({
-    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
-
-    tagList(
-      fileInput(inputId = "latLonData",
-                label = strong("Upload Lat-Lon Data:"),
-                placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv",
-                  ".xls",
-                  ".xlsx")),
-      fileInput(inputId = "incidenceData",
-                label = strong("Upload Incidence/Death Data:"),
-                placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv",
-                  ".xls",
-                  ".xlsx"))
-    )
-  })
-
   #--------------------------------------------------------------------------#
   # Dynamically generate a date slider that contains the dates for all the
   # observed data in the incidence/death file

@@ -70,7 +70,25 @@ ui <- fluidPage( # UI ----
                             conditionalPanel(
                               condition = "input.appMode == 'Visualizer'",
 
-                              uiOutput("transPathFileInputs"),
+                              conditionalPanel(condition = "input.selectedCountry == 'Democratic Republic of Congo'",
+                                               fileInput(inputId = "latLonData",
+                                                           label = strong("Upload Lat-Lon Data:"),
+                                                           placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
+                                                           accept = c(
+                                                             "text/csv",
+                                                             "text/comma-separated-values,text/plain",
+                                                             ".csv",
+                                                             ".xls",
+                                                             ".xlsx")),
+                                                 fileInput(inputId = "incidenceData",
+                                                           label = strong("Upload Incidence/Death Data:"),
+                                                           placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
+                                                           accept = c(
+                                                             "text/csv",
+                                                             "text/comma-separated-values,text/plain",
+                                                             ".csv",
+                                                             ".xls",
+                                                             ".xlsx"))),
                               uiOutput("transPathDateInput"),
                               br(),
                               uiOutput("resetButton")
