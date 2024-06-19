@@ -42,12 +42,12 @@ source("R/rasterWorldPop.R")
 
 ##############################
 ## ┓ ┏┓┏┳┓  ┳┳┏┓  ┳┓┏┓┏┓┳┳┓╻ #
-## ┃ ┣  ┃   ┃┃┗┓  ┣┫┣ ┃┓┃┃┃┃ #
+## ┃ ┣    ┃      ┣┫┣ ┃ ┓┃┃┃┃ #
 ## ┗┛┗┛ ┻   ┗┛┗┛  ┻┛┗┛┗┛┻┛┗• #
 ##############################
 
 selectedCountry <- "Greece"
-## selectedCountry <- "Italy"
+selectedCountry <- "Italy"
 ## selectedCountry <- "Korea"
 ## selectedCountry <- "Nigeria"
 
@@ -76,6 +76,7 @@ paste("https://data.worldpop.org",
 tifPath <- here("tif", basename(url))
 if (!file.exists(tifPath))
   download.file(url, tifPath, mode = "wb")
+
 WorldPop <- raster(tifPath)
 ## WorldPop <- raster(file.choose())
 
@@ -114,10 +115,23 @@ cellStats(WorldPop, sum)
 #---------------------------------------#
 ## ?readRDS
 
-Level1Identifier <- gadm(country = inputISO,
-                         level = 1,
-                         version = 3.6,
-                         path = here())
+# Level1Identifier <- gadm(country = inputISO,
+#                          level = 1,
+#                          version = 3.6,
+#                          path = here())
+
+gadmFileName <- paste("gadm36_", inputISOLower, "_1_sp.rds", sep = "")  # name of the .rds file
+
+#print(gadmFileName)
+#?readRDS
+
+gadmFolder <- "gadm/"         # .rds files should be stored in local gadm/ folder
+
+if (file.exists(paste(gadmFolder, gadmFileName, sep = ""))) {
+  Level1Identifier <- readRDS(paste(gadmFolder, gadmFileName, sep = ""))
+} else {
+  Level1Identifier <- getData("GADM", level = 1, country = inputISOLower)
+}
 
 print(Level1Identifier$NAME_1) # List of all States/Provinces/Regions
 
@@ -152,16 +166,16 @@ plot(Level1Identifier, main = "Level 1 Administrative Boundaries")
 ##                     "2020 UN-Adjusted Population Count (log-scale)",
 ##                     "(each grid cell is 1 km x 1 km)"))
 
-createBasePlot(selectedCountry = selectedCountry,
-               rasterAgg = 0,
-               directOutput = TRUE)
+# createBasePlot(selectedCountry = selectedCountry,
+#                rasterAgg = 0,
+#                directOutput = TRUE)
 
 suscLayer <- createSusceptibleLayer(selectedCountry, 0)
 
 createBasePlot(
   selectedCountry = selectedCountry,
   susceptible = suscLayer$Susceptible,
-  directOutput = FALSE
+  directOutput = TRUE
 )
 
 #----------------------------------------#
@@ -209,13 +223,13 @@ print(sprintf("Population count before and after aggregation is equal? %s",
 ##             longname = "Susceptible",
 ##             overwrite = TRUE)
 
-writeRaster(WorldPop_aggr,
-            filename = sprintf("%s_aggr_0000.tif", inputISO),
-            format = "GTiff",
-            varname = "Susceptible",
-            varunit = "Persons",
-            longname = "Susceptible",
-            overwrite = TRUE)
+# writeRaster(WorldPop_aggr,
+#             filename = sprintf("%s_aggr_0000.tif", inputISO),
+#             format = "GTiff",
+#             varname = "Susceptible",
+#             varunit = "Persons",
+#             longname = "Susceptible",
+#             overwrite = TRUE)
 
 #----------------------------------------#
 # Switch back to PowerPoint Presentation #
