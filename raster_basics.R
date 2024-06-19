@@ -47,9 +47,9 @@ source("R/rasterWorldPop.R")
 ##############################
 
 selectedCountry <- "Greece"
-selectedCountry <- "Italy"
-## selectedCountry <- "Korea"
-## selectedCountry <- "Nigeria"
+# selectedCountry <- "Italy"
+# selectedCountry <- "Korea"
+# selectedCountry <- "Nigeria"
 
 ## rasterAgg <- 5
 rasterAgg <- 10
@@ -203,6 +203,15 @@ print(sprintf("Population count before and after aggregation is equal? %s",
 #----------------------------------------#
 # Switch back to PowerPoint Presentation #
 #----------------------------------------#
+
+
+
+
+
+
+
+
+
 
 #--------------------#
 # EXPORTING A RASTER #
