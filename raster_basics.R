@@ -40,19 +40,13 @@ suppressWarnings(update.packages(oldPkgs = packages,
 source("R/rasterBasePlot.R")
 source("R/rasterWorldPop.R")
 
-##############################
-## ┓ ┏┓┏┳┓  ┳┳┏┓  ┳┓┏┓┏┓┳┳┓╻ #
-## ┃ ┣    ┃      ┣┫┣ ┃ ┓┃┃┃┃ #
-## ┗┛┗┛ ┻   ┗┛┗┛  ┻┛┗┛┗┛┻┛┗• #
-##############################
-
 selectedCountry <- "Greece"
 # selectedCountry <- "Italy"
 # selectedCountry <- "Korea"
 # selectedCountry <- "Nigeria"
 
-## rasterAgg <- 5
-rasterAgg <- 10
+ rasterAgg <- 5
+## rasterAgg <- 10
 ## rasterAgg <- 15
 
 ## Converts country name to ISO Alpha
@@ -203,15 +197,6 @@ print(sprintf("Population count before and after aggregation is equal? %s",
 #----------------------------------------#
 # Switch back to PowerPoint Presentation #
 #----------------------------------------#
-
-
-
-
-
-
-
-
-
 
 #--------------------#
 # EXPORTING A RASTER #
