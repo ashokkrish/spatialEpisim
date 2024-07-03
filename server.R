@@ -1397,6 +1397,11 @@ server <- function(input, output, session) {
                                      "iso3c"),
                          "summary.xlsx"))
 
+      output$downloadOutputSummary <- downloadHandler(
+        function() paste0(input$selectedCountry, "_Simulation_Summary", Sys.Date(), ".xlsx"),
+        function(ouputFile) file.copy(file, ouputFile)
+      )
+
       file.exists(file) |>
       need(message = "Waiting for simulation summary XLSX.") |>
       shiny::validate()
@@ -1404,6 +1409,7 @@ server <- function(input, output, session) {
       read_xlsx(file) |>
         datatable(options = list(autoWidth = FALSE, scrollX = TRUE)) |>
         formatRound(columns = 2:15, digits = 0)
+
     })
 
     output$dataPlot <- renderPlot({

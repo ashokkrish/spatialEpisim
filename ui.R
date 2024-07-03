@@ -298,7 +298,7 @@ ui <- fluidPage( # UI ----
 
                                             tabPanel(title = "Output Summary",
                                                      DTOutput("outputSummary") ,
-                                                     # downloadButton(outputId = "downloadOutputSummary", label = "Save Output Summary")
+                                                     downloadButton(outputId = "downloadOutputSummary", label = "Download as Excel")
                                             ),
 
                                             tabPanel(title = "Plot", id = "plotTab",
