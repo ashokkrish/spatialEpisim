@@ -96,15 +96,6 @@ ramp <- c('#FFFFFF',
 pal <- colorRampPalette(ramp)
 colorPalette <- colorBin(pal(9)[-1], domain = valueRange, bins = valueRange)
 
-#hoverDrop <- "selectedCountry"
-
-# labelMandatory <- function(label) {
-#   tagList(
-#     label,
-#     span("*", class = "mandatory_star")
-#   )
-# }
-
 highlightDrop <- function(menu) {
   tagList(
     menu, 
@@ -118,17 +109,19 @@ highlightDrop <- function(menu) {
 openDataFile <- function(datafile) {
   ext <- tools::file_ext(datafile$name)
   ext <- tolower(ext)
-  
+
   switch(ext, 
          csv = read_csv(datafile$datapath, show_col_types = FALSE),
          xls = read_xls(datafile$datapath),
          xlsx = read_xlsx(datafile$datapath),
          txt = read_tsv(datafile$datapath, show_col_types = FALSE),
-         
+
          validate("Improper file format.")
   )
 }
 
+## MAYBE FIXME? Why was this included? Is there any styling that Ashok wants
+## that we don't have?
 appCSS <- ".mandatory_star {color: red;}"
 appCSS <- ".invisible {display:none;}"
 appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
