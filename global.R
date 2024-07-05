@@ -66,7 +66,6 @@ prependList <- c("Czech Republic",
                  "Democratic Republic of Congo",
                  "Gambia",
                  "Netherlands")
-#print(epiparms)
 
 fieldsMandatory <- c("selectedCountry", "seedData")
 
