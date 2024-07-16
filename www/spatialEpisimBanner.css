@@ -136,3 +136,10 @@ table.dataTable {                                           /**/
   border-color: var(--main-color)!important;       /**/
 }                                                  /**/
 /* ------------------------------------------------- */
+
+.mandatory_star { color: red; }
+.invisible { display: none; }
+.dropDown:hover {
+    color: ADD8E6;
+    background-color: #000000;
+}
