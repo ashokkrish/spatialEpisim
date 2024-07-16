@@ -9,11 +9,24 @@ createSusceptibleLayer <- function(selectedCountry, rasterAgg = 0) {
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
   inputISOLower <- tolower(inputISO)
 
-  url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_1km_UNadj/2020/", inputISO, "/", inputISOLower, "_ppp_2020_1km_Aggregated_UNadj.tif")
+  ## Construct the path to the data on data.worldpop.org
+  urlPath <-
+    c("GIS",
+      "Population",
+      "Global_2000_2020_1km_UNadj",
+      "2020",
+      iso3c,
+      basename = sprintf("%s_ppp_2020_1km_Aggregated_UNadj.tif",
+                         tolower(iso3c))) %>%
+    httr2:::dots_to_path()
+  url_build(structure(list(scheme = "https",
+                           hostname = "data.worldpop.org",
+                           path = urlPath),
+                      class = "httr2_url"))
 
   tifFileName <- basename(url)    # name of the .tif file
   tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
-
+  
   if (!file.exists(paste0(tifFolder, tifFileName)))
   {
     download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
