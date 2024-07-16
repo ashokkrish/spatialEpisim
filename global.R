@@ -46,6 +46,7 @@ suppressPackageStartupMessages({
   library(tidyverse)
   library(here)
 
+  library(urltools)
   library(tools)
 })
 
