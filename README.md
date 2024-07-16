@@ -4,7 +4,7 @@
 
 **spatialEpisim** is an open-source platform-independent browser-based interface for tracking the spatial spread of infectious diseases (ex: COVID-19, Ebola, Measles etc.). 
 
-Run the app on Shinyapp.io server by clicking <[http://spatialepisim.shinyapps.io/spatialepisim](https://ashokkrish.shinyapps.io/spatialepisim/)>.
+Run the app on Shinyapp.io server by clicking <[[http://spatialepisim.shinyapps.io/spatialepisim](https://ashokkrish.shinyapps.io/spatialepisim/)](https://ashokkrish.shinyapps.io/spatialepisim/)>.
 
 To run the application locally you'll need a copy of the software. Download an archived version of the repository or a release (if available) from the GitHub web interface, or clone the repository using Git or your IDE tools, then run the app locally. To run the Shiny application follow whatever procedure is correct for your environment (in RStudio you may use the "Run App" button) after loading `global.R`. 
 
