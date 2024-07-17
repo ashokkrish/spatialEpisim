@@ -2,7 +2,6 @@ library(countrycode)
 library(terra, warn.conflicts = FALSE)
 
 createSusceptibleLayer <- function(selectedCountry, rasterAgg = 0) {
-
   ##----------------------------------------------------------------#
   ## Source 1: WorldPop UN-Adjusted Population Count GeoTIFF raster #
   ##----------------------------------------------------------------#
@@ -26,7 +25,7 @@ createSusceptibleLayer <- function(selectedCountry, rasterAgg = 0) {
 
   tifFileName <- basename(url)    # name of the .tif file
   tifFolder <- "tif/"             # .tif files should be stored in local tif/ folder
-  
+
   if (!file.exists(paste0(tifFolder, tifFileName)))
   {
     download.file(url, paste0(tifFolder, tifFileName), mode = "wb")
