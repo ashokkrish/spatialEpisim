@@ -1,6 +1,18 @@
 #------------------------- #
 #      UI Components
 #------------------------- #
+developer <- function(lastName, firstName, degree = "", affiliationIndex = 1, href = "") {
+  tag("address",
+      list(a(style = "font-weight: bold;",
+             href = href,
+             target = "_blank",
+             lastName,
+             ",",
+             firstName,
+             degree,
+             tag("sup", affiliationIndex))))
+}
+
 ui <- fluidPage( # UI ----
   tags$head(
     tags$style(HTML("
@@ -316,6 +328,47 @@ ui <- fluidPage( # UI ----
                         ), # mainPanel
                       ) # sidebarLayout
              ), # Model tabPanel
+             
+             ModelAuthorshipTab <- nav_panel(
+               title = "Authors",
+               h2("Supervisor", style = "font-weight:bold"),
+               ## TODO: Reformat Ashok's information so the digital links aren't ugly.
+               tag("address",
+                   list(
+                     p(a("Ashok Krishnamurthy, Ph.D.", href = "https://bit.ly/2YKrXjX", target = "_blank", style = "font-weight: bold;"), br(),
+                       "Mount Royal University", br(),
+                       "Department of Mathematics & Computing,", br(),
+                       "Calgary, AB, Canada", br(),
+                       a("akrishnamurthy@mtroyal.ca", href = "mailto:akrishnamurthy@mtroyal.ca"), br(),
+                       a("Episim GitHub", href = "https://github.com/ashokkrish/episim", target = "_blank")),
+                     style = r"(a[href^='mailto']::before {content: '📧 ';} a[href^='tel']::before {content: '📞 ';})")),
+               
+               #TODO: Need the link for research assistants who have not had
+               h2("Research Assistants", style = "font-weight:bold"),
+               developer("Myer", "Michael", href = "https://github.com/m-myer"),
+               developer("Carson", "Bryce", "B.Sc", href = "https://github.com/bryce-carson/"),
+               developer("Le", "Khanh", href = "https://github.com/kle6951/"),
+               developer("Wondwossen", "Tobias", href = "https://github.com/Toby-exe"),
+               developer("Wai", "Crystal", href = "https://github.com/cwai097"),
+               developer("Dhaliwal", "Gursimran", href = "https://github.com/dhaliwalgurs"),
+               developer("Pulfer", "Timothy", href = ""), 
+               developer("Darby", "Ryan", href = "https://github.com/Ryan-Darby"),
+               developer("Szeto", "Jason", href = "https://github.com/jason-szeto"),
+               developer("White", "Tom Bayliss", href = "https://github.com/tombaylisswhite"),
+               developer("Doody", "Jake", href = ""),
+               
+               h2("Collaborators", style = "font-weight:bold"),
+               
+               h2("Acknowledgment", style = "font-weight:bold"),
+               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik", br(), 
+                      )),
+               
+               h3("Affiliations", style = "font-weight:bold"),
+               p(tag("sup", 1), "Mount Royal University", br(),
+                 "4825 Mount Royal Gate SW", br(),
+                 "Calgary, Alberta, Canada", br(),
+                 "T3E 6K6"),
+             ),
 
              tabPanel("Authors",
                       h3("Research Team", style= "font-weight:bold"),
