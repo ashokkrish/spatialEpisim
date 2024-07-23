@@ -96,9 +96,13 @@ server <- function(input, output, session) {
   )
 
   susceptible <- reactive({
-    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
-
-    createSusceptibleLayer(input$selectedCountry, input$agg)
+    shiny::validate(selectedCountryISO3C())
+    SusceptibleLayer <- createSusceptibleLayer(selectedCountryISO3C())
+    if (req(input$agg) > 1) {
+      aggregate(SusceptibleLayer, fact = input$agg, fun = sum, na.rm = TRUE)
+    } else {
+      SusceptibleLayer
+    }
   })
 
 
@@ -151,12 +155,8 @@ server <- function(input, output, session) {
   })
 
   output$leafletMap <- renderLeaflet({
-    req(!is.null(input$selectedCountry))
-
-    susc <- susceptible()$Susceptible
-    level1Names <- NULL
-
-    createLeafletPlot(input$selectedCountry, level1Names, susc)
+    req(input$selectedCountry)
+    createLeafletPlot(input$selectedCountry, NULL, susceptible())
   })
 
   ## WTF
@@ -246,36 +246,19 @@ server <- function(input, output, session) {
     ggplotly(p)
   })
 
-  output$timeSeriesOptions <- renderUI({
-    plotTitle <- paste0("Time-Series Graph of Incidence/Death in ")
-    if(input$selectedCountry %in% prependList) {
-      plotTitle <- paste0(plotTitle, "the ")
-    }
-    plotTitle <- paste0(plotTitle, input$selectedCountry)
-
-    plotOptionsMenuUI(
-      id = "timeSeriesMenu",
-      plotType = "Time-Series",
-      title = plotTitle,
-      xlab = "Date",
-      ylab = "Number of Persons",
-      colour = "#22031F",
-      includeFlip = FALSE,
-      includeGridlines = FALSE
-    )
-  })
-
   output$timeSeries <- renderPlotly({
-    req(iv_dataupload$is_valid())
-    req(!is.null(input[["timeSeriesMenu-Colour"]]))
+    shiny::validate(iv_dataupload$is_valid())
 
-    p <- plotTimeSeries(file = input$incidenceData$datapath,
-                        input[["timeSeriesMenu-Title"]],
-                        input[["timeSeriesMenu-Xlab"]],
-                        input[["timeSeriesMenu-Ylab"]],
-                        input[["timeSeriesMenu-Colour"]],
-                        input[["timeSeriesMenu-TSstyle"]])
-    ggplotly(p)
+    ## TODO: this needs to be updated so that it plots the users data.
+    plotTimeSeries(here("data", "observeddata", "Ebola_Incidence_Data.xlsx"),
+                 sprintf("Time-Series Graph of Incidence/Death in %s",
+                         paste0(if (input$selectedCountry %in% prependList)
+                                  "the ", input$selectedCountry)),
+                 "Time",
+                 "Incidence/Death",
+                 "#0f0f0f",
+                 "Area") %>%
+    ggplotly()
   })
 
 
@@ -764,12 +747,12 @@ server <- function(input, output, session) {
                  src = "MP4/Infected_MP4.mp4",
                  controls = "controls")
     })
-  }) |> bindEvent(input$go)
+  }) %>% bindEvent(input$go)
 
   observe({
     shinyjs::hide(id = "tabsetContainer")
     fileInputs$smStatus <- 'reset'
-  }) |> bindEvent(input$resetAll)
+  }) %>% bindEvent(input$resetAll)
 
   observe({ if(!iv$is_valid()) shinyjs::hide(id = "tabsetContainer") })
 
@@ -777,9 +760,8 @@ server <- function(input, output, session) {
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
     runjs("window.scrollTo(0, 0)")
-  }) |> bindEvent(input$go)
+  }) %>% bindEvent(input$go)
 
-  ## TODO: change the template to be shown in a helper modal, and show the 
   observe({
     if(iv_seeddataupload$is_valid()) {
       shinyjs::hide(id = "downloadData")
@@ -788,5 +770,5 @@ server <- function(input, output, session) {
       shinyjs::hide(id = "seedRadius")
       shinyjs::show(id = "downloadData")
     }
-  }) |> bindEvent(input$seedData)
+  }) %>% bindEvent(input$seedData)
 }

@@ -52,7 +52,7 @@ suppressPackageStartupMessages({
 
 here::i_am("global.R")
 
-epiparms <- read_excel("misc/epiparms.xlsx", 1)
+epiparms <- read_excel(here("data", "misc", "epiparms.xlsx"))
 
 ## List of countries that need "the" prepended to their name
 prependList <- c("Czech Republic",
@@ -75,6 +75,14 @@ colourPalette <-
            domain = valueRange,
            bins = length(valueRange))
 
+acceptedFileTypes <- c("text/csv",
+                       "text/comma-separated-values",
+                       "text/plain",
+                       ".csv",
+                       ".xls",
+                       ".xlsx",
+                       ".txt")
+
 ## MAYBE TODO: replace with read_table?
 openDataFile <- function(datafile) {
   switch(tolower(tools::file_ext(datafile$name)),
@@ -85,14 +93,6 @@ openDataFile <- function(datafile) {
 
          validate("Improper file format."))
 }
-
-acceptedFileTypes <- c("text/csv",
-                       "text/comma-separated-values",
-                       "text/plain",
-                       ".csv",
-                       ".xls",
-                       ".xlsx",
-                       ".txt")
 
 ## NOTE: borrowed from Episim; the features I use—validated inputs, inputs
 ## updated with rows of a dataframe filtered on some input, et cetera—should be
@@ -109,6 +109,6 @@ updateNumericInputs <- function(defaults, session) {
 
 ## TODO: population is filtered by shortlist == TRUE in both ui.R and
 ## WorldPopViz.R; that work should only be done once.
-population <- read_xlsx("misc/population.xlsx")
+population <- read_xlsx(here("data", "misc", "population.xlsx"))
 
 shinyAppDir(here::here()) # and hurrah!
