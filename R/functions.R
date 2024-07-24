@@ -200,69 +200,6 @@ maskSusceptibleSpatRaster <- function(subregionRaster, susceptibleLayer) {
     "levels<-"(levels(.)[[1]])
 }
 
-##' @description Plot a map of the susceptible persons in the level one
-##'   administrative regions of a masked susceptible RasterLayer
-##' @title Plot a map of Susceptible persons
-##' @param maskedSpatRaster a masked susceptibile layer created with
-##'   maskSusceptibleSpatRaster
-##' @param subregionRaster TODO
-##' @param countryISO3C TODO
-##' @author Bryce Carson
-##' @author Michael Myer
-##' @author Ashok Krishnmaurthy
-##' @examples
-##' ## Get the subregion raster, ensure its CRS is the same as that for
-##' ## Susceptible, and then mask it.
-##' countryISO3C <- "COD"
-##' suceptible <- createSusceptibleLayer(countryISO3C)
-##' subregionRaster <- getSubregionRaster(countryISO3C)
-##' crs(subregionRaster) <- crs(susceptible, proj = TRUE)
-##' plotMaskedRaster(maskSusceptibleSpatRaster(subregionRaster, susceptible),
-##'                  subregionRaster,
-##'                  countryISO3C)
-plotMaskedRaster <- function(maskedSpatRaster, subregionRaster, countryISO3C) {
-  ## The Haxby colour palette
-  palette <- c('#FFFFFF', '#D0D8FB', '#BAC5F7',
-               '#8FA1F1', '#617AEC', '#0027E0',
-               '#1965F0', '#0C81F8', '#18AFFF',
-               '#31BEFF', '#43CAFF', '#60E1F0',
-               '#69EBE1', '#7BEBC8', '#8AECAE',
-               '#ACF5A8', '#CDFFA2', '#DFF58D',
-               '#F0EC78', '#F7D767', '#FFBD56',
-               '#FFA044', '#EE4F4D') %>%
-    colorRampPalette()
-
-  countryNameEnglish <- countrycode(countryISO3C, "iso3c", "country.name.en")
-
-  ## Plot the classified raster, add a compass (north) mark, and add the GADM
-  ## data to the plot.
-  terra::plot(maskedSpatRaster,
-              col = palette(8)[-1],
-              axes = TRUE,
-              buffer = TRUE,
-              box = TRUE,
-              cex.main = 1.5,
-              line.main = 1.25,
-              main = sprintf(r"(2020 UN-Adjusted Population Count
-for cropped selection(s) in %s (1 sq. km resolution))", countryNameEnglish),
-              xlab = expression(bold(Longitude)),
-              ylab = expression(bold(Latitude)),
-              line.lab = 2.25,
-              cex.lab = 1.4,
-              plg = list(title = expression(bold("Persons")),
-                         title.cex = 1.25,
-                         horiz = TRUE,
-                         loc = "bottom",
-                         yjust = 3.5,
-                         x.intersp = 0.6,
-                         inset = c(0, -0.2),
-                         cex = 1.25),
-              pax = list(cex.axis = 1.7),
-              mar = c(8.5, 3.5, 4, 2.5))
-  terra::plot(subregionRaster, add = TRUE)
-  terra::north(type = 2, xy = "bottomleft", cex = 1)
-}
-
 ## TODO
 ##' Create a RasterStack of RasterLayers, one for each component in an SVEIRD epidemic model.
 ##'
@@ -281,17 +218,23 @@ createRasterStack <- function(subregionsSpatRaster,
                               Susceptible) {
   ## NOTE: what is the reason we set the CRS of the subregionsSpatRaster?
   ## Shouldn't it already be latlon? TODO: refactor everything below this line.
-  crs(subregionsSpatRaster) <- crs(Susceptible, proj = TRUE)
+  crs(subregionsSpatRaster) <- crs(Susceptible, proj = TRUE)@projargs
 
   ## TODO: refactor everything below this line; it doesn't make sense, because
   ## the object lvl1AdminBorders is overwritten twice (on lines two tand three).
   ## lvl1AdminBorders <- crop(subregionsSpatRaster, Susceptible)
   ## lvl1AdminBorders <- rast(subregionsSpatRaster, resolution = res(Susceptible)[1])
-  lvl1AdminBorders <- rasterize(subregionsSpatRaster, lvl1AdminBorders) %>%
-    resample(Susceptible, method = "near")
 
-  ## FIXME: this reads weird... and I don't trust it.
-  values(lvl1AdminBorders) <- if (values(lvl1AdminBorders) > 0) values(lvl1AdminBorders) else 0
+  ## FIXME: the following line, which I retained from the original script,
+  ## doesn't work with the raster; vector data is expected.
+  ## lvl1AdminBorders <- rasterize(subregionsSpatRaster, lvl1AdminBorders) %>%
+  ##   resample(Susceptible, method = "near")
+
+  lvl1AdminBorders <- resample(subregionsSpatRaster, Susceptible, method = "near")
+
+  values(lvl1AdminBorders) <-
+    ifelse(values(lvl1AdminBorders) > 0, values(lvl1AdminBorders), 0)
+
   lvl1AdminBorders <- replace(lvl1AdminBorders, is.na(lvl1AdminBorders), 0)
   values(Susceptible) <- if (values(lvl1AdminBorders) > 0) values(Susceptible) else 0
 
@@ -321,59 +264,68 @@ createRasterStack <- function(subregionsSpatRaster,
 
 ##' @title Average Euclidean Distance
 ##' @description TODO
-##' @param p TODO
-##' @param q TODO
+##' @param p a length-two numerical vector, corresponding to the Euclidean
+##'   coordinates of point p.
+##' @param q a length-two numerical vector, corresponding to the Euclidean
+##'   coordinates of point q.
 ##' @param lambda TODO
-##' @returns TODO
+##' @returns The average of the Euclidean distances between the provided points.
 ##' @author Thomas White
 ##' @author Bryce Carson
-averageEuclideanDistance <- function(p, q, lambda) {
+avgEuclideanDistance <- function(p, q, lambda) {
   exp(-sqrt(sum((p - q)^2)) / lambda)
 }
 
 ##' @title Bias Matrix by its Weighted Sum
 ##' @description Bias a matrix by the weighted sum of its values
 ##' @param input_matrix The matrix to be biased
-##' @param radius TODO
+##' @param r The radius of the bias used for the average Euclidean distance
+##'   between points.
 ##' @param lambda TODO
 ##' @returns TODO
 ##' @author Thomas White
 ##' @author Bryce Carson
-biasMatrixByWeightedSum <- function(input_matrix, radius, lambda) {
-  temp_1 <- matrix(data = 0, nrow = nrow(x = input_matrix), ncol = radius)
+biasMatrixByWeightedSum <- function(input_matrix, r, lambda) {
+  temp_1 <- matrix(data = 0,
+                   nrow = nrow(input_matrix),
+                   ncol = r)
+  temp_2 <- matrix(data = 0,
+                   nrow = r,
+                   ncol = ((2 * r) + ncol(input_matrix)))
 
-  temp_2 <- matrix(data = 0, nrow = radius, ncol = ((2 * radius) + ncol(x = input_matrix)))
+  input_matrix_modified <- rbind(temp_2,
+                                 cbind(temp_1, input_matrix, temp_1),
+                                 temp_2)
 
-  input_matrix_modified <- rbind(temp_2, cbind(temp_1, input_matrix, temp_1), temp_2)
+  ## print(input_matrix_modified)
+  ## print(dim(input_matrix_modified))
 
-  #print(input_matrix_modified)
-  #print(dim(input_matrix_modified))
+  output_matrix <- matrix(nrow = nrow(x = input_matrix),
+                          ncol = ncol(x = input_matrix))
 
-  output_matrix <- matrix(nrow = nrow(x = input_matrix), ncol = ncol(x = input_matrix))
+  ## Generating the weight matrix; MAYBE TODO: replace this with
+  ## terra::weighted.mean?
+  dim.length <- 1 + 2 * r
+  distance <- seq_len(1 + 2 * r)
+  apply(matrix(0, dim.length, dim.length), c(1, 2),
+        avgEuclideanDistance,
+        p = distance,
+        q = rep.int(r + 1, 2),
+        lambda = lambda)
 
-  ## Generating the weight matrix; MAYBE TODO: replace this with terra::weighted.mean?
-  weight_matrix <- matrix(0, nrow = 1 + 2*radius, ncol = 1 + 2*radius)
+  for(i in distance)
+    for(j in distance)
+      weights[i, j] <- avgEuclideanDistance(c(i, j), rep.int(r + 1, 2), lambda)
 
-  for(i in seq_len(1 + 2*radius))
-  {
-    for(j in seq_len(1 + 2*radius))
-    {
-      weight_matrix[i,j] <- avg_euclidean_distance(c(i,j), c(radius+1, radius+1), lambda)
-    }
-  }
-
-  #print(weight_matrix)
-
-  for(i in seq_len(length.out = nrow(x = input_matrix)))
-  {
-    for(j in seq_len(length.out = ncol(x = input_matrix)))
-    {
-      row_min <- (radius + (i - radius))
-      row_max <- (radius + (i + radius))
-      column_min <- (radius + (j - radius))
-      column_max <- (radius + (j + radius))
-      neighbours <- input_matrix_modified[(row_min:row_max), (column_min:column_max)]
-      weighted_sum <- sum(neighbours * weight_matrix) # casewise multiplication
+  for(i in seq_len(length.out = nrow(x = input_matrix))) {
+    for(j in seq_len(length.out = ncol(x = input_matrix))) {
+      minRow <- (r + (i - r))
+      maxRow <- (r + (i + r))
+      minCol <- (r + (j - r))
+      maxCol <- (r + (j + r))
+      neighbours <- input_matrix_modified[(minRow:maxRow),
+                                          (minCol:maxCol)]
+      weighted_sum <- sum(neighbours * weights) # casewise multiplication
       output_matrix[i, j] <- weighted_sum
     }
   }
@@ -725,7 +677,41 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'
 ##' @author Michael Myer
 ##'
-##' @examples TODO
+##' @examples
+##' SVEIRD.BayesianDataAssimilation(
+##'   ## Parameters
+##'   alpha = 0.0015,
+##'   beta = 0.05,
+##'   gamma = 0.16,
+##'   sigma = 0.065,
+##'   delta = 0.002,
+##'   radius = 3,
+##'   lambda = 9,
+##'
+##'   ## Model runtime
+##'   days = 5,
+##'
+##'   ## Model data
+##'   seedData = here("data", "seed", "CZE_InitialSeedDataSep 1, 2020.csv"),
+##'   layers = createRasterStack(getSubregionRaster("CZE", "Prague"),
+##'                              Susceptible = createSusceptibleLayer("CZE")),
+##'   startDate = "2020-09-01",
+##'   countryISO3C = "CZE",
+##'   incidenceData = here("data", "observed", "Ebola_Incidence_Data.xlsx"),
+##'
+##'   ## Model options
+##'   simulationIsDeterministic = TRUE,
+##'   dataAssimilationEnabled = TRUE,
+##'   healthZoneCoordinates = here("data", "observed", "CZE_COVID-19_Health_Zones.csv"),
+##'   variableCovarianceFunction = "DBD",
+##'
+##'   ## Special parameters
+##'   Q.variance = 0,
+##'   Q.correlationLength = 0,
+##'   neighbourhood = 3,
+##'   psi.diagonal = 3
+##' )
+##'
 SVEIRD.BayesianDataAssimilation <-
   function(## Parameters
            alpha,
@@ -743,10 +729,9 @@ SVEIRD.BayesianDataAssimilation <-
            seedData,
            seedRadius = 0,
            layers,
-           startData,
+           startDate,
            countryISO3C,
            incidenceData,
-           deathsAndDeadData,
 
            ## Model options
            simulationIsDeterministic,
