@@ -759,6 +759,7 @@ SVEIRD.BayesianDataAssimilation <-
            ## Model data
            seedData,
            seedRadius = 0,
+           rasterAgg,
            layers,
            startDate,
            countryISO3C,
@@ -948,10 +949,11 @@ SVEIRD.BayesianDataAssimilation <-
       numberLiving <- sum(layerWideMatrices)
       ## TODO: this is the slowest code in the original; how does the refactored
       ## code perform?
-      I_tilda <-
-        biasMatrixByWeightedSum(input_matrix = layerWideMatrices$Infected,
-                                radius = radius,
-                                lambda = lambda)
+      I_tilde <-
+        transmissionLikelihoodWeightings(layerWideMatrices$Infected,
+                                         radius,
+                                         lambda,
+                                         rasterAgg)
 
       ## Some susceptible people are going to be newly vaccinated
       with(layerWideMatrices, {
@@ -964,11 +966,11 @@ SVEIRD.BayesianDataAssimilation <-
       proportionSusceptible <- layerWideMatrices$Susceptible / numberLiving
       proportionSusceptible[is.nan(proportionSusceptible)] <- 0
 
-      growth <- beta * proportionSusceptible * I_tilda
+      growth <- beta * proportionSusceptible * I_tilde
       newExposed <- growth %>%
         if(simulationIsDetermistic) growth else rpois(1, growth)
 
-      newExposed[c(susceptibleMatrix < 1) || I_tilda < 1] <- 0
+      newExposed[c(susceptibleMatrix < 1) || I_tilde < 1] <- 0
 
       dailyExposed <- sum(newExposed)
 
