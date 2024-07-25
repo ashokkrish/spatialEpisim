@@ -1,6 +1,3 @@
-#--------------------------#
-#     Server Components
-#--------------------------#
 server <- function(input, output, session) {
   selectedCountryISO3C <-
     reactive(countrycode(sourcevar = input$selectedCountry,
@@ -9,132 +6,40 @@ server <- function(input, output, session) {
 
   observe_helpers(help_dir = "helpfiles", withMathJax = TRUE)
 
-  iv <- InputValidator$new()
-  iv_alpha <- InputValidator$new()
-  iv_cropped <- InputValidator$new()
-  iv_seeddataupload <- InputValidator$new()
-
-  iv$add_rule("selectedCountry", sv_required())
-
-  iv_alpha$add_rule("alpha", sv_required())
-  iv_alpha$add_rule("alpha", sv_gte(0))
-
-  iv$add_rule("beta", sv_required())
-  iv$add_rule("beta", sv_gte(0))
-
-  iv$add_rule("gamma", sv_required())
-  iv$add_rule("gamma", sv_gte(0))
-
-  iv$add_rule("sigma", sv_required())
-  iv$add_rule("sigma", sv_gte(0))
-
-  iv$add_rule("delta", sv_required())
-  iv$add_rule("delta", sv_gte(0))
-
-  iv$add_rule("lambda", sv_required())
-  iv$add_rule("lambda", sv_integer())
-  iv$add_rule("lambda", sv_gt(0))
-
-  iv$add_rule("date", sv_required())
-
-  iv$add_rule("timestep", sv_required())
-  iv$add_rule("timestep", sv_integer())
-  iv$add_rule("timestep", sv_gt(0))
-
-  iv_cropped$add_rule("level1List", sv_required())
-
-  iv_seeddataupload$add_rule("seedData", sv_required())
-  iv_seeddataupload$add_rule("seedData", ~ if(is.null(fileInputs$smStatus) || fileInputs$smStatus == 'reset') "Required")
-
-  iv_alpha$condition(~ isTRUE(input$modelSelect == "SVEIRD"))
-  iv_cropped$condition(~ isTRUE(input$cropLev1))
-  iv_seeddataupload$condition(~ isTRUE(input$appMode == "Simulator"))
-
-  iv$add_validator(iv_alpha)
-  iv$add_validator(iv_cropped)
-  iv$add_validator(iv_seeddataupload)
-
-  #------------------------------------------#
-  ## Visualizer Input Validators         ----
-  #------------------------------------------#
-  # iv <- InputValidator$new()
-  iv_dataupload <- InputValidator$new()
-
-  iv_dataupload$add_rule("latLonData", sv_required())
-  iv_dataupload$add_rule("latLonData", ~ if(is.null(fileInputs$latLonStatus) || fileInputs$latLonStatus == 'reset') "Required")
-  iv_dataupload$add_rule("incidenceData", sv_required())
-  iv_dataupload$add_rule("incidenceData", ~ if(is.null(fileInputs$incidenceStatus) || fileInputs$incidenceStatus == 'reset') "Required")
-
-  iv_dataupload$condition(~ isTRUE(input$appMode == "Visualizer"))
-
-  iv$add_validator(iv_dataupload)
-
-  iv$enable()
-  iv_alpha$enable()
-  iv_cropped$enable()
-  iv_seeddataupload$enable()
-  iv_dataupload$enable()
-
-  observe({ if(iv$is_valid()) enable("go") else disable("go") })
-
-  observe({
-    input$muValue
-    updateNumericInput(session, "muBirth", value = 0)
-  })
-  observe({
-    input$muValue
-    updateNumericInput(session, "muDeath", value = 0)
-  })
-
-  values <- reactiveValues()
-  values$allow_simulation_run <- TRUE
-
-  fileInputs <- reactiveValues(
-    smStatus = NULL,
-    latLonStatus = NULL,
-    incidenceStatus = NULL
-  )
-
   susceptible <- reactive({
     shiny::validate(selectedCountryISO3C())
     SusceptibleLayer <- createSusceptibleLayer(selectedCountryISO3C())
     if (req(input$agg) > 1) {
-      aggregate(SusceptibleLayer, fact = input$agg, fun = sum, na.rm = TRUE)
-    } else {
-      SusceptibleLayer
+      SusceptibleLayer <- aggregate(SusceptibleLayer, fact = input$agg, fun = sum, na.rm = TRUE)
     }
+    SusceptibleLayer
   })
 
-
-  #==========================================================================#
-  # World Pop Visualizer Components                                       ----
-  #==========================================================================#
   #--------------------------------------------------------------------------#
   # Display the file inputs for generating the transmission path             #
   #--------------------------------------------------------------------------#
-  output$transPathFileInputs <- renderUI({
+  output$transmissionPathFileInputs <- renderUI({
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
 
     tagList(
       fileInput(inputId = "latLonData",
-                label = strong("Upload Lat-Lon Data:"),
-                placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
+                label = strong("Health Zone centroid coordinates"),
+                placeholder = "Upload Lat-Lon data",
                 accept = acceptedFileTypes),
       fileInput(inputId = "incidenceData",
-                label = strong("Upload Incidence/Death Data:"),
-                placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
+                label = strong("Incidence & Deaths"),
+                placeholder = "Upload Incidence/Death data",
                 accept = acceptedFileTypes)
     )
   })
 
-  #--------------------------------------------------------------------------#
-  # Dynamically generate a date slider that contains the dates for all the
-  # observed data in the incidence/death file
-  #--------------------------------------------------------------------------#
-  output$transPathDateInput <- renderUI({
+  # NOTE: the date input slider needs to be limited to the range of dates the
+  # observed data. THEM: Dynamically generate a date slider that contains the dates
+  # for all the observed data in the incidence/death file.
+  output$transmissionPathDateInput <- renderUI({
     req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
 
-    dateInfo <- colnames(transPathData())[4:length(colnames(transPathData()))]
+    dateInfo <- colnames(transmissionPathData())[4:length(colnames(transmissionPathData()))]
 
     sliderTextInput(
       inputId = "transPathDate",
@@ -144,66 +49,60 @@ server <- function(input, output, session) {
       animate = animationOptions(interval = 250, loop = FALSE))
   })
 
-
-  output$resetButton <- renderUI({ ## resetButton ----
-    if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
-      actionButton(
-        inputId = "visReset",
-        label = "Reset Values",
-        class = "act-btn")
-    }
-  })
-
   output$leafletMap <- renderLeaflet({
     req(input$selectedCountry)
     createLeafletPlot(input$selectedCountry, NULL, susceptible())
   })
 
-  ## WTF
-  level1Country <- reactiveVal({
-    value = NULL
-  })
-  observeEvent(input$level1List, {
-    level1Country(input$selectedCountry)
-  })
+  ## END OF WORLD_POP_VISUALIZER?
+
+  ## FIXME: what the hell? This is a no-op, and then there is code that treats
+  ## this like a reactive.
+  ##
+  ## observeEvent(input$level1List, {
+  ##   level1Country(input$selectedCountry)
+  ## })
+
   output$croppedLeafletMap <- renderLeaflet({
     req(!is.null(input$selectedCountry) && !is.null(input$level1List))
-    req(input$selectedCountry == level1Country())
+    ## FIXME: see the observer prior to this. What the hell is this code?
+    ## req(input$selectedCountry == level1Country())
     susc <- susceptible()$Susceptible
     level1Names <- input$level1List
     createLeafletPlot(input$selectedCountry, level1Names, susc)
   })
 
+  ## FIXME: rewrite this so that it isn't spoopy.
   output$terraOutputImage <- renderImage({
-    validate(need(!is.null(input$selectedCountry), "Loading App..."))
+    ## TODO: that's not what is happening when the user hasn't selected a country!
+    shiny::validate(need(input$selectedCountry, message = "Loading app..."))
 
-    if (input$selectedCountry == ""){
-      list(src = "", width = 0, height = 0)
-    } else {
-      outfile <- tempfile(fileext = '.png')
+    outfile <- tempfile(fileext = '.png')
 
-      png(outfile, width = 1024, height = 768)
-      createBasePlot(input$selectedCountry, susceptible()$Susceptible, TRUE)
-      dev.off()
+    png(outfile, width = 1024, height = 768)
+    createBasePlot(input$selectedCountry,
+                   susceptible()$Susceptible,
+                   TRUE)
+    dev.off()
 
-      list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
-    }
+    list(src = outfile,
+         contentType = 'image/png',
+         width = 1024,
+         height = 768,
+         alt = "Base plot image not found")
   }, deleteFile = TRUE)
 
   output$transmission <- renderLeaflet({
-    req(!is.null(input$selectedCountry))
-    req(iv_dataupload$is_valid())
+    shiny::validate(need(input$selectedCountry))
+    ## req(iv_dataupload$is_valid())
 
-    level1Names <- NULL
+    shiny::validate(need(input$cropLev1))
+    shiny::validate(need(input$level1List))
 
-    if(input$cropLev1 == TRUE){
-
-      if(!is.null(input$level1List) && !("" %in% input$level1List)){
-        level1Names <- input$level1List
-      }
-    }
-
-    createLeafletBubblePlot(input$selectedCountry, level1Names, transPathData(), 1)
+    createLeafletBubblePlot(input$selectedCountry,
+                            input$level1List,
+                            transmissionPathData(),
+                            1)
   })
 
   observe({
@@ -211,7 +110,7 @@ server <- function(input, output, session) {
 
     transDate <- input$transPathDate
 
-    plotData <- transPathData()
+    plotData <- transmissionPathData()
 
     # To access a column inside the leafletProxy function the column name must
     # be called directly (can't use a variable storing the column name) so we
@@ -262,7 +161,7 @@ server <- function(input, output, session) {
   })
 
 
-  transPathData <- reactive({
+  transmissionPathData <- reactive({
     req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
 
     incidenceData <- openDataFile(input$incidenceData)
@@ -326,6 +225,8 @@ server <- function(input, output, session) {
     fileInputs$incidenceStatus <- 'reset'
   })
 
+  ## FIXME: a better option would be to enable or disable the buttons of the tab
+  ## when the data is valid or invalid.
   observe({
     if(input$appMode == "Visualizer") {
       if(iv_dataupload$is_valid()) {
@@ -340,8 +241,9 @@ server <- function(input, output, session) {
     }
   })
 
+  ## FIXME: plot the susceptible layer, cropped or not.
   observeEvent(input$go, {
-    req(iv$is_valid())
+    ## req(iv$is_valid())
     output$outputImage <- renderImage({
 
       outfile <- tempfile(fileext = '.png')
@@ -370,42 +272,11 @@ server <- function(input, output, session) {
     }, deleteFile = TRUE)
   })
 
-  observeEvent(input$go, {
-    req(iv$is_valid())
-    output$modelImg <- renderImage({
-      return(list(src= "www/ModelEquations.png",
-                  height = 400,
-                  contentType = "image/png"))
-    }, deleteFile = FALSE)
-  })
-
-  observeEvent(input$go, {
-    req(iv$is_valid())
-    output$flowchartImg <- renderImage({
-      if (input$modelSelect == "SEIRD"){
-        return(list(src= "www/SEIRD.png",
-                    height = 400,
-                    contentType = "image/png"))
-      }
-      else if (input$modelSelect == "SVEIRD"){
-        return(list(src = "www/SVEIRD.png",
-                    height = 400,
-                    contentType = "image/png"))
-      }
-    }, deleteFile = FALSE)
-  })
-
   observeEvent(input$resetAll, {
     shinyjs::reset("dashboard")
-    shinyjs::disable(id = "go")
-
-    values$allow_simulation_run <- FALSE
-
-  })
-
-  observeEvent(input$seedData, {
-    values$allow_simulation_run <- TRUE
-    fileInputs$smStatus <- 'uploaded'
+    ## NOTE: the application should be usable without uploading any data if a
+    ## user simply selects some sane defaults like country and perhaps cropping.
+    ## shinyjs::disable(id = "go")
   })
 
   ## MAYBE TODO: inline the pipeline into the following observable.
@@ -604,20 +475,24 @@ server <- function(input, output, session) {
   })
 
   observe({
-    shiny::validate(need(iv$is_valid(), message = "An input is invalid."))
+    ## TODO: validate all inputs.
 
-    rs <- createRasterStack(selectedCountry = input$selectedCountry,
+    ## NOTE: the purpose of the RasterStack class is to collect related rasters
+    ## with the same dimensions, CRS, and projection. We can be guaranteed of
+    ## this by the class.
+    compartmentLayers <- createRasterStack(selectedCountry = input$selectedCountry,
                             rasterAgg = input$agg,
+
+                            ## MAYBE FIXME: I'm unsure these are necessary or
+                            ## truly useful.
                             isCropped = input$cropLev1,
                             level1Names = input$level1List,
-                            susceptible = susceptible())
+
+                            ## NOTE: this reactive and argument make sense.
+                            Susceptible = susceptible())
 
     output$tableSeed <- renderDT({
-      path <- req(input$seedData$datapath)
-      datatable(if(file_ext(path) %in% 'xlsx')
-                  read_excel(path)
-                else
-                  read.csv(path),
+      datatable(req(seedData), # TODO: must be read and created prior
                 rownames = FALSE,
                 options = list(dom = 't',
                                pageLength = -1,
@@ -633,20 +508,8 @@ server <- function(input, output, session) {
     ## all the programmer-defined reactives used [simulationSummary,
     ## simmulationSummaryPath, etc.] are inlined).
     output$outputSummary <- renderDT({
-      file <- here("www",
-                   "MP4",
-                   paste(sep = "_",
-                         countrycode(sourcevar = input$selectedCountry,
-                                     "country.name",
-                                     "iso3c"),
-                         "summary.xlsx"))
-
-      file.exists(file) |>
-      need(message = "Waiting for simulation summary XLSX.") |>
-      shiny::validate()
-
-      read_xlsx(file) |>
-        datatable(options = list(autoWidth = FALSE, scrollX = TRUE)) |>
+      datatable(outputSummary,
+                options = list(autoWidth = FALSE, scrollX = TRUE)) %>%
         formatRound(columns = 2:15, digits = 0)
     })
 
@@ -658,7 +521,7 @@ server <- function(input, output, session) {
     with(isolate(reactiveValuesToList(input)), {
       modelArguments <-
         list(modelSelect,
-             rs,
+             compartmentLayers,
              date,
              selectedCountry,
              FALSE,
@@ -689,39 +552,28 @@ server <- function(input, output, session) {
              QCorrLength,
              nbhd,
              psidiag)
-      names(modelArguments) <- formals(SpatialCompartmentalModelWithDA)
-      do.call(SpatialCompartmentalModelWithDA, modelArguments)
+      names(modelArguments) <- formals(SVEIRD.BayesianDataAssimilation)
+      do.call(SVEIRD.BayesianDataAssimilation, modelArguments)
     })
 
+    ## NOTE: this summary doesn't need to include user-input model configuration
+    ## values, given that their configuration should still be visible in the
+    ## left-hand side of the application.
     output$summaryTable <- renderDT({
       datatable(
         tribble(~Variable, ~Value,
-                "Country", input$selectedCountry,
-
                 ## TODO: reformat this text.
                 "WorldPop Raster Dimension",
-                paste0(rs$nRows, " rows x ",
-                       rs$nCols, " columns = ",
-                       rs$nCells, " grid cells"),
+                paste0(compartmentLayers$nRows, " rows x ",
+                       compartmentLayers$nCols, " columns = ",
+                       compartmentLayers$nCells, " grid cells"),
 
-                "Aggregation Factor", input$agg,
-
-                ## TODO: reformat this text.
                 "Aggregated Raster Dimension",
-                paste0(nrow(rs$rasterStack), " rows x ",
-                       ncol(rs$rasterStack), " columns = ",
-                       ncell(rs$rasterStack), " grid cells"),
-
-                "Compartmental Model", input$modelSelect,
-                "Model Parameters", paste("Rate of vaccination (α): ", alpha,
-                                          "Rate of exposure (β): ", beta,
-                                          "Rate of infection (γ): ", gamma,
-                                          "Rate of recovery (σ): ", sigma,
-                                          "Rate of fatality (δ): ", delta),
-                "Average Distance Travelled/Day (in km)", input$lambda,
-                "Radius (1 = Moore neighbourhood)", radius,
-                "Uploaded Seed Data", input$seedData$name,
-                "Number of iterations (days)", input$timestep),
+                sprintf("%s rows ✕ %s columns = %s grid cells",
+                        compartmentLayers$rows, # TODO: verify
+                        compartmentLayers$columns, # TODO: verify
+                        compartmentLayers$cells) # TODO: verify
+                ),
         rownames = FALSE,
         options = list(dom = 't',
                        pageLength = -1,
@@ -732,30 +584,28 @@ server <- function(input, output, session) {
     })
 
     output$seedPlot <- renderLeaflet({
-      req(iv$is_valid())
-      seedData <- read.csv(input$seedData$datapath, header = T)
+      ## MAYBE TODO: reading the data in the background would be interesting,
+      ## but difficult to implement given R doens't have great asynchronous
+      ## programming support. Regardless, reading the data here and now is
+      ## inappropriate.
+      seedData <- read.csv(input$seedDataPath, header = T) ## NOP🛷
       printCroppedBubbleSeedPlot(input$selectedCountry,
                                  input$seedData$datapath,
                                  level1Names = input$level1List,
-                                 6)
+                                 ## NOTE: this is the "current" column. FIXME:
+                                 ## magic number, regardless of the bad named
+                                 ## identifier.
+                                 activeCol = 6)
     })
 
     ## TODO: display multiple animations or a selection among available options.
-    output$outputVideo <- renderUI({
-      tags$video(id = "video",
-                 type = "video/mp4",
-                 src = "MP4/Infected_MP4.mp4",
-                 controls = "controls")
-    })
   }) %>% bindEvent(input$go)
 
-  observe({
-    shinyjs::hide(id = "tabsetContainer")
-    fileInputs$smStatus <- 'reset'
-  }) %>% bindEvent(input$resetAll)
-
-  observe({ if(!iv$is_valid()) shinyjs::hide(id = "tabsetContainer") })
-
+  ## NOTE: when the user has run a simulation, scroll to the top of the page so
+  ## that they can see the tab panel buttons and the output. TODO: include a
+  ## scroll to top button in the UI when appropriate, and otherwise make the
+  ## model configuration panel scrollable without scrolling the main output
+  ## area.
   observe({
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
@@ -763,12 +613,7 @@ server <- function(input, output, session) {
   }) %>% bindEvent(input$go)
 
   observe({
-    if(iv_seeddataupload$is_valid()) {
-      shinyjs::hide(id = "downloadData")
-      shinyjs::show(id = "seedRadius")
-    } else {
-      shinyjs::hide(id = "seedRadius")
-      shinyjs::show(id = "downloadData")
-    }
+    if (iv_seeddataupload$is_valid()) shinyjs::enable(id = "seedRadius")
+    else shinyjs::disable(id = "seedRadius")
   }) %>% bindEvent(input$seedData)
 }

@@ -50,9 +50,9 @@ sidebar <-
                    content = "rasterAggregationFactor"))),
 
         conditionalPanel("input.appMode == 'Visualizer'",
-                         uiOutput("transPathFileInputs"),
-                         uiOutput("transPathDateInput"),
-                         uiOutput("resetButton")),
+                         uiOutput("transmissionPathFileInputs"),
+                         uiOutput("transmissionPathDateInput"),
+                         actionButton("visReset", "Reset Values")),
 
         conditionalPanel(
           "input.appMode == 'Simulator' && input.selectedCountry !== ''",
@@ -248,9 +248,19 @@ simulator <-
 
                     tabPanel(title = "Model", id = "modelTab",
                              h3("Schematic Diagram"),
-                             imageOutput("flowchartImg"),
+                             conditionalPanel(r"[input.modelSelect === "SVEIRD"]",
+                                              img(src = "www/SVEIRD.png",
+                                                  height = 400,
+                                                  contentType = "image/png")),
+                             conditionalPanel(r"[input.modelSelect === "SEIRD"]",
+                                              img(src = "www/SEIRD.png",
+                                                  height = 400,
+                                                  contentType = "image/png")),
+
                              h3("Mathematical Model"),
-                             imageOutput("modelImg")),
+                             img(src = "www/ModelEquations.png",
+                                 height = 400,
+                                 contentType = "image/png")),
 
                     tabPanel(title = "Initial Seed Data",
                              DTOutput("tableSeed"),
