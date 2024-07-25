@@ -263,74 +263,105 @@ createRasterStack <- function(subregionsSpatRaster,
 }
 
 ##' @title Average Euclidean Distance
-##' @description TODO
-##' @param p a length-two numerical vector, corresponding to the Euclidean
-##'   coordinates of point p.
-##' @param q a length-two numerical vector, corresponding to the Euclidean
-##'   coordinates of point q.
-##' @param lambda TODO
-##' @returns The average of the Euclidean distances between the provided points.
-##' @author Thomas White
+##' @description Measure the exposure influence upon susceptible individuals at
+##'   spatial position (x, y) of the infectious individuals at a spatial
+##'   position (u, v).
+##' @details The mathematical modelling of human or non-human mobility patterns
+##'   is non-trivial. This function is a limited implementation of the effective
+##'   area for only human mobility, with distances travelled per day (λ)
+##'   measured in kilometers.
+##'
+##'   NOTE: Our weight function does not take the same arguments as shown in the
+##'   slideshow: (𝑤 x y u v); The term “effective area” comes from the fact that
+##'   if the kernel is constant on a finite disk (and zero outside it), then the
+##'   formula due to Bolker (1999) gives the area of the disk.
+##'
+##'   See the article titled *A clarification of transmission terms in
+##'   host-microparasite models by Begon et al.* (2002).
+##'
+##'   The raster data of infection counts or disease incidence provided to the
+##'   function which calls this one, transmissionLikelihoodWeightings, may be
+##'   aggregated by a given factor. That factor must be passed to this function
+##'   for parity, so the data is treated the same.
+##' @param radius TODO: a fixed radius r > lambda; see details.
+##' @param lambda movemenet distance (in kilometers) per day; see details.
+##' @param aggregationFactor the degree of aggregation applied to the raster
+##'   data mentioned in the function details.
+##' @returns a matrix of the average Euclidean distances
 ##' @author Bryce Carson
-avgEuclideanDistance <- function(p, q, lambda) {
-  exp(-sqrt(sum((p - q)^2)) / lambda)
-}
-
-##' @title Bias Matrix by its Weighted Sum
-##' @description Bias a matrix by the weighted sum of its values
-##' @param input_matrix The matrix to be biased
-##' @param r The radius of the bias used for the average Euclidean distance
-##'   between points.
-##' @param lambda TODO
-##' @returns TODO
 ##' @author Thomas White
-##' @author Bryce Carson
-biasMatrixByWeightedSum <- function(input_matrix, r, lambda) {
-  temp_1 <- matrix(data = 0,
-                   nrow = nrow(input_matrix),
-                   ncol = r)
-  temp_2 <- matrix(data = 0,
-                   nrow = r,
-                   ncol = ((2 * r) + ncol(input_matrix)))
+avgEuclideanDistance <- function(radius, lambda, aggregationFactor) {
+  ## NOTE: “I have a philosophical and geometric question about these
+  ## identities: what do they imply about the dimension and magnitude of the
+  ## raster which the weighted number sum will be used with? Can we rid the
+  ## function of the radius argument and only accept the lambda argument, given
+  ## these identities and the claim made about the calculation of radius in the
+  ## slides?” — Bryce
+  if (radius > lambda)
+    stopifnot(r == round((lambda - aggregationFactor) / aggregationFactor) + 1)
+  else
+    stopifnot(r == lambda + aggregationFactor)
 
-  input_matrix_modified <- rbind(temp_2,
-                                 cbind(temp_1, input_matrix, temp_1),
-                                 temp_2)
-
-  ## print(input_matrix_modified)
-  ## print(dim(input_matrix_modified))
-
-  output_matrix <- matrix(nrow = nrow(x = input_matrix),
-                          ncol = ncol(x = input_matrix))
-
-  ## Generating the weight matrix; MAYBE TODO: replace this with
-  ## terra::weighted.mean?
-  dim.length <- 1 + 2 * r
-  distance <- seq_len(1 + 2 * r)
-  apply(matrix(0, dim.length, dim.length), c(1, 2),
-        avgEuclideanDistance,
-        p = distance,
-        q = rep.int(r + 1, 2),
-        lambda = lambda)
-
-  for(i in distance)
-    for(j in distance)
-      weights[i, j] <- avgEuclideanDistance(c(i, j), rep.int(r + 1, 2), lambda)
-
-  for(i in seq_len(length.out = nrow(x = input_matrix))) {
-    for(j in seq_len(length.out = ncol(x = input_matrix))) {
-      minRow <- (r + (i - r))
-      maxRow <- (r + (i + r))
-      minCol <- (r + (j - r))
-      maxCol <- (r + (j + r))
-      neighbours <- input_matrix_modified[(minRow:maxRow),
-                                          (minCol:maxCol)]
-      weighted_sum <- sum(neighbours * weights) # casewise multiplication
-      output_matrix[i, j] <- weighted_sum
-    }
+  len <- seq_len(1 + radius * 2)
+  df <- tidyr::expand(tibble(i = len, j = len), i, j)
+  avg.euc.dist <- function(i, j) {
+    exp(-sqrt(sum((c(i, j) - c(radius + 1, radius + 1))^2)) / lambda)
   }
-  return(output_matrix)
+  mutate(df, averageEuclideanDistance = map2_dbl(i, j, avg.euc.dist)) %>%
+    as.matrix(byrow = TRUE, ncol = nrow(df))
 }
+
+##' @title Weighted Sums
+##' @description Calculate a matrix of weights respecting human mobility
+##'   patterns.
+##' @details The pattern of human mobility used is described in a slideshow
+##'   here:
+##'   https://docs.google.com/presentation/d/1_gqcEh4d8yRy22tCZkU0MbGYSsGu3Djh/edit?usp=sharing&ouid=102231457806738400087&rtpof=true&sd=true.
+##' @param infections a matrix of the count of infections per aggregate area in
+##'   a raster of terrestrial data.
+##' @param radius a constant; see details.
+##' @param lambda movemenet distance (in kilometers) per day; see details.
+##' @returns a matrix of weightings for the calculation of the proportion of
+##'   exposed individuals who will become infectious.
+##' @author Bryce Carson
+##' @author Thomas White
+##' @examples
+##' terra::as.matrix(Infected, wide = TRUE) %>%
+##'   transmissionLikelihoodWeightings(30, 15, 10)
+transmissionLikelihoodWeightings <-
+  function(infections, radius, lambda, aggregationFactor) {
+    inputMatrixRows <- nrow(infections)
+    inputMatrixCols <- ncol(infections)
+    diameter <- 2 * radius
+    temp.1 <- matrix(data = 0, nrow = inputMatrixRows, ncol = radius)
+    temp.2 <- matrix(data = 0, nrow = radius, ncol = diameter + inputMatrixCols)
+    input.modified <- rbind(temp.2, cbind(temp.1, infections, temp.1), temp.2)
+
+    print(dim(input.modified))
+
+    weights <- avgEuclideanDistance(radius, lambda)
+    list(i = seq_len(length.out = inputMatrixRows),
+         j = seq_len(length.out = inputMatrixCols)) %>%
+      expand.grid() %>%
+      as_tibble() %>%
+      mutate(weightedSum =
+               map2_dbl(i, j, function(i, j) {
+                 neighbours <- input.modified[i:(i + diameter), j:(j + diameter)]
+
+                 ## MAYBE FIXME: are we certain we don't want matrix
+                 ## multiplication? %*%
+                 ## FIXME: non-conformable arrays
+                 ## Caused by error in `map2_dbl()`:
+                 ##                    ℹ In index: 1.
+                 ## Caused by error in `subset * weights`:
+                 ##                    ! non-conformable arrays
+                 ## matrix(1, 3, 3) * matrix(2, 9, 3)
+                 ## Error in matrix(1, 3, 3) * matrix(2, 9, 3) : non-conformable arrays
+                 products <- neighbours * weights
+                 sum(products)
+               })) %>%
+      as.matrix(byrow = TRUE, nrow = inputMatrixRows, ncol = inputMatrixCols)
+  }
 
 ## TODO: the situation report data should not be read by this function, it
 ## should take the dataframe that it needs, no more. TODO: rename this function
