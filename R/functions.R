@@ -915,6 +915,8 @@ SVEIRD.BayesianDataAssimilation <-
       })
 
       numberLiving <- sum(layerWideMatrices)
+      ## TODO: this is the slowest code in the original; how does the refactored
+      ## code perform?
       I_tilda <-
         biasMatrixByWeightedSum(input_matrix = layerWideMatrices$Infected,
                                 radius = radius,
