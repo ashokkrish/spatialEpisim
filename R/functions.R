@@ -20,6 +20,7 @@ suppressPackageStartupMessages({
   library(terra)
   library(tidyverse)
   library(writexl)
+  library(magrittr)
 })
 
 ## DONE
@@ -55,9 +56,9 @@ downloadWorldPopData <- function(countryISO3C, folder = here("data", "geotiff"))
                          tolower(countryISO3C))) %>%
     httr2:::dots_to_path()
   url <- url_build(structure(list(scheme = "https",
-                           hostname = "data.worldpop.org",
-                           path = urlPath),
-                      class = "httr2_url"))
+                                  hostname = "data.worldpop.org",
+                                  path = urlPath),
+                             class = "httr2_url"))
 
   ## Download the GeoTIFF file if it doesn't already exist.
   if (!file.exists(here(folder, basename(url)))) {
@@ -99,14 +100,12 @@ lvl1AdminBorders <- function(ISO3C) {
 ##' @author Bryce Carson
 ##' @author Michael Myer
 ##' @author Ashok Krishnmaurthy
-createSusceptibleLayer <- function(countryISO3C) {
-  raster(downloadWorldPopData(countryISO3C)) %>%
+##' @examples
+##' getSusceptible("COD")
+getSusceptible <- function(countryISO3C) {
+  rast(downloadWorldPopData(countryISO3C)) %>%
     replace(., is.na(.), 0) %>% # . is a magrittr placeholder for the piped data.
     `names<-`("Susceptible")
-
-  ## DONT: aggregate the data... in fact, createSusceptibleLayer might not even
-  ## be needed!
-  ## aggregate(RasterObject, fact = aggregationFactor, fun = sum, na.rm = TRUE)
 }
 
 ## DONE
@@ -117,23 +116,22 @@ createSusceptibleLayer <- function(countryISO3C) {
 ##'   country.
 ##' @param level1Region The subregions of the country to crop to
 ##' @param folder The folder which should be searched for the GADM data
-##' @return SpatRaster for the specificed country.
+##' @returns SpatVector for the specificed country.
 ##' @author Bryce Carson
 ##' @examples
-##' getSubregionRaster("COD", c("Nord-Kivu", "Ituri"), here("data", "gadm"))
-##' getSubregionRaster("CZE", "Prague")
-##' getSubregionRaster("NGA", "Kwara")
-getSubregionRaster <- function(countryISO3C = "COD",
-                               level1Region = c("Nord-Kivu", "Ituri"),
-                               folder = here("data", "gadm")) {
+##' getSubregions("COD", c("Nord-Kivu", "Ituri"), here("data", "gadm"))
+##' getSubregions("CZE", "Prague")
+##' getSubregions("NGA", "Kwara")
+getSubregions <- function(countryISO3C = "COD",
+                          level1Region = c("Nord-Kivu", "Ituri"),
+                          folder = here("data", "gadm")) {
   stopifnot(countryISO3C %in% countrycode::codelist$iso3c)
   ## Read data from the gadm folder corresponding to the country. ## NOTE: 1_sp
   ## refers to the fact that this RDS file contains 1km aggregated spatial data.
   here(folder, sprintf("gadm36_%s_1_sp.rds", toupper(countryISO3C))) %>%
     readRDS() %>%
     subset(.$NAME_1 %in% level1Region) %>%
-    vect() %>%
-    rast()
+    vect()
 }
 
 ## DONE
@@ -151,115 +149,102 @@ getSubregionRaster <- function(countryISO3C = "COD",
 ##' @author Ashok Krishnmaurthy
 ##' @author Michael Myer
 ##' @author Thomas White
-##' @param subregionRaster a SpatRaster object for subregions, created with
-##'   getSubregionRaster
-##' @param susceptibleLayer SpatRaster or SpatVector to be masked by GADM data
+##' @param subregions a SpatRaster object for subregions, created with
+##'   getSubregions
+##' @param susceptible SpatRaster or SpatVector to be masked by GADM data
 ##'   of the country
 ##' @examples
-##' subrRast <- getSubregionRaster("COD",
-##'                                c("Nord-Kivu", "Ituri"),
-##'                                here("data", "gadm"))
-##' suscLayer <- createSusceptibleLayer("NGA")$Susceptible
-##' maskSusceptibleSpatRaster(subregionRaster = subrRast,
-##'                           susceptibleLayer = suscLayer)
+##' subregions <- getSubregions("COD",
+##'                            c("Nord-Kivu", "Ituri"),
+##'                            here("data", "gadm"))
+##' susceptible <- getSusceptible("COD")
+##' result <- maskAndClassifySusceptibleSpatRaster(subregions = subregions,
+##'                                                susceptible = susceptible)
+##' plot(result)
 ##'
-##' maskSusceptibleSpatRaster(getSubregionRaster("COD", c("Nord-Kivu", "Ituri")),
-##'                           createSusceptibleLayer("COD")$Susceptible)
+##' maskAndClassifySusceptibleSpatRaster(getSubregions("COD", c("Nord-Kivu", "Ituri")),
+##'                                      getSusceptible("COD"))
 ##'
-##' maskSusceptibleSpatRaster(getSubregionRaster("CZE", "Prague"),
-##'                           createSusceptibleLayer("CZE")$Susceptible)
+##' maskAndClassifySusceptibleSpatRaster(getSubregion("CZE", "Prague"),
+##'                                      getSusceptible("CZE"))
 ##'
-##' maskSusceptibleSpatRaster(getSubregionRaster("NGA", "Lagos"),
-##'                           createSusceptibleLayer("NGA")$Susceptible)
+##' maskAndClassifySusceptibleSpatRaster(getSubregion("NGA", "Lagos"),
+##'                                      getSusceptible("NGA"))
 ##'
-##' maskSusceptibleSpatRaster(getSubregionRaster("COD", "Ituri"),
-##'                           createSusceptibleLayer("COD")$Susceptible)
+##' maskAndClassifySusceptibleSpatRaster(getSubregion("COD", "Ituri"),
+##'                                      getSusceptible("COD"))
 ##'
-##' maskSusceptibleSpatRaster(getSubregionRaster("COD", c("Nord-Kivu", "Ituri")),
-##'                           createSusceptibleLayer("COD")$Susceptible)
-##'
-maskSusceptibleSpatRaster <- function(subregionRaster, susceptibleLayer) {
-  crs(subregionRaster) <- crs(susceptibleLayer, proj = TRUE)@projargs
+##' maskAndClassifySusceptibleSpatRaster(getSubregion("COD", c("Nord-Kivu", "Ituri")),
+##'                                      getSusceptible("COD"))
+maskAndClassifySusceptibleSpatRaster <- function(subregions, susceptible) {
+  crs(subregions) <- crs(susceptible, proj = TRUE)
 
-  ## Mask the susceptible SpatRaster by the subregionRaster SpatRaster
-  ## FIXME: DONE: the subregionRaster needs to be conferted to a RasterLayer
-  ## before the crop method generic can reliably retrieve the extent.
-  susceptibleMaskedBySubregion <-
-    rast(crop(susceptibleLayer, raster(subregionRaster), mask = TRUE))
+  ## NOTE: these two values were betwixt the call of rast and classify, which
+  ## are only piped to remove the use of an unnecssary assignment whilst these
+  ## interjecting values are unused and therefore don't need to be calculated.
+  ## Rather than interjecting and elongating the pipe's line count, they are
+  ## moved here (before the pipe), so only a relevant comment interjects in the
+  ## pipeline.
+  ##
+  ## MAYBE FIXME: these values are unused.
+  ## dlong = abs(xmax(susceptibleMaskedBySubregion) -
+  ##             xmin(susceptibleMaskedBySubregion))
+  ## ## MAYBE FIXME: shouldn't this be ymax - ymin?
+  ## dlat = abs(ymax(susceptibleMaskedBySubregion) -
+  ##            xmax(susceptibleMaskedBySubregion))
 
-  dlong = abs(xmax(susceptibleMaskedBySubregion) -
-              xmin(susceptibleMaskedBySubregion))
-
-  ## MAYBE FIXME: shouldn't this be ymax - ymin?
-  dlat = abs(ymax(susceptibleMaskedBySubregion) -
-             xmax(susceptibleMaskedBySubregion))
-
-  ## NOTE: this is refactored, but untested.
-  classify(susceptibleMaskedBySubregion,
-           c(0, 10, 25, 50, 100, 250, 1000, 10000)) %>%
+  ## Mask the susceptible SpatRaster by the subregions SpatRaster
+  crop(susceptible, subregions, mask = TRUE) %>%
+  ## NOTE: this is refactored, but untested. NOTE: this seems to classify the
+  ## values as 1:7, if they have a value between the bin lower limits; that is,
+  ## bin the values into classes delineated by the given vector of minimums for
+  ## the bins.
+  classify(c(0, 10, 25, 50, 100, 250, 1000, 10000)) %>%
     "levels<-"(levels(.)[[1]])
 }
 
-## TODO
 ##' Create a RasterStack of RasterLayers, one for each component in an SVEIRD epidemic model.
 ##'
 ##' The SpatRasters are manipulated before being stacked.
 ##' @title Create a RasterStack of SVEIRD model compartment raster data
-##' @param subregionsSpatRaster a SpatRaster object, usually cropped to some
-##'   subregions of a recognized country.
+##' @param subregions a SpatVector object of subregions used to crop the created
+##'   raster stack.
 ##' @param isCropped
 ##' @param Susceptible a RasterLayer, pre-aggregated if that is wished.
-##' @returns RasterStack of Inhabitable, Vaccinated, Exposed, Infected, Recovered, and Dead
+##' @param aggregationFactor the number of cells in any direction to aggregate
+##'   together into one, in the Susceptible ratser, after masking with the
+##'   subregions vector, before creating the list
+##' @returns a list of the SVEIRD compartment layers and the Inhabited layer
 ##' @author Bryce Carson
 ##' @author Michael Myer
 ##' @author Ashok Krishnmaurthy
-createRasterStack <- function(subregionsSpatRaster,
-                              isCropped = FALSE,
-                              Susceptible) {
-  ## NOTE: what is the reason we set the CRS of the subregionsSpatRaster?
-  ## Shouldn't it already be latlon? TODO: refactor everything below this line.
-  crs(subregionsSpatRaster) <- crs(Susceptible, proj = TRUE)@projargs
+##' @examples
+##' createRasterList(getSubregions("COD", c("Ituri", "Nord-Kivu")),
+##'                  getSusceptible("COD"),
+##'                  aggregationFactor = 35)
+createRasterList <- function(subregions, Susceptible, aggregationFactor = NULL) {
+  Suceptible <- maskAndClassifySusceptibleSpatRaster(subregions, Susceptible)
 
-  ## TODO: refactor everything below this line; it doesn't make sense, because
-  ## the object lvl1AdminBorders is overwritten twice (on lines two tand three).
-  ## lvl1AdminBorders <- crop(subregionsSpatRaster, Susceptible)
-  ## lvl1AdminBorders <- rast(subregionsSpatRaster, resolution = res(Susceptible)[1])
+  if (!is.null(aggregationFactor)) {
+    Susceptible <- aggregate(Susceptible, aggregationFactor)
+  }
 
-  ## FIXME: the following line, which I retained from the original script,
-  ## doesn't work with the raster; vector data is expected.
-  ## lvl1AdminBorders <- rasterize(subregionsSpatRaster, lvl1AdminBorders) %>%
-  ##   resample(Susceptible, method = "near")
+  ## MAYBE FIXME: I'd be surprised if any of the values were negative, but it's
+  ## okay to retain this.
+  values(Susceptible)[values(Susceptible) < 0] <- 0
 
-  lvl1AdminBorders <- resample(subregionsSpatRaster, Susceptible, method = "near")
+  Inhabited <- Susceptible
+  values(Inhabited) <- ifelse(values(Susceptible) > 0, 1, 0)
 
-  values(lvl1AdminBorders) <-
-    ifelse(values(lvl1AdminBorders) > 0, values(lvl1AdminBorders), 0)
-
-  lvl1AdminBorders <- replace(lvl1AdminBorders, is.na(lvl1AdminBorders), 0)
-  values(Susceptible) <- if (values(lvl1AdminBorders) > 0) values(Susceptible) else 0
-
-  compartments <- c("Inhabitable", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead")
-  lapply(compartments, assign, value = Susceptible, envir = parent.frame())
-
-  ## Don't change the values of Inhabitable to zero.
-  lapply(mget(compartments)[-1], "values<-", 0)
-  values(Inhabitable) <- ifelse(values(Susceptible) > 0, 1, 0)
-
-  inhabitableTrimmed <- trim(Inhabitable, value = 0)
-
-  ## NOTE: this is refactored, but untested.
-  layers <- list(Susceptible = Susceptible,
-                 Vaccinated = Vaccinated,
-                 Exposed = Exposed,
-                 Infected = Infected,
-                 Recovered = Recovered,
-                 Dead = Dead,
-                 Inhabitable = Inhabitable,
-                 lvl1AdminBorders = lvl1AdminBorders)
-  ## The names are only assigned in case stacking removed the names.
-  rasterStack <- stack(layers) %>% "names<-"(names(layers))
-  if (isCropped) rasterStack <- crop(rasterStack, inhabitableTrimmed)
-  return (rasterStack)
+  empty <- init(Susceptible, fun = 0)
+  c(Susceptible, rep(empty, 5), Inhabited) %>%
+    "names<-"(c("Susceptible",
+                "Vaccinated",
+                "Exposed",
+                "Infected",
+                "Recovered",
+                "Dead",
+                "Inhabited"))
 }
 
 ##' @title Average Euclidean Distance
@@ -297,18 +282,20 @@ avgEuclideanDistance <- function(radius, lambda, aggregationFactor) {
   ## function of the radius argument and only accept the lambda argument, given
   ## these identities and the claim made about the calculation of radius in the
   ## slides?” — Bryce
-  if (radius > lambda)
-    stopifnot(r == round((lambda - aggregationFactor) / aggregationFactor) + 1)
-  else
-    stopifnot(r == lambda + aggregationFactor)
+  ## if (radius > lambda)
+  ##   stopifnot(r == round((lambda - aggregationFactor) / aggregationFactor) + 1)
+  ## else
+  ##   stopifnot(r == lambda + aggregationFactor)
 
   len <- seq_len(1 + radius * 2)
   df <- tidyr::expand(tibble(i = len, j = len), i, j)
   avg.euc.dist <- function(i, j) {
     exp(-sqrt(sum((c(i, j) - c(radius + 1, radius + 1))^2)) / lambda)
   }
-  mutate(df, averageEuclideanDistance = map2_dbl(i, j, avg.euc.dist)) %>%
-    as.matrix(byrow = TRUE, ncol = nrow(df))
+  mutate(df, avgEuclideanDistance = map2_dbl(i, j, avg.euc.dist)) %>%
+    dplyr::select(avgEuclideanDistance) %>%
+    unlist(use.names = FALSE) %>%
+    matrix(byrow = TRUE, ncol = sqrt(length(.)))
 }
 
 ##' @title Weighted Sums
@@ -330,37 +317,7 @@ avgEuclideanDistance <- function(radius, lambda, aggregationFactor) {
 ##'   transmissionLikelihoodWeightings(30, 15, 10)
 transmissionLikelihoodWeightings <-
   function(infections, radius, lambda, aggregationFactor) {
-    inputMatrixRows <- nrow(infections)
-    inputMatrixCols <- ncol(infections)
-    diameter <- 2 * radius
-    temp.1 <- matrix(data = 0, nrow = inputMatrixRows, ncol = radius)
-    temp.2 <- matrix(data = 0, nrow = radius, ncol = diameter + inputMatrixCols)
-    input.modified <- rbind(temp.2, cbind(temp.1, infections, temp.1), temp.2)
-
-    print(dim(input.modified))
-
-    weights <- avgEuclideanDistance(radius, lambda)
-    list(i = seq_len(length.out = inputMatrixRows),
-         j = seq_len(length.out = inputMatrixCols)) %>%
-      expand.grid() %>%
-      as_tibble() %>%
-      mutate(weightedSum =
-               map2_dbl(i, j, function(i, j) {
-                 neighbours <- input.modified[i:(i + diameter), j:(j + diameter)]
-
-                 ## MAYBE FIXME: are we certain we don't want matrix
-                 ## multiplication? %*%
-                 ## FIXME: non-conformable arrays
-                 ## Caused by error in `map2_dbl()`:
-                 ##                    ℹ In index: 1.
-                 ## Caused by error in `subset * weights`:
-                 ##                    ! non-conformable arrays
-                 ## matrix(1, 3, 3) * matrix(2, 9, 3)
-                 ## Error in matrix(1, 3, 3) * matrix(2, 9, 3) : non-conformable arrays
-                 products <- neighbours * weights
-                 sum(products)
-               })) %>%
-      as.matrix(byrow = TRUE, nrow = inputMatrixRows, ncol = inputMatrixCols)
+    focal(infections, avgEuclideanDistance(radius, lambda, aggregationFactor))
   }
 
 ## TODO: the situation report data should not be read by this function, it
@@ -369,26 +326,26 @@ transmissionLikelihoodWeightings <-
 ## and spend so many lines to do so! Motivate me! 🫠 Is states_observable the
 ## number of finite states that are observable in the data, or the number of
 ## provinces/states that are observed within the data? C'mon! Document stuff!
-generateLIO2 <- function(rasterStack, healthZoneCoordinates, states_observable = 2) {
-  nrows <- nrow(rasterStack)
-  ncols <- ncol(rasterStack)
-  p <- ncell(rasterStack)
+generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable = 2) {
+  nrows <- nrow(raster.list)
+  ncols <- ncol(raster.list)
+  p <- ncell(raster.list)
 
   Locations <- read.csv(file = healthZoneCoordinates, header = T)
   nHealthZones <-  dim(Locations)[1]
 
-  cellFromXY(rasterStack, cbind(27.13,3.72)) # 1. Note: This is the top left corner cell
-  cellFromXY(rasterStack, cbind(29.47306, 0.49113)) # 1929. Note: This is the Lon, Lat for Beni
-  cellFromXY(rasterStack, cbind(0.49113, 29.47306)) # NA will be produced if you flip the (Lon, Lat) to (Lat, Lon)
-  cellFromXY(rasterStack, cbind(31.29,-2.19)) # 3550. Note This is the bottom righ corner cell
+  cellFromXY(raster.list, cbind(27.13,3.72)) # 1. Note: This is the top left corner cell
+  cellFromXY(raster.list, cbind(29.47306, 0.49113)) # 1929. Note: This is the Lon, Lat for Beni
+  cellFromXY(raster.list, cbind(0.49113, 29.47306)) # NA will be produced if you flip the (Lon, Lat) to (Lat, Lon)
+  cellFromXY(raster.list, cbind(31.29,-2.19)) # 3550. Note This is the bottom righ corner cell
 
-  Hpos <- cellFromXY(rasterStack, as.matrix(Locations[ ,3:2]))
+  Hpos <- cellFromXY(raster.list, as.matrix(Locations[ ,3:2]))
   print('Hpos is')
   print(Hpos)
 
-  rows <- rowFromY(rasterStack, as.vector(Locations[,2]))
+  rows <- rowFromY(raster.list, as.vector(Locations[,2]))
   rows
-  cols <- colFromX(rasterStack, as.vector(Locations[,3]))
+  cols <- colFromX(raster.list, as.vector(Locations[,3]))
   cols
 
   # print('A test:')
@@ -484,7 +441,7 @@ generateLIO2 <- function(rasterStack, healthZoneCoordinates, states_observable =
   # print(sum(Hmat))
   # print(table(Hmat))
 
-  return(list("Hmat" = Hmat, "Locations" = Locations, "rasterStack" = rasterStack, "states_observable" = states_observable))
+  return(list("Hmat" = Hmat, "Locations" = Locations, "raster.list" = raster.list, "states_observable" = states_observable))
 }
 
 ##' @description Q-matrix generation from various parameters.
@@ -508,14 +465,14 @@ generateLIO2 <- function(rasterStack, healthZoneCoordinates, states_observable =
 ##' Q.correlationLength <- 0.8
 ##' states_observable <- 2
 ##'
-##' stack <- createRasterStack("Democratic Republic of Congo",
+##' stack <- createRasterList("Democratic Republic of Congo",
 ##'                            rasterAgg = 10,
 ##'                            isCropped = T,
 ##'                            level1Names = c("Ituri", "Nord-Kivu"),
-##'                            createSusceptibleLayer("Democratic Republic of Congo", rasterAgg = 10))
+##'                            getSusceptible("Democratic Republic of Congo", rasterAgg = 10))
 ##'
-##' nrow(stack$rasterStack)
-##' ncol(stack$rasterStack)
+##' nrow(stack$raster.list)
+##' ncol(stack$raster.list)
 ##'
 ##' Qmat <- genQ(stack, "DBD", Q.variance = 1, Q.correlationLength = 0.8, neighbourhood = 4, states_observable = 2)
 ##'
@@ -594,9 +551,8 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'
 ##' @param countryISO3C The ISO three character code for a recognized country.
 ##'
-##' @param directOutput TODO
-##'
-##' @param rasterAgg TODO
+##' @param rasterAgg The number of adjacent cells in any one direction to
+##'   aggregate into a single cell.
 ##'
 ##' @param alpha The rate of vaccination (per day)
 ##'
@@ -628,15 +584,15 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'     Mandima   1.35551   29.08173   0           0        0         0          0
 ##'   }
 ##'
-##' @param seedRadius TODO
+##' @param seedRadius The number of cells over which to average the seed data in
+##'   a Moore neighbourhood for each locality.
 ##'
-##' @param simulationIsDeterministic TODO
+##' @param simulationIsDeterministic Whether stochasticity is enabled or not; if
+##'   the simulation is deterministic then no stochastic processes are used and
+##'   the simulation is entirely deterministic.
 ##'
-##' @param isCropped TODO
-##'
-##' @param level1Names TODO
-##'
-##' @param dataAssimilationEnabled Whether data assimilation will be used.
+##' @param dataAssimilationEnabled Whether Bayesian data assimilation will be
+##'   used for state reporting data.
 ##'
 ##' @param healthZoneCoordinates The coordinates of health zones in the country
 ##'   of interest which will be used to group and summarize the compartmental
@@ -711,23 +667,24 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##' @examples
 ##' SVEIRD.BayesianDataAssimilation(
 ##'   ## Parameters
-##'   alpha = 0.0015,
-##'   beta = 0.05,
-##'   gamma = 0.16,
-##'   sigma = 0.065,
-##'   delta = 0.002,
-##'   radius = 3,
-##'   lambda = 9,
+##'   alpha = 3.5e-5,
+##'   beta = 7e-3,
+##'   gamma = 1/7,
+##'   sigma = 1/36,
+##'   delta = 2/36,
+##'   radius = 1,
+##'   lambda = 15,
 ##'
 ##'   ## Model runtime
-##'   days = 5,
+##'   days = 4,
 ##'
 ##'   ## Model data
-##'   seedData = here("data", "seed", "CZE_InitialSeedDataSep 1, 2020.csv"),
-##'   layers = createRasterStack(getSubregionRaster("CZE", "Prague"),
-##'                              Susceptible = createSusceptibleLayer("CZE")),
-##'   startDate = "2020-09-01",
-##'   countryISO3C = "CZE",
+##'   seedData = here("data", "seed", "COD_InitialSeedData.csv"),
+##'   layers = createRasterList(getSubregions("COD", c("Itrui", "Nord-Kivu")),
+##'                             getSusceptible("COD"),
+##'                             35),
+##'   startDate = "2018-08-05",
+##'   countryISO3C = "COD",
 ##'   incidenceData = here("data", "observed", "Ebola_Incidence_Data.xlsx"),
 ##'
 ##'   ## Model options
@@ -737,12 +694,11 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   variableCovarianceFunction = "DBD",
 ##'
 ##'   ## Special parameters
-##'   Q.variance = 0,
-##'   Q.correlationLength = 0,
+##'   Q.variance = 0.55,
+##'   Q.correlationLength = 6.75e-1,
 ##'   neighbourhood = 3,
-##'   psi.diagonal = 3
+##'   psi.diagonal = 1e-3
 ##' )
-##'
 SVEIRD.BayesianDataAssimilation <-
   function(## Parameters
            alpha,
@@ -796,111 +752,117 @@ SVEIRD.BayesianDataAssimilation <-
     ncols <- ncol(layers)
     p <- nrows * ncols # What is the meaning of p?
 
-    with("names<-"(unstack(layers), names(layers)), {
-      ## NOTE: cast the seed data from the initial infections equitably, in a
-      ## Moore Neighborhood of cells.
-      for (locationNumber in seq_along(nrow(seedData))) {
-        ## Select only the epidemic compartment data
-        data <- seedData[locationNumber, -c(1:3)]
-        ## NOTE: the numerator is the exposed and infected compartment; the
-        ## denominator is the number of cells per region.
-        data[c(2, 3)] <- data[c(2, 3)] / (2 * seedRadius + 1)^2
+    ## NOTE: cast the seed data from the initial infections equitably, in a
+    ## Moore Neighborhood of cells.
+    for (locationNumber in seq_along(nrow(seedData))) {
+      ## Select only the epidemic compartment data
+      data <- as.vector(seedData[locationNumber, -c(1:3)])
+      ## NOTE: the numerator is the exposed and infected compartment; the
+      ## denominator is the number of cells per region.
+      data[2:3] <- data[2:3] / (2 * seedRadius + 1)^2
 
-        row <- terra::rowFromY(rasterStack, seedData[locationNumber, 2])
-        rowRange <- seq(from = row - seedRadius,
-                        to = row + seedRadius)
+      ## Get a cell number from the latitude for this health region.
+      row <- terra::rowFromY(layers, seedData[locationNumber, 2])
+      rowRange <- seq(from = row - seedRadius,
+                      to = row + seedRadius)
 
-        col <- terra::colFromX(rasterStack, seedData[locationNumber, 3])
-        columnRange <- seq(from = col - seedRadius,
-                           to = col + seedRadius)
+      ## Get a cell number from the longitude for this health region.
+      col <- terra::colFromX(layers, seedData[locationNumber, 3])
+      columnRange <- seq(from = col - seedRadius,
+                         to = col + seedRadius)
 
-        ## NOTE: these lines assume that the layers in the RasterStack are
-        ## available in this environment directly.
-        Vaccinated[row, col]            %<>% sum(data[1])
-        Exposed[rowRange, columnRange]  %<>% sum(data[2])
-        Infected[rowRange, columnRange] %<>% sum(data[3])
-        Recovered[row, col]             %<>% sum(data[4])
-        Dead[row, col]                  %<>% sum(data[5])
-      }
+      ## FIXME TODO: these layers are empty, so there's no need to summate the
+      ## values. The values can simply be overlaid. MAYBE TODO: a terra method
+      ## probably exists to assign the values in a vector to given cells in a
+      ## vector of selected layers in a SpatRasterCollection.
+      ##
+      ## layers[2:6][row, col] <- data
+      layers$Vaccinated[row, col]            %<>% sum(data[1])
+      layers$Recovered[row, col]             %<>% sum(data[4])
+      layers$Dead[row, col]                  %<>% sum(data[5])
+      ## FIXME: the exposed and infected persons will be seeded in multiple
+      ## cells, cloning them!
+      layers$Exposed[rowRange, columnRange]  %<>% sum(data[2])
+      layers$Infected[rowRange, columnRange] %<>% sum(data[3])
+    }
 
-      ## Calculate the proportion of people who will move from the susceptibile
-      ## compartment to another compartment. NOTE: the names, exactly as they
-      ## are, provide semantics for the components: e.g. accessing the
-      ## proportion$vaccinated, or the proportion$exposed, is self-describing.
-      proportion <-
-        sapply(c(vaccinated = Vaccinated,
-                 exposed = Exposed,
-                 infected = Infected,
-                 recovered = Recovered,
-                 dead = Dead),
-               function(otherCompartment, susceptibleCompartment) {
-                 sum(values(otherCompartment)) / susceptibleCompartment
-               },
-               ## NOTE: Supplying the sum of the values of the susceptible compartment
-               ## as an extra argument passed to the anonymous function ensures
-               ## that its value is only calculated once.
-               susceptibleCompartment = sum(values(Susceptible)),
-               SIMPLIFY = FALSE,
-               USE.NAMES = TRUE)
+    ## Calculate the proportion of people who will move from the susceptibile
+    ## compartment to another compartment. NOTE: the names, exactly as they
+    ## are, provide semantics for the components: e.g. accessing the
+    ## proportion$vaccinated, or the proportion$exposed, is self-describing.
+    proportion <-
+      map_dbl(c(vaccinated = layers$Vaccinated,
+                exposed = layers$Exposed,
+                infected = layers$Infected,
+                recovered = layers$Recovered,
+                dead = layers$Dead),
+              function(otherCompartment, susceptibleCompartment) {
+                sum(values(otherCompartment)) / susceptibleCompartment
+              },
+              ## NOTE: Supplying the sum of the values of the susceptible compartment
+              ## as an extra argument passed to the anonymous function ensures
+              ## that its value is only calculated once.
+              susceptibleCompartment = sum(values(layers$Susceptible)))
 
-      ## Calculate the actual number of people that have moved to other compartments
-      ## and subtract these from the original Susceptible compartment count.
-      Susceptible %<>% sum(-Susceptible * proportion)
+    ## Calculate the actual number of people that have moved to other compartments
+    ## and subtract these from the original Susceptible compartment count.
+    ## FIXME: Error in -proportion : invalid argument to unary operator
+    values(layers$Susceptible) %<>% sum(as.matrix(layers$Susceptible) * -proportion)
 
-      if (dataAssimilationEnabled) {
-        ## TODO: remove this, or make it a check that the data is the proper
-        ## dimension, so the SVEIRD function isn't noisy.
-        ## print(sprintf("Dimension of Incidence Matrix: %s ✕ %s",
-        ##               dim(incidenceData)[1],
-        ##               dim(incidenceData)[2]))
+    if (dataAssimilationEnabled) {
+      ## TODO: remove this, or make it a check that the data is the proper
+      ## dimension, so the SVEIRD function isn't noisy.
+      ## print(sprintf("Dimension of Incidence Matrix: %s ✕ %s",
+      ##               dim(incidenceData)[1],
+      ##               dim(incidenceData)[2]))
 
-        Hlist <- generateLIO2(rasterStack,
-                              healthZoneCoordinates,
-                              states_observable = states_observable)
-        Hmat <- Hlist$Hmat
-        ## print(sprintf("Dimension of the Linear Interpolation Operator: %s ✕ %s",
-        ##             dim(Hmat)[1],
-        ##             dim(Hmat)[2]))
+      Hlist <- generateLIO2(layers,
+                            healthZoneCoordinates,
+                            states_observable = states_observable)
+      Hmat <- Hlist$Hmat
+      ## print(sprintf("Dimension of the Linear Interpolation Operator: %s ✕ %s",
+      ##             dim(Hmat)[1],
+      ##             dim(Hmat)[2]))
 
-        Locations <- Hlist$Locations
-        nHealthZones <- as.numeric(dim(Locations)[1])
+      Locations <- Hlist$Locations
+      nHealthZones <- as.numeric(dim(Locations)[1])
 
-        QMat <- genQ(nrows,
-                     ncols,
-                     variableCovarianceFunction,
-                     Q.variance,
-                     Q.correlationLength,
-                     neighbourhood,
-                     states_observable = states)
+      QMat <- genQ(nrows,
+                   ncols,
+                   variableCovarianceFunction,
+                   Q.variance,
+                   Q.correlationLength,
+                   neighbourhood,
+                   states_observable = states)
 
-        Q <- QMat$Q
-        ## print(paste("Dimension of the Model Error Covariance Matrix: ",
-        ##             dim(Q)[1],
-        ##             dim(Q)[2]))
+      Q <- QMat$Q
+      ## print(paste("Dimension of the Model Error Covariance Matrix: ",
+      ##             dim(Q)[1],
+      ##             dim(Q)[2]))
 
-        ## NOTE: Among ensemble-type data assimilation processes, the model
-        ## error covariance matrix is time invariant.
-        QFull <- QMat$QFull
-        ## print(det(QFull)) # The determinant of the Q matrix.
-        ## print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ",
-        ##             dim(QFull)[1],
-        ##             dim(QFull)[2]))
+      ## NOTE: Among ensemble-type data assimilation processes, the model
+      ## error covariance matrix is time invariant.
+      QFull <- QMat$QFull
+      ## print(det(QFull)) # The determinant of the Q matrix.
+      ## print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ",
+      ##             dim(QFull)[1],
+      ##             dim(QFull)[2]))
 
-        QHt <- QFull %*% t(Hmat)
-        HQHt <- Hmat %*% QHt
+      QHt <- QFull %*% t(Hmat)
+      HQHt <- Hmat %*% QHt
 
-        ## TODO: remove these print statments entirely, or wrap them in some sort
-        ## of debugging printer function. HQHt is a square-symmetric matrix
-        ## print(HQHt)
-        ## print(diag(HQHt))
-        ## print(paste("det(HQHt) is:", det(HQHt))) # The determinant of the matrix.
-        ## print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
-        ## print(HQHt[1:8, 1:8])
+      ## TODO: remove these print statments entirely, or wrap them in some sort
+      ## of debugging printer function. HQHt is a square-symmetric matrix
+      ## print(HQHt)
+      ## print(diag(HQHt))
+      ## print(paste("det(HQHt) is:", det(HQHt))) # The determinant of the matrix.
+      ## print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
+      ## print(HQHt[1:8, 1:8])
 
-        ## The sum of the Eigen values should be equal to q
-        stopifnot(sum(eigen(HQHt)$values) == q)
-      }
-    })
+      ## FIXME: there is no q anymore! Should there be?
+      ## The sum of the Eigen values should be equal to q
+      ## stopifnot(sum(eigen(HQHt)$values) == q)
+    }
 
     ## NOTE: preallocate the list which will hold a timeseries of RasterStack
     ## objects.
@@ -925,31 +887,29 @@ SVEIRD.BayesianDataAssimilation <-
 
       ## Set NSVEI counts in the summary table.
       with(proportion, {
-        summary[t, 2] <- round(sum(Susceptible, Vaccinated, Exposed, Infected, Recovered, Dead))
-        summary[t, 3] <- round(Susceptible)
-        summary[t, 4] <- round(Vaccinated) # Absorbing state
+        summary[t, 2] <- round(sum(susceptible, vaccinated, exposed, infected, recovered, dead))
+        summary[t, 3] <- round(susceptible)
+        summary[t, 4] <- round(vaccinated) # Absorbing state
         ## This is the prevalence (active exposed cases) at time t, NOT the
         ## cumulative sum.
-        summary[t, 5] <- round(Exposed)
+        summary[t, 5] <- round(exposed)
         ## This is the prevalence (active infectious cases) at time t, NOT the
         ## cumulative sum.
-        summary[t, 6] <- round(Infected)
+        summary[t, 6] <- round(infected)
 
-        layerWideMatrices <- lapply(c(Inhabitable = Inhabitable,
-                                      Susceptible = Susceptible,
-                                      Vaccinated = Vaccinated,
-                                      Exposed = Exposed,
-                                      Infected = Infected,
-                                      Recovered = Recovered,
-                                      Dead = Dead),
+        layerWideMatrices <- lapply(c(Inhabited = inhabited,
+                                      Susceptible = susceptible,
+                                      Vaccinated = vaccinated,
+                                      Exposed = exposed,
+                                      Infected = infected,
+                                      Recovered = recovered,
+                                      Dead = dead),
                                     terra::as.matrix,
                                     wide = TRUE)
       })
 
       numberLiving <- sum(layerWideMatrices)
-      ## TODO: this is the slowest code in the original; how does the refactored
-      ## code perform?
-      I_tilde <-
+      transmissionLikelihoods <-
         transmissionLikelihoodWeightings(layerWideMatrices$Infected,
                                          radius,
                                          lambda,
@@ -966,11 +926,11 @@ SVEIRD.BayesianDataAssimilation <-
       proportionSusceptible <- layerWideMatrices$Susceptible / numberLiving
       proportionSusceptible[is.nan(proportionSusceptible)] <- 0
 
-      growth <- beta * proportionSusceptible * I_tilde
+      growth <- beta * proportionSusceptible * transmissionLikelihoods
       newExposed <- growth %>%
         if(simulationIsDetermistic) growth else rpois(1, growth)
 
-      newExposed[c(susceptibleMatrix < 1) || I_tilde < 1] <- 0
+      newExposed[c(susceptibleMatrix < 1) || transmissionLikelihoods < 1] <- 0
 
       dailyExposed <- sum(newExposed)
 
@@ -1061,8 +1021,8 @@ SVEIRD.BayesianDataAssimilation <-
         rat <- sum(terra::as.matrix(Exposed, wide = TRUE)) /
           (sum(Infected) + 1e-9) # FIXME: magic number
 
-        ## FIXME: the method used is ambiguous because base, raster, and
-        ## terra each define transpose functions.
+        ## MAYBE FIXME: this operation seems dubious. What was the motivation
+        ## behind it?
         Xf.OSI <- Infected %>% t() %>% as.vector() %>% t() %>% t()
 
         HXf <- Hmat %*% Xf.OSI
@@ -1086,6 +1046,11 @@ SVEIRD.BayesianDataAssimilation <-
                     ncol = ncols,
                     byrow = T)
 
+        ## NOTE: if an area is uninhabitable replace its value with zero; it
+        ## makes more sense to instead use NA values to prevent calculating
+        ## values for uninhabitable areas. MAYBE TODO: a raster with
+        ## uninhabitable areas which can mask the susceptible and any other
+        ## layer with NAs would be better than this.
         I %<>% replaceInequalityWith(f = `==`, valInhabitable, 0, 0)
         cumInfected <- cumInfected +
           sum(I - terra::as.matrix(preDAInfected, wide = TRUE))
@@ -1102,8 +1067,8 @@ SVEIRD.BayesianDataAssimilation <-
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
-##' @title 
-##' @return 
+##' @title
+##' @return
 ##' @author Bryce
 awfulPlottingCode <- function() {
   ## TODO: refactor everything below this line.
@@ -1111,8 +1076,8 @@ awfulPlottingCode <- function() {
   dir.create("www/MP4")               # Create empty MP4 folder before running new simulation
   dir.create("www/MP4/paper")         # Create paper folder before for plots without labels
 
-  save(stack$rasterStack[["Infected"]], file = "infectedRaster.RData")
-  ## plot(layers.timeseries[[t]]$rasterStack[["Infected"]],
+  save(stack$raster.list[["Infected"]], file = "infectedRaster.RData")
+  ## plot(layers.timeseries[[t]]$raster.list[["Infected"]],
   ##      col = pal(8)[-2],
   ##      axes = T,
   ##      cex.main = 1,
@@ -1131,11 +1096,11 @@ awfulPlottingCode <- function() {
 
   ## Print a PNG for the infected variable
   rasterLayer <- "Infected"
-  ## print(layers.timeseries[[1]]$rasterStack[[rasterLayer]])
+  ## print(layers.timeseries[[1]]$raster.list[[rasterLayer]])
   maxRasterLayerVal <- 0
 
   for (t in 1:days) {
-    tempMax <- minmax(layers.timeseries[[t]]$rasterStack[[rasterLayer]])
+    tempMax <- minmax(layers.timeseries[[t]]$raster.list[[rasterLayer]])
     maxRasterLayerVal <- max(maxRasterLayerVal, tempMax)
   }
 
@@ -1151,7 +1116,7 @@ awfulPlottingCode <- function() {
     ## fname = paste0("MP4/", countryISO3C, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
 
     ## From /home/bryce/Documents/src/r/spatialEpisim/R/plotting/rasterPlot.R
-    printStackLayer(rasterStack = layers.timeseries[[t]]$rasterStack,
+    printStackLayer(raster.list = layers.timeseries[[t]]$raster.list,
                     rasterLayer = rasterLayer,
                     directOutput = directOutput,
                     Level1Identifier = stack$Level1Identifier,
@@ -1179,7 +1144,7 @@ awfulPlottingCode <- function() {
 ##'
 ##' .. content for \details{} ..
 ##' @title Awful plotting code №2
-##' @return 
+##' @return
 ##' @author Bryce
 awfulPlottingCode_two <- function() {
     ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC',
@@ -1206,7 +1171,7 @@ awfulPlottingCode_two <- function() {
     ## plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
     ## plot(Level1Identifier, add = TRUE)
     ##
-    ## plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabitable Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+    ## plot(Inhabited, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabited Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
     ## plot(Level1Identifier, add = TRUE)
     ## writeRaster(Infected, "seed.tif", overwrite = TRUE)
 }
