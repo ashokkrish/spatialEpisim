@@ -37,7 +37,7 @@ server <- function(input, output, session) {
   # observed data. THEM: Dynamically generate a date slider that contains the dates
   # for all the observed data in the incidence/death file.
   output$transmissionPathDateInput <- renderUI({
-    req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
+    req(input$appMode == "Visualizer")
 
     dateInfo <- colnames(transmissionPathData())[4:length(colnames(transmissionPathData()))]
 
@@ -94,8 +94,6 @@ server <- function(input, output, session) {
 
   output$transmission <- renderLeaflet({
     shiny::validate(need(input$selectedCountry))
-    ## req(iv_dataupload$is_valid())
-
     shiny::validate(need(input$cropLev1))
     shiny::validate(need(input$level1List))
 
@@ -139,15 +137,11 @@ server <- function(input, output, session) {
   })
 
   output$lollipop <- renderPlotly({
-    req(iv_dataupload$is_valid())
-
     p <- plotLolliChart(input$selectedCountry, input$incidenceData$datapath)
     ggplotly(p)
   })
 
   output$timeSeries <- renderPlotly({
-    shiny::validate(iv_dataupload$is_valid())
-
     ## TODO: this needs to be updated so that it plots the users data.
     plotTimeSeries(here("data", "observeddata", "Ebola_Incidence_Data.xlsx"),
                  sprintf("Time-Series Graph of Incidence/Death in %s",
@@ -162,7 +156,7 @@ server <- function(input, output, session) {
 
 
   transmissionPathData <- reactive({
-    req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
+    req(input$appMode == "Visualizer")
 
     incidenceData <- openDataFile(input$incidenceData)
     latLonData <- openDataFile(input$latLonData)
@@ -176,15 +170,6 @@ server <- function(input, output, session) {
     plotData <- cbind(latLonData, lapply(incidence, as.numeric))
   })
 
-  observeEvent(input$latLonData, {
-    fileInputs$latLonStatus <- 'uploaded'
-  })
-
-  observeEvent(input$incidenceData, {
-    fileInputs$incidenceStatus <- 'uploaded'
-  })
-
-
   observeEvent({input$selectedCountry
                 input$appMode}, {
     if(!is.null(input$selectedCountry) && input$selectedCountry != "" && input$appMode == "Visualizer") {
@@ -192,9 +177,6 @@ server <- function(input, output, session) {
     } else {
       shinyjs::hide(id = "maptabPanels")
     }
-
-    fileInputs$latLonStatus <- 'reset'
-    fileInputs$incidenceStatus <- 'reset'
   })
 
   observeEvent({input$selectedCountry
@@ -219,31 +201,26 @@ server <- function(input, output, session) {
   observeEvent(input$visReset, {
     updateCheckboxInput(inputId = "cropLev1", value = FALSE)
     updatePickerInput(inputId = "selectedCountry", selected = "")
-
-    ## FIXME: WTF
-    fileInputs$latLonStatus <- 'reset'
-    fileInputs$incidenceStatus <- 'reset'
   })
 
   ## FIXME: a better option would be to enable or disable the buttons of the tab
   ## when the data is valid or invalid.
-  observe({
-    if(input$appMode == "Visualizer") {
-      if(iv_dataupload$is_valid()) {
-        showTab(inputId = 'vizTabSet', target = "Transmission Path")
-        showTab(inputId = 'vizTabSet', target = "Lollipop Chart")
-        showTab(inputId = 'vizTabSet', target = "Time-Series Graph")
-      } else {
-        hideTab(inputId = 'vizTabSet', target = "Transmission Path")
-        hideTab(inputId = 'vizTabSet', target = "Lollipop Chart")
-        hideTab(inputId = 'vizTabSet', target = "Time-Series Graph")
-      }
-    }
-  })
+  ## observe({
+  ##   if(input$appMode == "Visualizer") {
+  ##     if(iv_dataupload$is_valid()) {
+  ##       showTab(inputId = 'vizTabSet', target = "Transmission Path")
+  ##       showTab(inputId = 'vizTabSet', target = "Lollipop Chart")
+  ##       showTab(inputId = 'vizTabSet', target = "Time-Series Graph")
+  ##     } else {
+  ##       hideTab(inputId = 'vizTabSet', target = "Transmission Path")
+  ##       hideTab(inputId = 'vizTabSet', target = "Lollipop Chart")
+  ##       hideTab(inputId = 'vizTabSet', target = "Time-Series Graph")
+  ##     }
+  ##   }
+  ## })
 
   ## FIXME: plot the susceptible layer, cropped or not.
   observeEvent(input$go, {
-    ## req(iv$is_valid())
     output$outputImage <- renderImage({
 
       outfile <- tempfile(fileext = '.png')
@@ -279,13 +256,8 @@ server <- function(input, output, session) {
     ## shinyjs::disable(id = "go")
   })
 
-  ## MAYBE TODO: inline the pipeline into the following observable.
   provinces <- reactive({
-    upperISO3C <- toupper(req(selectedCountryISO3C()))
-    path <- paste0("gadm/",
-                   "gadm36_", # FIXME NOTE: What does 36 mean?
-                   upperISO3C,
-                   "_1_sp.rds")
+    path <- here("gadm", sprintf("gadm36_%s_1_sp.rds", req(selectedCountryISO3C())))
     if (file.exists(path)) {
       readRDS(path)$NAME_1
     }
@@ -356,12 +328,7 @@ server <- function(input, output, session) {
                             "agg",
                             value = recommendedRasterAggregationFactor()))
 
-
-  lineThickness <- 1.5
-
   observeEvent(input$go, {
-    req(iv$is_valid())
-
     output$infectedExposedPlot <- renderPlotly({
       p <- makePlot(
         compartments = c("E", "I"),
@@ -393,11 +360,9 @@ server <- function(input, output, session) {
             legend.title = element_text(size = 10, face = "bold"),
             legend.box = "horizontal")
 
+    ## FIXME: kill this; awful. No.
     simulationSummaryPath <-
-      reactive(here("www", "MP4", paste(sep = "_",
-                                        selectedCountryISO3C(),
-                                        "summary.xlsx")))
-
+      reactive({ here("www", "MP4", paste(sep = "_", selectedCountryISO3C(), "summary.xlsx")) })
     simulationSummary <- reactive({
       shiny::validate(need(file.exists(simulationSummaryPath()),
                            message = "Waiting for simulation summary XLSX."))
@@ -420,20 +385,19 @@ server <- function(input, output, session) {
                  coord_cartesian(clip="off"))
       }
 
+    ## FIXME: these are kind of awful; DONT do it this way.
     output$cumulativeDeaths <-
-      renderPlotly(
-        plotSimulationSummaryVariable("red", D,
-                                      "Estimated Cumulative Deaths"))
-
+      list("red", D, "Estimated Cumulative Deaths") %>%
+      do.call(what = plotSimulationSummaryVariable, args = .) %>%
+      renderPlotly()
     output$dailyIncidence <-
-      renderPlotly(
-        plotSimulationSummaryVariable("blue", newI,
-                                      "Estimated Daily Incidence"))
-
+      list("blue", newI, "Estimated Daily Incidence") %>%
+      do.call(what = plotSimulationSummaryVariable, args = .) %>%
+      renderPlotly()
     output$cumulativeIncidence <-
-      renderPlotly(
-        plotSimulationSummaryVariable("cyan", cumI,
-                                      "Estimated Cumulative Daily Incidence"))
+      list("cyan", cumI, "Estimated Cumulative Daily Incidence") %>%
+      do.call(what = plotSimulationSummaryVariable, args = .) %>%
+      renderPlotly()
 
     ## TODO: inline the plotting function in global.R, rather than in a separate
     ## file in R, especially if it is unused elsewhere in the project. If it is
@@ -469,9 +433,6 @@ server <- function(input, output, session) {
           InitialRecovered = 0,
           InitialDead = 0), sheetName, row.names = FALSE)
       })
-
-    ## FIXME WTF
-    fileInputs$smStatus <- 'reset'
   })
 
   observe({
@@ -599,14 +560,12 @@ server <- function(input, output, session) {
     })
 
     ## TODO: display multiple animations or a selection among available options.
-  }) %>% bindEvent(input$go)
 
-  ## NOTE: when the user has run a simulation, scroll to the top of the page so
-  ## that they can see the tab panel buttons and the output. TODO: include a
-  ## scroll to top button in the UI when appropriate, and otherwise make the
-  ## model configuration panel scrollable without scrolling the main output
-  ## area.
-  observe({
+    ## NOTE: when the user has run a simulation, scroll to the top of the page so
+    ## that they can see the tab panel buttons and the output. TODO: include a
+    ## scroll to top button in the UI when appropriate, and otherwise make the
+    ## model configuration panel scrollable without scrolling the main output
+    ## area.
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
     runjs("window.scrollTo(0, 0)")

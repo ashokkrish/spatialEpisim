@@ -111,4 +111,6 @@ updateNumericInputs <- function(defaults, session) {
 ## WorldPopViz.R; that work should only be done once.
 population <- read_xlsx(here("data", "misc", "population.xlsx"))
 
+lineThickness <- 1.5
+
 shinyAppDir(here::here()) # and hurrah!
