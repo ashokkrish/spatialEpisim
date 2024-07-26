@@ -275,7 +275,7 @@ createRasterList <- function(subregions, Susceptible, aggregationFactor = NULL) 
 ##' @returns a matrix of the average Euclidean distances
 ##' @author Bryce Carson
 ##' @author Thomas White
-avgEuclideanDistance <- function(radius, lambda, aggregationFactor) {
+avgEuclideanDistance <- function(radius, lambda, aggregationFactor = NULL) {
   ## NOTE: “I have a philosophical and geometric question about these
   ## identities: what do they imply about the dimension and magnitude of the
   ## raster which the weighted number sum will be used with? Can we rid the
@@ -308,6 +308,8 @@ avgEuclideanDistance <- function(radius, lambda, aggregationFactor) {
 ##'   a raster of terrestrial data.
 ##' @param radius a constant; see details.
 ##' @param lambda movemenet distance (in kilometers) per day; see details.
+##' @param aggregationFactor the degree of aggregation applied to the raster
+##'   data mentioned in the function details.
 ##' @returns a matrix of weightings for the calculation of the proportion of
 ##'   exposed individuals who will become infectious.
 ##' @author Bryce Carson
