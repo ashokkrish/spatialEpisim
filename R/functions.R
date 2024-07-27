@@ -23,12 +23,19 @@ suppressPackageStartupMessages({
   library(magrittr)
 })
 
-## DONE
-##' Download countryRaster 2020 1 km aggregated UN-adjusted population count data
+##' Download 1 km aggregated UN-adjusted population count spatial data from 2020
+##' through the WorldPop servers.
 ##'
 ##' This function only downloads the file if necessary (if it doesn't exist at
 ##' path).
-##' @title
+##'
+##' ppp is the code used by WorldPop to mean population estimate for population
+##' counts; similar data, but which grids population density is coded _pd_
+##' rather than _ppp_. 1km means 1 km aggregation of the data. The description
+##' WorldPop gives for this data is «individual countries 2000-2020 UN adjusted
+##' aggregated to 1km resolution using 100m resolution population count
+##' datasets». See: https://hub.worldpop.org/doi/10.5258/SOTON/WP00671.
+##' @title Download WorldPop 2020 data
 ##' @param countryISO3C The uppercase ISO three character code a recognized
 ##'   country.
 ##' @param folder The destination folder the downloaded data will be stored in
@@ -45,13 +52,6 @@ downloadWorldPopData <- function(countryISO3C, folder = here("data", "geotiff"))
       "Global_2000_2020_1km_UNadj",
       "2020",
       countryISO3C,
-      ## NOTE: ppp is the code used by WorldPop to mean population estimate for
-      ## population counts; similar data, but which grids population density is
-      ## coded _pd_ rather than _ppp_. NOTE: 1km means, ObVIoUslY 🫠, 1 km
-      ## aggregation of the data. The description WorldPop gives for this data
-      ## is "individual countries 2000-2020 UN adjusted aggregated to 1km
-      ## resolution using 100m resolution population count datasets." See:
-      ## https://hub.worldpop.org/doi/10.5258/SOTON/WP00671.
       basename = sprintf("%s_ppp_2020_1km_Aggregated_UNadj.tif",
                          tolower(countryISO3C))) %>%
     httr2:::dots_to_path()
