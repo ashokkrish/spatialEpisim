@@ -324,39 +324,53 @@ transmissionLikelihoodWeightings <-
     focal(infections, avgEuclideanDistance(radius, lambda, aggregationFactor))
   }
 
-## TODO: the situation report data should not be read by this function, it
+## TODO: the health zone coordinate data should not be read by this function, it
 ## should take the dataframe that it needs, no more. TODO: rename this function
 ## so that it is semantic; what on earth is LIO2? Why do we care to generate it
-## and spend so many lines to do so! Motivate me! 🫠 Is states_observable the
+## and spend so many lines to do so! Motivate me! 🫠 Is compartmentsReported the
 ## number of finite states that are observable in the data, or the number of
 ## provinces/states that are observed within the data? C'mon! Document stuff!
-generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable = 2) {
+##' @title Generate an LIO2 matrix
+##' @param raster.list a list of SpatRaster objects containing the SVEIRD
+##'   compartmental data and an additional SpatRaster classifying inhabitation
+##'   of the land.
+##' @param healthZoneCoordinates a table of values giving the latitude and
+##'   longitude coordinates for health zones in the country of interest. See the
+##'   description of the healthZoneCoordinates argument in the function
+##'   SVEIRD.BayesianDataAssimilation
+##' @param compartmentsReported previously identified as states_observable, this
+##'   is the count of compartments that are reported on and which will have data
+##'   assimilated.
+##' @returns
+##' @author Bryce Carson
+##' @author Ashok Krishnmaurthy
+##' @author Michael Myer
+generateLIO2 <- function(raster.list, healthZoneCoordinates, compartmentsReported = 2) {
   nrows <- nrow(raster.list)
   ncols <- ncol(raster.list)
   p <- ncell(raster.list)
 
-  Locations <- read.csv(file = healthZoneCoordinates, header = T)
-  nHealthZones <-  dim(Locations)[1]
+  nHealthZones <- nrow(healthZoneCoordinates)
 
   cellFromXY(raster.list, cbind(27.13,3.72)) # 1. Note: This is the top left corner cell
   cellFromXY(raster.list, cbind(29.47306, 0.49113)) # 1929. Note: This is the Lon, Lat for Beni
   cellFromXY(raster.list, cbind(0.49113, 29.47306)) # NA will be produced if you flip the (Lon, Lat) to (Lat, Lon)
   cellFromXY(raster.list, cbind(31.29,-2.19)) # 3550. Note This is the bottom righ corner cell
 
-  Hpos <- cellFromXY(raster.list, as.matrix(Locations[ ,3:2]))
+  ## NOTE: H position is "health zone position".
+  Hpos <- cellFromXY(raster.list, as.matrix(healthZoneCoordinates[ ,3:2]))
   print('Hpos is')
   print(Hpos)
 
-  rows <- rowFromY(raster.list, as.vector(Locations[,2]))
-  rows
-  cols <- colFromX(raster.list, as.vector(Locations[,3]))
-  cols
+  rows <- rowFromY(raster.list, as.vector(healthZoneCoordinates[,2]))
+  cols <- colFromX(raster.list, as.vector(healthZoneCoordinates[,3]))
 
   # print('A test:')
   # print(Hpos[5])
   # print(rows[5])
   # print(cols[5])
 
+  ## NOTE: the 
   # Hpos for Beni is obtained as = (rows - 1)*ncols + cols = (39-1)*50 + 29 = 1929
 
   if (!(anyDuplicated(Hpos) == 0)){
@@ -403,7 +417,7 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
 
   Hmat <- H
 
-  # if (states_observable == 2)
+  # if (compartmentsReported == 2)
   # {
   #   Htop <- cbind(H, H0)
   #   Hbottom <- cbind(H0, H)
@@ -413,16 +427,16 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
   #   Hmat <- H
   # }
 
-  if (states_observable > 1)
+  if (compartmentsReported > 1)
   {
-    for (n in seq(from = 1, to = states_observable-1, by = 1)){
+    for (n in seq(from = 1, to = compartmentsReported-1, by = 1)){
       Hmat <- cbind(Hmat, H0)
     }
 
-    for (n in seq(from = 1, to = states_observable-1, by = 1)){
+    for (n in seq(from = 1, to = compartmentsReported-1, by = 1)){
       Htop <- matrix(0, nHealthZones, n*p)
-      if ((n+1 - states_observable) !=  0){
-        Hbottom <- matrix(0, nHealthZones, (states_observable-n-1)*p)
+      if ((n+1 - compartmentsReported) !=  0){
+        Hbottom <- matrix(0, nHealthZones, (compartmentsReported-n-1)*p)
         # print(dim(Htop))
         # print(dim(H))
         # print(dim(Hbottom))
@@ -445,7 +459,7 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
   # print(sum(Hmat))
   # print(table(Hmat))
 
-  return(list("Hmat" = Hmat, "Locations" = Locations, "raster.list" = raster.list, "states_observable" = states_observable))
+  return(list("Hmat" = Hmat, "healthZoneCoordinates" = healthZoneCoordinates, "raster.list" = raster.list, "compartmentsReported" = compartmentsReported))
 }
 
 ##' @description Q-matrix generation from various parameters.
@@ -457,7 +471,7 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
 ##' @param Q.variance TODO
 ##' @param Q.correlationLength TODO
 ##' @param neighbourhood TODO
-##' @param states_observable TODO
+##' @param compartmentsReported TODO
 ##' @returns TODO
 ##' @author Ashok Krishnmaurthy
 ##' @author Michael Myer
@@ -467,7 +481,7 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
 ##' variableCovarianceFunction <- "DBD"
 ##' Q.variance <- 2
 ##' Q.correlationLength <- 0.8
-##' states_observable <- 2
+##' compartmentsReported <- 2
 ##'
 ##' stack <- createRasterList("Democratic Republic of Congo",
 ##'                            rasterAgg = 10,
@@ -478,7 +492,7 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
 ##' nrow(stack$raster.list)
 ##' ncol(stack$raster.list)
 ##'
-##' Qmat <- genQ(stack, "DBD", Q.variance = 1, Q.correlationLength = 0.8, neighbourhood = 4, states_observable = 2)
+##' Qmat <- genQ(stack, "DBD", Q.variance = 1, Q.correlationLength = 0.8, neighbourhood = 4, compartmentsReported = 2)
 ##'
 ##' x <- 1:10
 ##' y <- 1:10
@@ -490,7 +504,7 @@ generateLIO2 <- function(raster.list, healthZoneCoordinates, states_observable =
 ##' persp3D(x = X, y = Y, z = Qmat$Q[1:10,1:10], theta = 90, expand = 0.5,
 ##'         xlab = "Columns", ylab = "Rows", scale = FALSE, clim = c(0, 1),
 ##'         colkey = list(side = 1))
-genQ <- function(nrows, ncols, variableCovarianceFunction, Q.variance, Q.correlationLength, neighbourhood, states_observable = 2) {
+genQ <- function(nrows, ncols, variableCovarianceFunction, Q.variance, Q.correlationLength, neighbourhood, compartmentsReported = 2) {
   p <- nrows * ncols
   Q0 <- Q <- matrix(0, p, p)
   rows <- rep(1:(p / ncols), each = ncols)
@@ -524,7 +538,7 @@ Valid function names are:
   Q[d < neighbourhood] <- varCov.fun(Q.variance)[d < neighbourhood]
   diag(Q) <- ifelse(diag(Q) == 0, Q.variance, diag(Q))
 
-  if (states_observable == 2) {
+  if (compartmentsReported == 2) {
     Qtop <- cbind(Q, Q0)
     Qbottom <- cbind(Q0, Q)
     QFull <- rbind(Qtop, Qbottom)
