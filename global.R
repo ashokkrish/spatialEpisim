@@ -16,6 +16,7 @@ suppressPackageStartupMessages({
   library(deSolve)
   library(DT)
   library(htmltools)
+  library(bslib)
 
   library(lattice)
   library(latticeExtra)

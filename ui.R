@@ -1,3 +1,4 @@
+source("theme.R")
 ## Override the default arguments
 wellPanel <- \(...) div(..., class = "well", style = "margin-bottom: 0.75rem;")
 plotlyOutput <- \(...) plotly::plotlyOutput(..., width = 800, height = 600)
@@ -223,7 +224,7 @@ visualizer <-
                              value = "Leaflet Cropped Plot",
                              leafletOutput("croppedLeafletMap")),
 
-                    tabPanel(title = "terra Plot",
+                    tabPanel(title = "Terra Plot",
                              imageOutput("terraOutputImage")),
 
                     tabPanel(title = "Transmission Path",
@@ -273,11 +274,14 @@ model <- tabPanel(title = "Model",
                   sidebarLayout(sidebar, mainPanel(visualizer, simulator)))
 
 ui <- fluidPage(withTags(head(link(rel = "stylesheet",
-                                   type="text/css",
-                                   href="spatialEpisimBanner.css"))),
+                                   type="text/css"
+                                   #href="spatialEpisimBanner.css"
+                                   ))),
                 navbarPage(HTML(titleHTML), model, authors),
                 add_busy_spinner("cube-grid",
                                  "#18536F",
                                  margins = c("50%","50%")),
                 title = "spatialEpisim",
-                theme = bs_theme(version = 4, primary = "#18536F"))
+                #theme = bs_theme(version = 4, primary = "#18536F")
+                theme = lightTheme
+                )
