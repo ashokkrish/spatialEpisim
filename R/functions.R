@@ -1048,12 +1048,8 @@ SVEIRD.BayesianDataAssimilation <-
     return(summary)
   }
 
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
-##' @title
-##' @return
-##' @author Bryce
+##' @title Awful Plotting Code
+##' @author al
 awfulPlottingCode <- function() {
   ## TODO: refactor everything below this line.
   unlink("www/MP4", recursive = TRUE, force = TRUE) # Delete the MP4
@@ -1124,19 +1120,15 @@ awfulPlottingCode <- function() {
   setwd("./../..")
 }
 
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Awful plotting code №2
-##' @return
-##' @author Bryce
+##' @author al
 awfulPlottingCode_two <- function() {
-    ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC',
-              '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF',
-              '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE',
-              '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767',
-              '#FFBD56', '#FFA044', '#EE4F4D')
-    pal <- colorRampPalette(ramp)
+    ## ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC',
+    ##           '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF',
+    ##           '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE',
+    ##           '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767',
+    ##           '#FFBD56', '#FFA044', '#EE4F4D')
+    ## pal <- colorRampPalette(ramp)
     ## par(mfrow = c(1, 2))
     ## plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
     ##      main = "Location of Initial Infections",
