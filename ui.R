@@ -1,4 +1,16 @@
-source("theme.R")
+lightTheme <- bs_theme(
+  version = 4,
+  bg = "#ffffff",  # Corrected the extra '#' character
+  fg = "#000000",
+  primary = "#003352",
+  secondary = "#007fb5",
+  base_font = font_google("Open Sans"),
+  info = "#003352",
+  "navbar-bg" = "#003352", # Navbar background color
+  "navbar-color" = "#ffffff", # Navbar text color
+  "navbar-border-color" = "#003352", # Navbar border color
+  "navbar-padding-y" = "1.5rem" # Increase navbar padding (adjust height)
+)
 ## Override the default arguments
 wellPanel <- \(...) div(..., class = "well", style = "margin-bottom: 0.75rem;")
 plotlyOutput <- \(...) plotly::plotlyOutput(..., width = 800, height = 600)
@@ -273,15 +285,10 @@ simulator <-
 model <- tabPanel(title = "Model",
                   sidebarLayout(sidebar, mainPanel(visualizer, simulator)))
 
-ui <- fluidPage(withTags(head(link(rel = "stylesheet",
-                                   type="text/css"
-                                   #href="spatialEpisimBanner.css"
-                                   ))),
-                navbarPage(HTML(titleHTML), model, authors),
+ui <- fluidPage(navbarPage(HTML(titleHTML), model, authors),
                 add_busy_spinner("cube-grid",
                                  "#18536F",
                                  margins = c("50%","50%")),
                 title = "spatialEpisim",
-                #theme = bs_theme(version = 4, primary = "#18536F")
                 theme = lightTheme
                 )
