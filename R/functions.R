@@ -554,43 +554,27 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 
 ##' @description Run a SVEIRD compartmental model of an epidemic, optionally
 ##'   using Bayesian data assimilation.
-##'
 ##' @details TODO: DETAILS of the function.
-##'
 ##' @title SVEIRD compartmental model with optional Bayesian data assimilation
-##'
 ##' @param psi.diagonal TODO
-##'
 ##' @param layers The RasterStack object containing the SVEIRD compartment
 ##'   rasters, and other rasters. Read the function DETAILs for more
 ##'   information.
-##'
 ##' @param startDate The date (in YYYY-MM-DD format) the simulation begins.
-##'
 ##' @param countryISO3C The ISO three character code for a recognized country.
-##'
 ##' @param rasterAgg The number of adjacent cells in any one direction to
 ##'   aggregate into a single cell.
-##'
 ##' @param alpha The rate of vaccination (per day)
-##'
 ##' @param beta The rate of exposure (per day)
-##'
 ##' @param gamma The rate of becoming infectious (per day)
-##'
 ##' @param sigma The rate of recovery (per day)
-##'
 ##' @param delta The fatality rate (per day)
-##'
 ##' @param radius The distance, in kilometers, a given individual travels from
 ##'   their starting point (on average, per day)
-##'
 ##' @param lambda The probability that an individual will move the distance
 ##'   governed by radius
-##'
 ##' @param days The number of days the simulation will run for, beginning
 ##'   from the startDate.
-##'
 ##' @param seedData a dataframe like the following example; the compartment
 ##'   columns are the initial values.
 ##'
@@ -601,17 +585,13 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'     Mabalako  0.461257  29.210687  0           0        0         0          0
 ##'     Mandima   1.35551   29.08173   0           0        0         0          0
 ##'   }
-##'
 ##' @param seedRadius The number of cells over which to average the seed data in
 ##'   a Moore neighbourhood for each locality.
-##'
 ##' @param simulationIsDeterministic Whether stochasticity is enabled or not; if
 ##'   the simulation is deterministic then no stochastic processes are used and
 ##'   the simulation is entirely deterministic.
-##'
 ##' @param dataAssimilationEnabled Whether Bayesian data assimilation will be
 ##'   used for state reporting data.
-##'
 ##' @param healthZoneCoordinates The coordinates of health zones in the country
 ##'   of interest which will be used to group and summarize the compartmental
 ##'   model data at the end of the simmulation.
@@ -647,7 +627,6 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'     Rwampara      1.4053      30.3449
 ##'     Tchomia       1.4412      30.4845
 ##'   }
-##'
 ##' @param incidenceData A "situation report" dataframe. The first column
 ##'   provides the date of the officially reported, observed incidence of the
 ##'   disease, in ISO format (YYYY-MM-DD). MAYBE TODO: enforce the startDate
@@ -662,26 +641,16 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'     2018-08-02  8     0        1         1
 ##'     2018-08-09  5     2        1         1
 ##'   }
-##'
 ##' @param deathsAndDeadData TODO
-##'
 ##' @param variableCovarianceFunction Passed directly to [genQ()] to generate a Q matrix.
-##'
 ##' @param Q.variance TODO
-##'
 ##' @param Q.correlationLength TODO
-##'
 ##' @param neighbourhood TODO
-##'
 ##' @returns a summary dataframe for the simulation, showing changes in the
 ##'   compartment values over time, the daily values, and cumulative values.
-##'
 ##' @author Bryce Carson
-##'
 ##' @author Ashok Krishnmaurthy
-##'
 ##' @author Michael Myer
-##'
 ##' @examples
 ##' SVEIRD.BayesianDataAssimilation(
 ##'   ## Parameters
@@ -692,10 +661,8 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   delta = 2/36,
 ##'   radius = 1,
 ##'   lambda = 15,
-##'
 ##'   ## Model runtime
-##'   days = 4,
-##'
+##'   days = 31, # a month, permitting three assimilations of observed data
 ##'   ## Model data
 ##'   seedData = here("data", "seed", "COD_InitialSeedData.csv"),
 ##'   layers = createRasterList(getSubregions("COD", c("Itrui", "Nord-Kivu")),
@@ -704,13 +671,11 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   startDate = "2018-08-05",
 ##'   countryISO3C = "COD",
 ##'   incidenceData = here("data", "observed", "Ebola_Incidence_Data.xlsx"),
-##'
 ##'   ## Model options
 ##'   simulationIsDeterministic = TRUE,
 ##'   dataAssimilationEnabled = TRUE,
 ##'   healthZoneCoordinates = here("data", "observed", "CZE_COVID-19_Health_Zones.csv"),
 ##'   variableCovarianceFunction = "DBD",
-##'
 ##'   ## Special parameters
 ##'   Q.variance = 0.55,
 ##'   Q.correlationLength = 6.75e-1,
@@ -750,15 +715,16 @@ SVEIRD.BayesianDataAssimilation <-
            Q.correlationLength,
            neighbourhood,
            psi.diagonal,
-           states_observable = 1) {
+           compartmentsReported = 1) {
     ## Preallocate a zeroed data frame with the following column names, and
     ## store it in a symbol named "summary".
-    names <- c("Date",
-               ## Compartments
+    names <- c(## Population and epidemic compartments (states)
                "N", "S", "V", "E", "I", "R", "D",
-               ## Daily values
+               ## Daily values of new vaccinations, exposures, infections,
+               ## recoveries, and deaths
                "newV", "newE", "newI", "newR","newD",
-               ## Cumulative values
+               ## Cumulative values of exposed or infected people through the
+               ## simulation runtime
                "cumE", "cumI")
 
     summary <-
@@ -836,14 +802,14 @@ SVEIRD.BayesianDataAssimilation <-
 
       Hlist <- generateLIO2(layers,
                             healthZoneCoordinates,
-                            states_observable = states_observable)
+                            compartmentsReported = compartmentsReported)
       Hmat <- Hlist$Hmat
       ## print(sprintf("Dimension of the Linear Interpolation Operator: %s ✕ %s",
       ##             dim(Hmat)[1],
       ##             dim(Hmat)[2]))
 
-      Locations <- Hlist$Locations
-      nHealthZones <- as.numeric(dim(Locations)[1])
+      healthZoneCoordinates <- Hlist$healthZoneCoordinates
+      nHealthZones <- as.numeric(dim(healthZoneCoordinates)[1])
 
       QMat <- genQ(nrows,
                    ncols,
@@ -851,7 +817,7 @@ SVEIRD.BayesianDataAssimilation <-
                    Q.variance,
                    Q.correlationLength,
                    neighbourhood,
-                   states_observable = states)
+                   compartmentsReported = states)
 
       Q <- QMat$Q
       ## print(paste("Dimension of the Model Error Covariance Matrix: ",
