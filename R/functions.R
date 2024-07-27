@@ -203,10 +203,12 @@ maskAndClassifySusceptibleSpatRaster <- function(subregions, susceptible) {
     "levels<-"(levels(.)[[1]])
 }
 
-##' Create a RasterStack of RasterLayers, one for each component in an SVEIRD epidemic model.
-##'
-##' The SpatRasters are manipulated before being stacked.
 ##' @title Create a RasterStack of SVEIRD model compartment raster data
+##' @description Create a list of SpatRaster objects, one for each component in
+##'   an SVEIRD epidemic model.
+##' @details The SpatRaster objects for the VEIRD components are empty, while
+##'   the Inhabited SpatRaster is a binary classification on habitation of land
+##'   area.
 ##' @param subregions a SpatVector object of subregions used to crop the created
 ##'   raster stack.
 ##' @param isCropped
