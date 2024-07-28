@@ -476,10 +476,129 @@ server <- function(input, output, session) {
   #--------------------------------------------------------------------------#
   # Checks to see that a new file has been uploaded (helper func)            #
   #--------------------------------------------------------------------------#
-  observeEvent(input$seedData, {
+
+coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames = NULL, debug = FALSE) {
+  points <- st_as_sf(coordinates, coords = c("lon", "lat"), crs = 4326)
+  
+  country <- ne_countries(scale = 110, returnclass = "sf") %>%
+    filter(iso_a3 == countryISO3C)
+  print(country$name)
+  
+  admin_boundaries <- ne_states(country = country$name, returnclass = "sf")
+  
+  if (!is.null(regionNames)) {
+    print("checking regions")
+    regions <- admin_boundaries %>% 
+      filter(name %in% regionNames)
+    
+    if (nrow(regions) == 0) {
+      stop("No specified regions found in the country.")
+    }
+    
+    areaPolygon <- regions %>% 
+      st_combine() %>% 
+      st_cast("MULTIPOLYGON")
+
+    areaPolygon <- st_as_sf(areaPolygon)
+
+  } else {
+    print("no regions")
+    areaPolygon <- country
+  }
+  
+  areaPolygon <- st_transform(areaPolygon, st_crs(points))
+  
+  intersections <- st_intersects(points, areaPolygon)
+  
+  vaildPoints <- sapply(intersections, function(x) length(x) > 0)
+  
+  if (debug) {
+    print(paste("Number of points:", nrow(points)))
+    print("Area of interest bounding box:")
+    print(st_bbox(areaPolygon))
+    print("Points coordinates:")
+    print(coordinates)
+    print("Results:")
+    print(vaildPoints)
+  }
+  
+  return(vaildPoints)
+}
+
+validateAndCleanSeedData <- function(data) {
+  # This is so that I can collect all the err msgs for later
+  error_messages <- c()
+
+  numeric_cols <- c("lat", "lon", "InitialVaccinated", "InitialExposed", 
+                    "InitialInfections", "InitialRecovered", "InitialDead")
+
+  missing_cols <- setdiff(c("Location", numeric_cols), colnames(data))
+  if (length(missing_cols) > 0) {
+    error_messages <- c(error_messages, 
+                        paste0("Error: Missing columns: ", paste(missing_cols, collapse = ", ")))
+  }
+
+  if (any(is.na(data$Location) | data$Location == "")) {
+    error_messages <- c(error_messages, 
+                        "Error: 'Location' column cannot have empty cells or NA values.")
+  }
+
+  for (col in numeric_cols) {
+    if (any(data[[col]] == "" | is.na(suppressWarnings(as.numeric(data[[col]]))))) { 
+      error_messages <- c(error_messages, 
+                          paste0("Error: '", col, "' column must contain only numbers and no empty cells."))
+    } else {
+      data[[col]] <- suppressWarnings(as.numeric(data[[col]]))
+    }
+  }
+
+  if (length(error_messages) > 0) {
+    for (msg in error_messages) {
+      showNotification(msg, type = "error", duration = NULL)
+    }
+    return(NULL)
+  }
+
+  coordinates <- data.frame(lat = data$lat, lon = data$lon)
+
+  validCoords <- coordinatePairsInsideCountry(coordinates, selectedCountryISO3C(), input$level1List, debug = TRUE)
+  
+  if(!all(validCoords)) {
+    showNotification("Error: ALL coordinates are not within the country or selected areas.", type = "error", duration = NULL)
+    return(NULL)
+  } 
+  
+  cleanedCoordinates <- coordinates[validCoords, , drop = FALSE]
+  
+  if (nrow(cleanedCoordinates) != nrow(coordinates)) {
+    showNotification("SOME coordinates are not within the country or selected areas.", type = "warning", duration = NULL)
+    data$lat <- cleanedCoordinates$lat
+    data$lon <- cleanedCoordinates$lon
+  }
+
+  return (data)
+}
+
+observeEvent(input$seedData, {
+
+  ext <- tools::file_ext(input$seedData$datapath)
+  if (ext == "xlsx") {
+    uploaded_data <- readxl::read_excel(input$seedData$datapath)
+  } else {
+    uploaded_data <- read.csv(input$seedData$datapath)
+  }
+
+  validated_data <- validateAndCleanSeedData(uploaded_data)
+
+  if (!is.null(validated_data)) {
+    data(validated_data) 
     values$allow_simulation_run <- TRUE
     fileInputs$smStatus <- 'uploaded'
-  })
+  } else {
+    fileInputs$smStatus <- 'reset' 
+  }
+})
+  
 
   #--------------------------------------------------------------------------#
   # Check if all mandatory fields have a value                               #
@@ -1506,7 +1625,7 @@ server <- function(input, output, session) {
                                     QVar = input$QVar,
                                     QCorrLength = input$QCorrLength,
                                     nbhd = input$nbhd,
-                                    psiDiag = input$psidiag)
+                                    psiDiag = sidiag)
 
     row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
