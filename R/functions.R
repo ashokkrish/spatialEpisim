@@ -418,9 +418,10 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   }
 
   if (compartmentsReported == 2) H <- bdiag(H, H) # block diagonal matrix
-  attr(H, "healthZoneCoordinates") <- healthZoneCoordinates
-  attr(H, "layers") <- dim(layers)[3]
-  attr(H, "compartmentsReported") <- compartmentsReported
+  ## NOTE: these are unused, so they are commented out. For historical reasons, they are included.
+  ## attr(H, "healthZoneCoordinates") <- healthZoneCoordinates
+  ## attr(H, "layers") <- dim(layers)[3]
+  ## attr(H, "compartmentsReported") <- compartmentsReported
 
   H
 }
