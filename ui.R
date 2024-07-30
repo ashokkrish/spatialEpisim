@@ -331,7 +331,7 @@ ui <- fluidPage( # UI ----
              
              ModelAuthorshipTab <- nav_panel(
                title = "Authors",
-               h2("Supervisor", style = "font-weight:bold"),
+               h2("Principal investigator", style = "font-weight:bold"),
                ## TODO: Reformat Ashok's information so the digital links aren't ugly.
                tag("address",
                    list(
@@ -349,15 +349,24 @@ ui <- fluidPage( # UI ----
                developer("Le", "Khanh", href = "https://github.com/kle6951/"),
                developer("Wondwossen", "Tobias", href = "https://github.com/Toby-exe"),
                
-               h2("Acknowledgment", style = "font-weight:bold"),
-               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Michael Myer, Tom Bayliss White, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, Jason Szeto, and Jake Doody.", br(), 
-                      )),
-               
-               h3("Affiliations", style = "font-weight:bold"),
+               h2("Affiliations", style = "font-weight:bold"),
                p(tag("sup", 1), "Mount Royal University", br(),
                  "4825 Mount Royal Gate SW", br(),
                  "Calgary, Alberta, Canada", br(),
                  "T3E 6K6"),
+               
+               h2("Acknowledgment", style = "font-weight:bold"),
+               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Michael Myer, Tom Bayliss White, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, Jason Szeto, and Jake Doody.", br(), 
+               )),
+               
+               h2("Disclaimer", style ="font-weight:bold"),
+               p("This tool uses a mathematical model to simulate a variety of CoViD-19, Ebola, and
+Measles outbreaks based on user-defined parameters. The output of the model
+depends on model assumptions, parameter choices, and human mobility patterns. It
+is not a medical predictor, and should be used for informational and research
+purposes only. Please carefully consider the parameters you choose. Interpret
+and use the simulated results responsibly. Authors are not liable for any direct
+or indirect consequences of this usage."),
              ), #Author Tab Panel
   ) # navbarPage
 )
