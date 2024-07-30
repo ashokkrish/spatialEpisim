@@ -345,22 +345,12 @@ ui <- fluidPage( # UI ----
                
                #TODO: Need the link for research assistants who have not had
                h2("Research Assistants", style = "font-weight:bold"),
-               developer("Myer", "Michael", href = "https://github.com/m-myer"),
                developer("Carson", "Bryce", "B.Sc", href = "https://github.com/bryce-carson/"),
                developer("Le", "Khanh", href = "https://github.com/kle6951/"),
                developer("Wondwossen", "Tobias", href = "https://github.com/Toby-exe"),
-               developer("Wai", "Crystal", href = "https://github.com/cwai097"),
-               developer("Dhaliwal", "Gursimran", href = "https://github.com/dhaliwalgurs"),
-               developer("Pulfer", "Timothy", href = ""), 
-               developer("Darby", "Ryan", href = "https://github.com/Ryan-Darby"),
-               developer("Szeto", "Jason", href = "https://github.com/jason-szeto"),
-               developer("White", "Tom Bayliss", href = "https://github.com/tombaylisswhite"),
-               developer("Doody", "Jake", href = ""),
-               
-               h2("Collaborators", style = "font-weight:bold"),
                
                h2("Acknowledgment", style = "font-weight:bold"),
-               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik", br(), 
+               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Michael Myer, Tom Bayliss White, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, Jason Szeto, and Jake Doody.", br(), 
                       )),
                
                h3("Affiliations", style = "font-weight:bold"),
@@ -368,57 +358,6 @@ ui <- fluidPage( # UI ----
                  "4825 Mount Royal Gate SW", br(),
                  "Calgary, Alberta, Canada", br(),
                  "T3E 6K6"),
-             ),
-
-             tabPanel("Authors",
-                      h3("Research Team", style= "font-weight:bold"),
-                      br(),
-                      p(span("Ashok Krishnamurthy, PhD", style= "font-weight:bold")),
-                      p("Project PI,"),
-                      p("Associate Professor, Department of Mathematics and Computing,"),
-                      p("Faculty of Science and Technology,"),
-                      p("Mount Royal University,"),
-                      p("Calgary, AB, CANADA"),
-
-                      br(),
-
-                      p("Email:",a("akrishnamurthy@mtroyal.ca", href="mailto:akrishnamurthy@mtroyal.ca")),
-                      p("Website:", a(href="https://bit.ly/2YKrXjX","https://bit.ly/2YKrXjX", target="_blank")),
-                      p("GitHub:", a(href="https://github.com/ashokkrish/spatialEpisim","https://github.com/ashokkrish/spatialEpisim", target="_blank")),
-
-                      br(),
-
-                      p(span("Michael Myer, Tobias Wondwossen, Khanh Le, Bryce Carson, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, and Jason Szeto", style= "font-weight:bold" )),
-                      p("Undergraduate Student, Mount Royal University, Calgary, AB, CANADA"),
-
-                      br(),
-
-                      p(span("Tom Bayliss White", style= "font-weight:bold" )),
-                      p("Undergraduate Student, University of Exeter, Exeter, Devon, UK"),
-                      p("Mitacs Globalink Research Intern (2023)"),
-
-                      br(),
-
-                      p(span("Jake Doody", style= "font-weight:bold" )),
-                      p("Undergraduate Student, University of Maryland Baltimore County, MD, USA"),
-
-                      br(),
-
-                      p(span("Acknowledgement", style= "font-weight:bold" )),
-                      p("Dr. Loren Cobb, Dr. Bedrich Sousedik"),
-
-                      br(),
-
-                      p("This interactive R Shiny app is maintained by Dr. Ashok Krishnamurthy. We welcome questions, insights, and feedback."),
-
-                      br(),
-
-                      h3("Disclaimer"),
-                      p("This tool uses a mathematical model to simulate a variety of COVID-19/Ebola/Measles outcomes based on user-defined parameters.
-                           The output of the model depends on model assumptions, parameter choices, and human mobility patterns.
-                           It is not a medical predictor, and should be used for informational and research purposes only.
-                           Please carefully consider the parameters you choose. Interpret and use the simulated results responsibly.
-                           Authors are not liable for any direct or indirect consequences of this usage.")
-             ) # Authors tabPanel
+             ), #Author Tab Panel
   ) # navbarPage
 )
