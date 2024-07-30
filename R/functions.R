@@ -374,14 +374,25 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   stopifnot(compartmentsReported %in% 1:2)
 
   queensNeighbours <- function(order, cell, ncols) {
-    outer.offset <- order * ncols
-    inner.offsets <- seq(0, order - 1) * ncols
-    inner.offsets <- c(cell - inner.offsets,
-                       cell + inner.offsets)
-    c(cell - outer.offset - 2 : cell - outer.offset + 2,
-      cell + outer.offset - 2 : cell + outer.offset + 2,
-      inner.offsets + order,
-      inner.offsets - order)
+    stopifnot(order %in% 1:2)
+
+    if (order == 1) {
+      neighbouringCells <-
+        c((cell - ncols - 1) : (cell - ncols + 1),
+          cell - 1 , cell + 1,
+          (cell + ncols - 1) : (cell + ncols + 1))
+      stopifnot(length(neighbouringCells) == 8)
+    } else if (order == 2) {
+      neighbouringCells <-
+        c((cell - ncols * 2 - 2) : (cell - ncols * 2 + 2),
+          cell - ncols - 2 , cell - ncols + 2,
+          cell - 2 , cell + 2,
+          cell + ncols - 2 , cell + ncols + 2,
+          (cell + ncols * 2 - 2) : (cell + ncols * 2 + 2))
+      stopifnot(length(neighbouringCells) == 16)
+    }
+
+    neighbouringCells
   }
 
   ## NOTE: cells contains the index into the rasters in layers (when converted
@@ -405,11 +416,18 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   ## https://www.paulamoraga.com/book-spatial/spatial-neighborhood-matrices.html#neighbors-of-order-k-based-on-contiguity
   ## for more information. The index into the vector is one more than the order
   ## of the neighourhood the value at that index the value applies to.
-  neighbour.weights <- c(0.12, 0.8, 0.04) * 5 / 7
+  neighbour.weights <- c(12e-2, 8e-2, 4e-2) * 5 / 7
 
+  ## NOTE: seq_along(cells) produces a vector of indices, 1, 2, 3, ..., n, where
+  ## n is the length of the number of cells. There is one cell for each health
+  ## zone, so the index corresponds to the health zone and the cell for that
+  ## health zone.
   for(index in seq_along(cells)) {
     neighbour.1st <- queensNeighbours(1, cells[index], ncol(layers))
     neighbour.2nd <- queensNeighbours(2, cells[index], ncol(layers))
+    print(sprintf("Row %s\tCell %s\n", index, cells[index]))
+    print(neighbour.1st)
+    print(neighbour.2nd)
     if(anyDuplicated(c(neighbour.1st, neighbour.2nd)) > 0)
       simpleError("Duplicate cell indices among neighbours of multiple localities.")
     H[index, cells[index]] <- neighbour.weights[1]
@@ -692,7 +710,7 @@ SVEIRD.BayesianDataAssimilation <-
                "cumE", "cumI")
 
     summary <-
-      data.frame(matrix(data = 0, ncols = length(names), nrow = n.days)) %>%
+      data.frame(matrix(data = 0, ncol = length(names), nrow = n.days)) %>%
       "colnames<-"(names)
 
     ## NOTE: HOW ARE THESE USED?
