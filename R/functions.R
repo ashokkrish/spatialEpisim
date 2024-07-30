@@ -370,9 +370,9 @@ transmissionLikelihoodWeightings <-
 ##'   compartmentsReported = 1
 ##' )
 linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartmentsReported = 1) {
-  stopifnot(ncol(layers) >= 5) # a second order neighbour can't be calculated
-                               # with the current algorithm if the number fo
-                               # columns is less than five.
+  ## A second order neighbour can't be calculated with the current algorithm if
+  ## the number of columns is less than five.
+  stopifnot(ncol(layers) >= 5)
   stopifnot(compartmentsReported %in% 1:2)
 
   queensNeighbours <- function(order, cell, ncols) {
