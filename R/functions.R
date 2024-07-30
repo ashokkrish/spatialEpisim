@@ -413,8 +413,8 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
     if(anyDuplicated(c(neighbour.1st, neighbour.2nd)) > 0)
       simpleError("Duplicate cell indices among neighbours of multiple localities.")
     H[index, cells[index]] <- neighbour.weights[1]
-    H[index, neighbour.1st[neighbour.1st >= 0 & neighbour.1st <= ncell(layers)]] <- neighbour.weights[2]
-    H[index, neighbour.2nd[neighbour.2nd >= 0 & neighbour.2nd <= ncell(layers)]] <- neighbour.weights[3]
+    H[index, neighbour.1st[neighbour.1st > 0 & neighbour.1st <= ncell(layers)]] <- neighbour.weights[2]
+    H[index, neighbour.2nd[neighbour.2nd > 0 & neighbour.2nd <= ncell(layers)]] <- neighbour.weights[3]
   }
 
   if (compartmentsReported == 2) H <- bdiag(H, H) # block diagonal matrix
