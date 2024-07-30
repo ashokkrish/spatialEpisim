@@ -972,7 +972,8 @@ SVEIRD.BayesianDataAssimilation <-
           (sum(Infected) + 1e-9) # FIXME: magic number
 
         ## MAYBE FIXME: this operation seems dubious. What was the motivation
-        ## behind it?
+        ## behind it? NOTE: see "Conjecture (Ⅰ)" in "Notes about covariance
+        ## matrices" in the Google Drive folder.
         Xf.OSI <- Infected %>% t() %>% as.vector() %>% t() %>% t()
 
         HXf <- linearInterpolationMatrix %*% Xf.OSI
