@@ -488,7 +488,7 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
 ##'         colkey = list(side = 1))
 genQ <- function(layers, variableCovarianceFunction, Q.variance, Q.correlationLength, neighbourhood, compartmentsReported = 2) {
   nrows <- nrow(layers)
-  ncols <- ncols(layers)
+  ncols <- ncol(layers)
   p <- nrows * ncols
   Q0 <- Q <- matrix(0, p, p)
   rows <- rep(1:(p / ncols), each = ncols)
@@ -715,7 +715,7 @@ SVEIRD.BayesianDataAssimilation <-
 
     ## NOTE: HOW ARE THESE USED?
     nrows <- nrow(layers)
-    ncols <- ncols(layers)
+    ncols <- ncol(layers)
     p <- nrows * ncols # What is the meaning of p?
 
     ## NOTE: cast the seed data from the initial infections equitably, in a
