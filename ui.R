@@ -340,7 +340,7 @@ ui <- fluidPage( # UI ----
                        "Department of Mathematics & Computing,", br(),
                        "Calgary, AB, Canada", br(),
                        a("akrishnamurthy@mtroyal.ca", href = "mailto:akrishnamurthy@mtroyal.ca"), br(),
-                       a("Episim GitHub", href = "https://github.com/ashokkrish/episim", target = "_blank")),
+                       a("SpatialEpisim GitHub", href = "https://github.com/ashokkrish/spatialEpisim", target = "_blank")),
                      style = r"(a[href^='mailto']::before {content: '📧 ';} a[href^='tel']::before {content: '📞 ';})")),
                
                #TODO: Need the link for research assistants who have not had
