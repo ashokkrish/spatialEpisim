@@ -387,10 +387,10 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   }
 
   ## NOTE: cells contains the index into the rasters in layers (when converted
-  ## to a matrix). The coordinates are re-ordered as longitude-latitude, rather
-  ## than latitude-longitude as they are otherwise stored; the reason is due to
-  ## the generation of NAs in the resulting matrix, otherwise, according to the
-  ## previous implementation.
+  ## to a matrix). MAYBE FIXME: The coordinates are re-ordered as
+  ## longitude-latitude, rather than latitude-longitude as they are otherwise
+  ## stored; the reason is due to the generation of NAs in the resulting matrix,
+  ## otherwise, according to the previous implementation.
   cells <- cellFromXY(layers, as.matrix(healthZoneCoordinates[, 3:2]))
   if (anyDuplicated(cells) > 0)
     warning("Duplicate cell indices in cells vector derived from health zone coordinates.")
