@@ -395,6 +395,9 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
     neighbouringCells
   }
 
+  extend.length <- 5
+  layers <- extend(layers, extend.length)
+
   ## NOTE: cells contains the index into the rasters in layers (when converted
   ## to a matrix). MAYBE FIXME: The coordinates are re-ordered as
   ## longitude-latitude, rather than latitude-longitude as they are otherwise
@@ -408,7 +411,7 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   ## q ✕ p, where p is the number of cells in the SpatRaster layers (nrow *
   ## ncols), and q is the number of health zones; i.e., the dimensions of the
   ## matrix are n health zones ✕ m cells in the SpatRaster.
-  H <- matrix(0, nrow(healthZoneCoordinates), ncell(layers))
+  H.extended <- matrix(0, nrow(healthZoneCoordinates), ncell(layers))
 
   ## NOTE: these are the weightings used for the chess queen 🨁 zeroth, first,
   ## and second order neighbors. The zeroth order neighbor is the position of
@@ -422,26 +425,34 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   ## n is the length of the number of cells. There is one cell for each health
   ## zone, so the index corresponds to the health zone and the cell for that
   ## health zone.
-  for(index in seq_along(cells)) {
+  for (index in seq_along(cells)) {
     neighbour.1st <- queensNeighbours(1, cells[index], ncol(layers))
     neighbour.2nd <- queensNeighbours(2, cells[index], ncol(layers))
-    print(sprintf("Row %s\tCell %s\n", index, cells[index]))
-    print(neighbour.1st)
-    print(neighbour.2nd)
     if(anyDuplicated(c(neighbour.1st, neighbour.2nd)) > 0)
       simpleError("Duplicate cell indices among neighbours of multiple localities.")
-    H[index, cells[index]] <- neighbour.weights[1]
-    H[index, neighbour.1st[neighbour.1st > 0 & neighbour.1st <= ncell(layers)]] <- neighbour.weights[2]
-    H[index, neighbour.2nd[neighbour.2nd > 0 & neighbour.2nd <= ncell(layers)]] <- neighbour.weights[3]
+    H.extended[index, cells[index]] <- neighbour.weights[1]
+    H.extended[index, neighbour.1st[neighbour.1st > 0 & neighbour.1st <= ncell(layers)]] <- neighbour.weights[2]
+    H.extended[index, neighbour.2nd[neighbour.2nd > 0 & neighbour.2nd <= ncell(layers)]] <- neighbour.weights[3]
   }
 
-  if (compartmentsReported == 2) H <- bdiag(H, H) # block diagonal matrix
+  if (compartmentsReported == 2) H.extended <- bdiag(H.extended, H.extended) # block diagonal matrix
   ## NOTE: these are unused, so they are commented out. For historical reasons, they are included.
-  ## attr(H, "healthZoneCoordinates") <- healthZoneCoordinates
-  ## attr(H, "layers") <- dim(layers)[3]
-  ## attr(H, "compartmentsReported") <- compartmentsReported
+  ## attr(H.extended, "healthZoneCoordinates") <- healthZoneCoordinates
+  ## attr(H.extended, "layers") <- dim(layers)[3]
+  ## attr(H.extended, "compartmentsReported") <- compartmentsReported
 
-  H
+  ## NOTE: the extended areas of the matrix are now dropped to return the matrix
+  ## to the expected size for the input.
+  apply(X = H.extended,
+        MARGIN = 1,
+        FUN =
+          function(row) {
+            m <- matrix(row, byrow = TRUE, ncol = ncol(layers))
+            m[(extend.length + 1):(nrow(m) - extend.length),
+              (extend.length + 1):(ncol(m) - extend.length)] %>%
+              t() %>% # row-major order (byrow)
+              as.vector()
+          }) %>% t() # rows should be health zones
 }
 
 ##' @description Q-matrix generation from various parameters.
@@ -656,7 +667,10 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   ## Model options
 ##'   simulationIsDeterministic = TRUE,
 ##'   dataAssimilationEnabled = TRUE,
+##'
+##'   ## FIXME: the following is incorrect argument type:
 ##'   healthZoneCoordinates = here("data", "observed", "Ebola_Health_Zones_LatLon.csv"),
+##'
 ##'   variableCovarianceFunction = "DBD",
 ##'   ## Special parameters
 ##'   Q.variance = 0.55,
