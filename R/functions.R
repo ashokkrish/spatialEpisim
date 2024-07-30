@@ -332,14 +332,12 @@ transmissionLikelihoodWeightings <-
 ##' @details Create a linear forward interpolation operator matrix with as many
 ##'   columns as cells in the SpatRaster layers, and as many rows as health
 ##'   zones for which coordinates are provided (when creating a matrix for use
-##'   with one state vector). The matrix is either one or two partitions in a
-##'   sparse, block diagonal matrix.
+##'   with one state vector). The matrix is either a trivial matrix as
+##'   described, or two partitions in a sparse, block diagonal matrix.
 ##'
-##' Each row of the partition
-##'
-##' When used to creat an interpolation matrix for two state vectors,
-##'   the result is a block diagonal matrix of identical partitions, with each
-##'   partition as described for one state vector.
+##' When used to creat an interpolation matrix for two state vectors, the result
+##'   is a block diagonal matrix of identical partitions, with each partition as
+##'   described for one state vector.
 ##' @param layers The SpatRaster object with SVEIRD compartment layers, and a
 ##'   layer classifying habitation. Created with the getSVEIRD.SpatRaster
 ##'   function.
