@@ -479,12 +479,15 @@ server <- function(input, output, session) {
 
 coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames = NULL, debug = FALSE) {
   points <- st_as_sf(coordinates, coords = c("lon", "lat"), crs = 4326)
-  
+
   country <- ne_countries(scale = 110, returnclass = "sf") %>%
     filter(iso_a3 == countryISO3C)
-  print(country$name)
-  
-  admin_boundaries <- ne_states(country = country$name, returnclass = "sf")
+
+  countryCode2c<- countrycode(countryISO3C, "iso3c", "iso2c")
+
+  print(countrycode(countryCode2c, "iso2c", "country.name"))
+
+  admin_boundaries <- ne_states(iso_a2 = countryCode2c, returnclass = "sf")
   
   if (!is.null(regionNames)) {
     print("checking regions")
