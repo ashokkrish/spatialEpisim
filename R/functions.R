@@ -865,7 +865,6 @@ SVEIRD.BayesianDataAssimilation <-
 
     ## Calculate the actual number of people that have moved to other compartments
     ## and subtract these from the original Susceptible compartment count.
-    ## FIXME: Error in -proportion : invalid argument to unary operator
     values(layers$Susceptible) %<>% sum(as.matrix(layers$Susceptible) * -proportion)
 
     if (dataAssimilationEnabled) {
@@ -876,6 +875,7 @@ SVEIRD.BayesianDataAssimilation <-
       ##                 dim(incidenceData)[1],
       ##                 dim(incidenceData)[2]))
 
+      ## FIXME: 
       ## Generate the linear interpolation operator matrix (function works for
       ## two compartments, at most).
       linearInterpolationMatrix <-
