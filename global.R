@@ -25,6 +25,7 @@ shhh(library(readxl))
 shhh(library(writexl))
 shhh(library(sf))     # classes and functions for vector data
 shhh(library(shiny))
+shhh(library(shinyBS))
 shhh(library(shinyalert))
 shhh(library(shinybusy))
 shhh(library(shinyhelper))

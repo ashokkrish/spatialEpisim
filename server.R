@@ -2,6 +2,44 @@
 #     Server Components
 #--------------------------#
 server <- function(input, output, session) {
+  packages_used <- c("av", "bslib", "cptcity", "countrycode",
+                     "deSolve","dplyr","DT","ggplot2","htmltools",
+                     "latex2exp","lattice","latticeExtra","leaflet",
+                     "maps","markdown","plotly","purrr","rasterVis",
+                     "readr","readxl","writexl","sf","shiny","shinyalert",
+                     "shinybusy","shinyhelper","shinyjs","shinyBS",
+                     "shinyvalidate","shinyWidgets","sp","stringr",
+                     "terra","tidyverse","tinytex","here","rnaturalearth") 
+  
+  # Function to get package authors
+  get_package_authors <- function(pkg) {
+    desc <- tryCatch(packageDescription(pkg), error = function(e) NULL)
+    if (!is.null(desc) && !is.null(desc$Author)) {
+      authors <- desc$Author
+    } else {
+      authors <- "Author information not available"
+    }
+    return(authors)
+  }
+  
+  # Get authors for all packages
+  package_authors <- lapply(packages_used, get_package_authors)
+  
+  
+  output$packageList <- renderUI({
+    packages <- packages_used
+    authors <- package_authors
+    
+    panels <- lapply(seq_along(packages), function(i) {
+      bsCollapsePanel(
+        title = packages[i],
+        content = tags$div(style = "padding: 10px;", authors[[i]]),
+        style = "primary"
+      )
+    })
+    do.call(bsCollapse, c(id = "collapseExample", open = NULL, panels))
+  })
+  
   selectedCountryISO3C <-
     reactive(countrycode(sourcevar = input$selectedCountry,
                          "country.name",

@@ -367,6 +367,24 @@ is not a medical predictor, and should be used for informational and research
 purposes only. Please carefully consider the parameters you choose. Interpret
 and use the simulated results responsibly. Authors are not liable for any direct
 or indirect consequences of this usage."),
+h2("Credits", style ="font-weight:bold"),
+p("We would like to express our gratitude to the authors of the following R packages used in our project:"),
+worldPopPanel <- bsCollapsePanel(
+  title = "WorldPop",
+  content = tags$div(style = "padding: 10px;",
+                     HTML(
+                       paste0(
+                         "WorldPop (www.worldpop.org - School of Geography and Environmental Science, University of Southampton; ",
+                         "Department of Geography and Geosciences, University of Louisville; Departement de Geographie, Universite de Namur) ",
+                         "and Center for International Earth Science Information Network (CIESIN), Columbia University (2018). ",
+                         "Global High Resolution Population Denominators Project - Funded by The Bill and Melinda Gates Foundation (OPP1134076). ",
+                         "<a href='https://dx.doi.org/10.5258/SOTON/WP00671' target='_blank'>Link to the website</a>"
+                       )
+                     )
+  ),
+  style = "primary"
+),
+uiOutput("packageList"),
              ), #Author Tab Panel
   ) # navbarPage
 )
