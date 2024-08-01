@@ -883,7 +883,10 @@ SVEIRD.BayesianDataAssimilation <-
       ##                 dim(incidenceData)[1],
       ##                 dim(incidenceData)[2]))
 
-      ## FIXME: 
+      ## FIXME: a strange error occurs during the call to `apply` in this
+      ## function when it is being called from inside SVEIRD only; the error
+      ## message is reported on GitHub here:
+      ## https://github.com/ashokkrish/spatialEpisim/issues/36#issuecomment-2261987543.
       ## Generate the linear interpolation operator matrix (function works for
       ## two compartments, at most).
       linearInterpolationMatrix <-
