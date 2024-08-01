@@ -453,7 +453,7 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
   if (anyDuplicated(cells) > 0)
     warning("Duplicate cell indices in cells vector derived from health zone coordinates.")
   if (any(is.na(cells)))
-    warning("Ignoring NAs generated from healthZoneCoordinates during linearInterpolationOperator generation.")
+    warning("Ignoring NAs in [cells] object corresponding to coordinates out of bounds of [layers] raster.")
 
   cells <- cells[!is.na(cells)]
 
@@ -753,7 +753,6 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   countryISO3C = "COD",
 ##'   incidenceData = incidenceEbola.Congo,
 ##'   ## Model options
-##'   simulationIsDeterministic = TRUE,
 ##'   dataAssimilationEnabled = TRUE,
 ##'   healthZoneCoordinates = healthZonesCongo,
 ##'   variableCovarianceFunction = "DBD",
@@ -761,7 +760,8 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   Q.backgroundErrorStandardDeviation = 0.55,
 ##'   Q.characteristicCorrelationLength = 6.75e-1,
 ##'   neighbourhood = 3,
-##'   psi.diagonal = 1e-3
+##'   psi.diagonal = 1e-3,
+##'   compartmentsReported = 1
 ##' )
 SVEIRD.BayesianDataAssimilation <-
   function(## Parameters
@@ -786,7 +786,7 @@ SVEIRD.BayesianDataAssimilation <-
            incidenceData,
 
            ## Model options
-           simulationIsDeterministic,
+           simulationIsDeterministic = TRUE,
            dataAssimilationEnabled = FALSE,
            healthZoneCoordinates,
            variableCovarianceFunction,
@@ -800,6 +800,11 @@ SVEIRD.BayesianDataAssimilation <-
 
            ## Monitoring and logging
            callback = `{`) {
+    ## TODO: implement stochasticity; afterwards the argument will have an
+    ## effect; before then, all simulations are deterministic, so the argument
+    ## is not used (yet).
+    .NotYetUsed("simulationIsDeterministic", error = FALSE)
+
     ## Preallocate a zeroed data frame with the following column names, and
     ## store it in a symbol named "summary".
     names <- c(## Population and epidemic compartments (states)
@@ -888,7 +893,10 @@ SVEIRD.BayesianDataAssimilation <-
       ## message is reported on GitHub here:
       ## https://github.com/ashokkrish/spatialEpisim/issues/36#issuecomment-2261987543.
       ## Generate the linear interpolation operator matrix (function works for
-      ## two compartments, at most).
+      ## two compartments, at most). DONE: I now understand the error: [envir]
+      ## is not of length one because data has a length greater than one, and
+      ## data is the object [data] which is constructed in the parent
+      ## environment.
       linearInterpolationMatrix <-
         linearInterpolationOperator(layers,
                                     healthZoneCoordinates,
@@ -1085,9 +1093,9 @@ SVEIRD.BayesianDataAssimilation <-
         rat <- sum(terra::as.matrix(Exposed, wide = TRUE)) /
           (sum(Infected) + 1e-9) # FIXME: magic number
 
-        ## MAYBE FIXME: this operation seems dubious. What was the motivation
-        ## behind it? NOTE: see "Conjecture (Ⅰ)" in "Notes about covariance
-        ## matrices" in the Google Drive folder.
+        ## NOTE: see "Conjecture (Ⅰ)" in "Notes about covariance matrices" in
+        ## the Google Drive folder for information on the motivation for
+        ## transposing the matrix twice.
         Xf.OSI <- Infected %>% t() %>% as.vector() %>% t() %>% t()
 
         HXf <- linearInterpolationMatrix %*% Xf.OSI
