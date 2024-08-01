@@ -1064,17 +1064,6 @@ SVEIRD.BayesianDataAssimilation <-
         layers$Dead <- Dead
       })
 
-      ## TODO: if the simulation was running one row at a time, with no
-      ## dependence on the previous values, then these could be calculated
-      ## independently, in parallel, and the rows collected. NOTE: this is a
-      ## refactoring inclusion, not a refactoring of original behaviour. This is
-      ## a possible alternative route.
-      ## cbind(newVaccinated,
-      ##       dailyExposed,
-      ##       dailyInfected,
-      ##       dailyRecovered,
-      ##       dailyDead)
-
       ## NOTE: assimilate observed data weekly, not more or less frequently,
       ## while there is still data to assimilate.
       if (all(dataAssimlationEnabled,
