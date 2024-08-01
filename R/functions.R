@@ -319,7 +319,7 @@ avgEuclideanDistance <- function(radius, lambda, aggregationFactor = NULL) {
 ##' @author Thomas White
 ##' @examples
 ##' terra::as.matrix(Infected, wide = TRUE) %>%
-##'   transmissionLikelihoodWeightings(30, 15, 10)
+##'   transmissionLikelihoodWeightings(30, 15, 35)
 transmissionLikelihoodWeightings <-
   function(infections, radius, lambda, aggregationFactor) {
     focal(infections, avgEuclideanDistance(radius, lambda, aggregationFactor))
@@ -393,7 +393,7 @@ transmissionLikelihoodWeightings <-
 ##' linearInterpolationOperator(
 ##'   layers = getSVEIRD.SpatRaster(subregionsSpatRaster,
 ##'                                 getCountryPopulation.SpatRaster("COD"),
-##'                                 aggregationFactor = 15),
+##'                                 aggregationFactor = 35),
 ##'   healthZoneCoordinates = healthZonesCongo,
 ##'   compartmentsReported = 1
 ##' )
@@ -401,7 +401,7 @@ transmissionLikelihoodWeightings <-
 ##' linearInterpolationOperator(
 ##'   layers = getSVEIRD.SpatRaster(subregionsSpatRaster,
 ##'                                 getCountryPopulation.SpatRaster("COD"),
-##'                                 aggregationFactor = 15),
+##'                                 aggregationFactor = 35),
 ##'   healthZoneCoordinates = healthZonesCongo,
 ##'   compartmentsReported = 2
 ##' )
@@ -519,12 +519,12 @@ linearInterpolationOperator <- function(layers, healthZoneCoordinates, compartme
 ##'                                                        c("Ituri",
 ##'                                                          "Nord-Kivu")),
 ##'                        getCountryPopulation.SpatRaster("COD"),
-##'                        15)
+##'                        35)
 ##' Ituri.Q.forecastErrorCov <- Q.forecastErrorCov(CongoleseLayers, "DBD", 2, 0.8, 4, 2)
 ##'
 ##' Alberta.SpatVector <- getCountrySubregions.SpatVector("CAN", c("Alberta"))
 ##' Alberta.SpatRaster <- getCountryPopulation.SpatRaster("CAN")
-##' AlbertanLayers <- getSVEIRD.SpatRaster(Alberta.SpatVector, Alberta.SpatRaster, 25)
+##' AlbertanLayers <- getSVEIRD.SpatRaster(Alberta.SpatVector, Alberta.SpatRaster, 35)
 ##' Alberta.Q.forecastErrorCov <- Q.forecastErrorCov(AlbertanLayers, "DBD", 2, 0.8, 4, 2)
 Q.forecastErrorCov <- function(layers,
                                variableCovarianceFunction,
@@ -722,7 +722,7 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##' SpatRaster.CongoIturiNordKivu <-
 ##'   getSVEIRD.SpatRaster(getCountrySubregions.SpatVector("COD", c("Itrui", "Nord-Kivu")),
 ##'                        getCountryPopulation.SpatRaster("COD"),
-##'                        15)
+##'                        35)
 ##' incidenceEbola.Congo <- read_xlsx(here("data", "observed", "Ebola_Incidence_Data.xlsx"))
 ##' initialInfections.fourCities <- read.csv(here("data", "seed", "COD_InitialSeedData.csv"),
 ##'                                          header = TRUE)
@@ -740,7 +740,7 @@ replaceInequalityWith <- function(f, w, x, y, z) {
 ##'   seedData = initialInfections.fourCities,
 ##'   seedRadius = 1,
 ##'   layers = SpatRaster.CongoIturiNordKivu,
-##'   rasterAgg = 15,
+##'   rasterAgg = 35,
 ##'   startDate = "2018-08-05",
 ##'   countryISO3C = "COD",
 ##'   incidenceData = incidenceEbola.Congo,
