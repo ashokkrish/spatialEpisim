@@ -932,7 +932,10 @@ SVEIRD.BayesianDataAssimilation <-
     for (today in seq(n.days)) {
       ## TODO: At this URL, StackOverflow user Roman provides a reprex for a
       ## waitress callback function to generate a progress bar.
-      ## https://stackoverflow.com/a/77496657/14211497.
+      ## https://stackoverflow.com/a/77496657/14211497. DONT change this; the
+      ## callback function call here should only be modified to include a
+      ## general set of arguments that a callback function may be interested in
+      ## using. The arguments should be provided as a list.
       callback() # Run the callback function, or NULL expression.
 
       ## TODO: the entire column can be calculated one time and added to the
