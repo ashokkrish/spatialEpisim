@@ -218,9 +218,17 @@ maskAndClassifySusceptibleSpatRaster <- function(subregions, susceptible) {
 ##' @author Michael Myer
 ##' @author Ashok Krishnmaurthy
 ##' @examples
-##' getSVEIRD.SpatRaster(getCountrySubregions.SpatVector("COD", c("Ituri", "Nord-Kivu")),
+##' getSVEIRD.SpatRaster(getCountrySubregions.SpatVector("COD",
+##'                                                      c("Ituri", "Nord-Kivu")),
 ##'                      getCountryPopulation.SpatRaster("COD"),
 ##'                      aggregationFactor = 35)
+##'
+##' ## Omitting the aggregation factor argument will prevent aggregation. An
+##' ## aggregation factor of zero or one is meaningless and will produce an
+##' ## error.
+##' getSVEIRD.SpatRaster(getCountrySubregions.SpatVector("COD",
+##'                                                      c("Ituri", "Nord-Kivu")),
+##'                      getCountryPopulation.SpatRaster("COD"))
 getSVEIRD.SpatRaster <- function(subregions, susceptible, aggregationFactor = NULL) {
   susceptible <- maskAndClassifySusceptibleSpatRaster(subregions, susceptible)
 
