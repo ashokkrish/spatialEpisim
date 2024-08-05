@@ -11,29 +11,39 @@ server <- function(input, output, session) {
                      "shinyvalidate","shinyWidgets","sp","stringr",
                      "terra","tidyverse","tinytex","here","rnaturalearth") 
   
-  # Function to get package authors
-  get_package_authors <- function(pkg) {
-    desc <- tryCatch(packageDescription(pkg), error = function(e) NULL)
-    if (!is.null(desc) && !is.null(desc$Author)) {
-      authors <- desc$Author
+  get_relevant_citation <- function(pkg) {
+    citation_info <- tryCatch(citation(pkg), error = function(e) NULL)
+    if (!is.null(citation_info)) {
+      citation_text <- capture.output(print(citation_info))
+      # Find the index of the "A BibTeX entry for LaTeX users is"
+      bibtex_index <- grep("A BibTeX entry for LaTeX users is", citation_text)
+      # Extract the relevant part
+      if (length(bibtex_index) > 0) {
+        relevant_part <- citation_text[2:(bibtex_index - 1)]
+      } else {
+        relevant_part <- citation_text[2:length(citation_text)]
+      }
+      relevant_part <- paste(relevant_part, collapse = "\n")
+      # Ensure proper HTML rendering
+      relevant_part <- gsub("<", "&lt;", relevant_part)
+      relevant_part <- gsub(">", "&gt;", relevant_part)
     } else {
-      authors <- "Author information not available"
+      relevant_part <- "Citation information not available"
     }
-    return(authors)
+    return(relevant_part)
   }
   
-  # Get authors for all packages
-  package_authors <- lapply(packages_used, get_package_authors)
-  
+  # Get the relevant part of citations for all packages
+  package_citations <- lapply(packages_used, get_relevant_citation)
   
   output$packageList <- renderUI({
     packages <- packages_used
-    authors <- package_authors
+    citations <- package_citations
     
     panels <- lapply(seq_along(packages), function(i) {
       bsCollapsePanel(
         title = packages[i],
-        content = tags$div(style = "padding: 10px;", authors[[i]]),
+        content = tags$div(style = "padding: 10px;", HTML(citations[[i]])),
         style = "primary"
       )
     })
