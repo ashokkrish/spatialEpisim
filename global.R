@@ -38,7 +38,8 @@ shhh(library(terra, warn.conflicts=FALSE))  # suppressWarnings(suppressMessages(
 shhh(library(tidyverse))
 shhh(library(tinytex))
 shhh(library(here))
-shhh(library(rnaturalearth))
+shhh(library(geodata))
+
 
 here::i_am("global.R")
 

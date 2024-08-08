@@ -526,43 +526,50 @@ server <- function(input, output, session) {
   #--------------------------------------------------------------------------#
 
 coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames = NULL, debug = FALSE) {
-  points <- st_as_sf(coordinates, coords = c("lon", "lat"), crs = 4326)
+  points <-  st_as_sf(coordinates, coords = c("lon", "lat"), crs = 4326)
 
-  country <- ne_countries(scale = 110, returnclass = "sf") %>%
-    filter(iso_a3 == countryISO3C)
-
-  countryCode2c<- countrycode(countryISO3C, "iso3c", "iso2c")
-
-  print(countrycode(countryCode2c, "iso2c", "country.name"))
-
-  admin_boundaries <- ne_states(iso_a2 = countryCode2c, returnclass = "sf")
-  
   if (!is.null(regionNames)) {
-    print("checking regions")
-    regions <- admin_boundaries %>% 
-      filter(name %in% regionNames)
-    
+
+    admin_boundaries <- gadm(country = countryISO3C, level = 1, resolution = 1, version = "latest", path = tempdir())
+
+    if (debug) {
+      print("Administrative regions available:")
+      print(admin_boundaries$NAME_1)
+    }
+
+    print("Checking specified regions")
+
+    regions <- terra::subset(admin_boundaries, admin_boundaries$NAME_1 %in% regionNames, 
+                     select = c("NAME_1", "geometry"))
+
+    regions <- st_as_sf(regions)
+
     if (nrow(regions) == 0) {
       stop("No specified regions found in the country.")
     }
-    
+
     areaPolygon <- regions %>% 
-      st_combine() %>% 
+      st_union() %>%
       st_cast("MULTIPOLYGON")
 
-    areaPolygon <- st_as_sf(areaPolygon)
-
   } else {
-    print("no regions")
+    country <- gadm(country = countryISO3C, level = 0, resolution = 1, version = "latest", path = tempdir())
+
+    if (is.null(country)) {
+      stop("Country not found. Please check the ISO3C code.")
+    }
+
+    print("No regions specified, using entire country boundaries")
     areaPolygon <- country
+    areaPolygon <- st_as_sf(areaPolygon)
   }
-  
+
   areaPolygon <- st_transform(areaPolygon, st_crs(points))
-  
+
   intersections <- st_intersects(points, areaPolygon)
-  
-  vaildPoints <- sapply(intersections, function(x) length(x) > 0)
-  
+
+  validPoints <- sapply(intersections, function(x) length(x) > 0)
+
   if (debug) {
     print(paste("Number of points:", nrow(points)))
     print("Area of interest bounding box:")
@@ -570,10 +577,11 @@ coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames 
     print("Points coordinates:")
     print(coordinates)
     print("Results:")
-    print(vaildPoints)
+    print(validPoints)
   }
-  
-  return(vaildPoints)
+
+  # Return both the results and the area of interest for plotting
+  return(validPoints)
 }
 
 validateAndCleanSeedData <- function(data) {
@@ -612,7 +620,7 @@ validateAndCleanSeedData <- function(data) {
 
   coordinates <- data.frame(lat = data$lat, lon = data$lon)
 
-  validCoords <- coordinatePairsInsideCountry(coordinates, selectedCountryISO3C(), input$level1List, debug = TRUE)
+  validCoords <- coordinatePairsInsideCountry(coordinates, selectedCountryISO3C(), input$level1List, debug = FALSE)
   
   if(!all(validCoords)) {
     showNotification("Error: ALL coordinates are not within the country or selected areas.", type = "error", duration = NULL)
