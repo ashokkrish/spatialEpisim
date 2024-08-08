@@ -526,11 +526,27 @@ server <- function(input, output, session) {
   #--------------------------------------------------------------------------#
 
 coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames = NULL, debug = FALSE) {
+
   points <-  st_as_sf(coordinates, coords = c("lon", "lat"), crs = 4326)
 
-  if (!is.null(regionNames)) {
+  country_filename <- file.path("gadm", paste0("gadm36_", countryISO3C, "_1_sp.rds"))
 
+  if (file.exists(country_filename)) {
+    print(paste("Loading country data from:", country_filename))
+    admin_boundaries <- readRDS(country_filename)
+  } else {
+    print(paste("Country data not found locally. Downloading", countryISO3C, "using geodata::gadm()"))
     admin_boundaries <- gadm(country = countryISO3C, level = 1, resolution = 1, version = "latest", path = tempdir())
+
+    if (is.null(admin_boundaries)) {
+      stop("Country not found. Please check the ISO3C code.")
+    }
+    saveRDS(admin_boundaries, country_filename)
+  }
+
+  admin_boundaries <- st_as_sf(admin_boundaries)
+
+  if (!is.null(regionNames)) {
 
     if (debug) {
       print("Administrative regions available:")
@@ -542,8 +558,6 @@ coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames 
     regions <- terra::subset(admin_boundaries, admin_boundaries$NAME_1 %in% regionNames, 
                      select = c("NAME_1", "geometry"))
 
-    regions <- st_as_sf(regions)
-
     if (nrow(regions) == 0) {
       stop("No specified regions found in the country.")
     }
@@ -553,14 +567,11 @@ coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames 
       st_cast("MULTIPOLYGON")
 
   } else {
-    country <- gadm(country = countryISO3C, level = 0, resolution = 1, version = "latest", path = tempdir())
-
-    if (is.null(country)) {
-      stop("Country not found. Please check the ISO3C code.")
-    }
 
     print("No regions specified, using entire country boundaries")
-    areaPolygon <- country
+    areaPolygon <- admin_boundaries %>% 
+      st_union() %>%
+      st_cast("MULTIPOLYGON")
     areaPolygon <- st_as_sf(areaPolygon)
   }
 
@@ -580,7 +591,6 @@ coordinatePairsInsideCountry <- function(coordinates, countryISO3C, regionNames 
     print(validPoints)
   }
 
-  # Return both the results and the area of interest for plotting
   return(validPoints)
 }
 
@@ -622,7 +632,7 @@ validateAndCleanSeedData <- function(data) {
 
   validCoords <- coordinatePairsInsideCountry(coordinates, selectedCountryISO3C(), input$level1List, debug = FALSE)
   
-  if(!all(validCoords)) {
+  if(all(!validCoords)) {
     showNotification("Error: ALL coordinates are not within the country or selected areas.", type = "error", duration = NULL)
     return(NULL)
   } 
@@ -650,7 +660,8 @@ observeEvent(input$seedData, {
   validated_data <- validateAndCleanSeedData(uploaded_data)
 
   if (!is.null(validated_data)) {
-    data(validated_data) 
+    # commenting this out has no effect, what is this for ? 
+    # data(validated_data) 
     values$allow_simulation_run <- TRUE
     fileInputs$smStatus <- 'uploaded'
   } else {
