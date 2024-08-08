@@ -116,91 +116,58 @@ createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, dire
   levs <- levels(x)[[1]]
   levels(x) <- levs
   
-  # pal <- getPalette(palettePng)
   pal <- colorRampPalette(colPalette)
 
   if (!directOutput){
     png(PNGFileName, height = 768, width = 768) # output the plot to the www/ image folder
   }
   
-  if (rasterAgg == 0 || rasterAgg == 1){
-    basePlotTitle <- ""
     
-    if(includeLabels){
-      basePlotTitle <- paste0(layerName, " Count \n in", selectedCountry,
-                             " (", resKm, " sq. km resolution)")
-      
-    } else {
-      par(bty = 'n')
-    }
-    terra::plot(x, 
-                col=pal(10)[-1], 
-                main = basePlotTitle, 
-                axes = includeLabels,
-                buffer = TRUE,
-                box = TRUE,
-                cex.main = 1.5,
-                line.main = 1.25,
-                all_levels = TRUE,
-                zlim=c(0,maxVal),
-                plg = list(title = expression(bold("Persons")),
-                           title.cex = 1.25,
-                           horiz = FALSE, 
-                           loc = "topright",
-                           xjust = -1,
-                           cex = 1.25),
-                pax = list(cex.axis = 2),
-                mar = c(4, 3.5, 9, 8.5))
-  } else {
-    aggrPlotTitle <- ""
+  aggrPlotTitle <- paste0("Aggregated ", layerName, " Count \n in ", 
+                            selectedCountry, " (", rasterAgg^2 * resKm, 
+                            " sq. km resolution)")
     
-    if (includeLabels){
-      aggrPlotTitle <- paste0("Aggregated ", layerName, " Count \n in ", 
-                              selectedCountry, " (", rasterAgg^2 * resKm, 
-                              " sq. km resolution)")
-      
-    } else {
-      par(bty = 'n')
-    }
-    terra::plot(x, 
-                col=pal(10)[-1], 
-                main = aggrPlotTitle, 
-                axes = includeLabels,
-                buffer = TRUE,
-                box = TRUE,
-                cex.main = 1.5,
-                line.main = 1.25,
-                all_levels = TRUE,
-                zlim=c(0,maxVal),
-                plg = list(title = expression(bold("Persons")),
-                           title.cex = 1.25,
-                           horiz = FALSE, 
-                           loc = "topright",
-                           xjust = -1,
-                           cex = 1.25),
-                pax = list(cex.axis = 2),
-                mar = c(8.5, 3.5, 4, 2.5))
-  }
+  terra::plot(x, 
+              col=pal(10)[-1], 
+              axes = TRUE,
+              buffer = TRUE,
+              box = TRUE,
+              cex.main = 1.5,
+              line.main = 1.25,
+              main = aggrPlotTitle, 
+              xlab = expression(bold(Longitude)),
+              ylab = expression(bold(Latitude)),
+              line.lab = 2.25,
+              cex.lab = 1.5,
+              # extra arguments
+              all_levels = TRUE,
+              zlim=c(0,maxVal),
+              plg = list(title = expression(bold("Persons")),
+                          title.cex = 1.25,
+                          horiz = TRUE, 
+                          loc = "bottom",
+                          yjust = 3.5,
+                          x.intersp = 0.6,
+                          inset = c(0, -0.2),
+                          cex = 1.25),
+              pax = list(cex.axis = 1.7),
+              mar = c(12.5, 3.5, 4, 2.5))
+  
   terra::plot(Level1Identifier, 
               add = TRUE)
   terra::north(type = 2, xy = "bottomleft", cex = 1)
-  
-  if(includeLabels){
-    title(xlab = expression(bold(Longitude)), 
-          ylab = expression(bold(Latitude)),
-          line = 0,
-          cex.lab = 1.5)
-  }
   
   if (!directOutput){
     dev.off()     # closes the file opened with png(PNGFileName)
     if (!includeLabels){
       img <- image_read(PNGFileName)
-      img <- image_trim(img)
+      # img <- image_trim(img)
       image_write(img, path=PNGFileName)
     } 
   }
 }
+  
+
 
 #---------------------------------------#
 # Sets the working directory for R file #
