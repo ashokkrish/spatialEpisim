@@ -635,14 +635,9 @@ validateAndCleanSeedData <- function(data) {
   if(all(!validCoords)) {
     showNotification("Error: ALL coordinates are not within the country or selected areas.", type = "error", duration = NULL)
     return(NULL)
-  } 
-  
-  cleanedCoordinates <- coordinates[validCoords, , drop = FALSE]
-  
-  if (nrow(cleanedCoordinates) != nrow(coordinates)) {
+  } else if (any(!validCoords)) {
     showNotification("SOME coordinates are not within the country or selected areas.", type = "warning", duration = NULL)
-    data$lat <- cleanedCoordinates$lat
-    data$lon <- cleanedCoordinates$lon
+    return(NULL)
   }
 
   return (data)
