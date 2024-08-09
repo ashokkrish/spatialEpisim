@@ -66,10 +66,11 @@ prependList <- c("Czech Republic",
                  "Gambia",
                  "Netherlands")
 
-## TODO: Why are we creating our own palett when many others already exist? Use
+## TODO: Why are we creating our own palette when many others already exist? Use
 ## an existing one which is loaded from a package we're already using. Don't
-## include a new package though, unless the palette is _really_ pretty and
-## useful.
+## include a new package though, unless the palette is really pretty and useful.
+## ## MAYBE FIXME: if this is that palette that Ashok likes, we can probably get
+## it from a package and not need to hard-code it.
 valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
 colourPalette <-
   colorBin((colorRampPalette(c("#FFFFFF", "#D0D8FB", "#BAC5F7", "#8FA1F1",
