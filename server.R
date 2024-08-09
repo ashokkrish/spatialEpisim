@@ -6,13 +6,10 @@ server <- function(input, output, session) {
 
   observe_helpers(help_dir = "helpfiles", withMathJax = TRUE)
 
+  ## NOTE: this is not aggregated. The aggregated form is only available from getSVEIRD.SpatRaster().
   susceptible <- reactive({
     shiny::validate(selectedCountryISO3C())
-    SusceptibleLayer <- createSusceptibleLayer(selectedCountryISO3C())
-    if (req(input$agg) > 1) {
-      SusceptibleLayer <- aggregate(SusceptibleLayer, fact = input$agg, fun = sum, na.rm = TRUE)
-    }
-    SusceptibleLayer
+    susceptibleSpatRaster <- getCountryPopulation.SpatRaster(selectedCountryISO3C())
   })
 
   #--------------------------------------------------------------------------#
