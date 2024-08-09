@@ -520,6 +520,7 @@ server <- function(input, output, session) {
                        autoWidth = FALSE))
     })
 
+    ## FIXME: create a Leaflet plot of the seed values.
     output$seedPlot <- renderLeaflet({
       ## MAYBE TODO: reading the data in the background would be interesting,
       ## but difficult to implement given R doens't have great asynchronous
@@ -530,7 +531,7 @@ server <- function(input, output, session) {
                                  input$seedData$datapath,
                                  level1Names = input$level1List,
                                  ## NOTE: this is the "current" column. FIXME:
-                                 ## magic number, regardless of the bad named
+                                 ## magic number, regardless of the badly named
                                  ## identifier.
                                  activeCol = 6)
     })
@@ -541,12 +542,13 @@ server <- function(input, output, session) {
     ## that they can see the tab panel buttons and the output. TODO: include a
     ## scroll to top button in the UI when appropriate, and otherwise make the
     ## model configuration panel scrollable without scrolling the main output
-    ## area.
+    ## area (make them scroll separately).
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
     runjs("window.scrollTo(0, 0)")
   }) %>% bindEvent(input$go)
 
+  ## FIXME: update this, obviously, using the new seed data validation that Toby wrote.
   observe({
     if (iv_seeddataupload$is_valid()) shinyjs::enable(id = "seedRadius")
     else shinyjs::disable(id = "seedRadius")
