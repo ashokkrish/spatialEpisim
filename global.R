@@ -108,8 +108,10 @@ updateNumericInputs <- function(defaults, session) {
 }
 
 ## TODO: population is filtered by shortlist == TRUE in both ui.R and
-## WorldPopViz.R; that work should only be done once.
-population <- read_xlsx(here("data", "misc", "population.xlsx"))
+## WorldPopViz.R; that work should only be done once. FIXME: it would be better
+## to change this to internal data in a package than ship this as a file and
+## depend on read_xlsx.
+population <- read_xlsx(here("data", "misc", "recommendedRasterAggregationFactors.xlsx"))
 
 lineThickness <- 1.5
 

@@ -25,7 +25,7 @@ sidebar <-
           id = "country-raster-selection",
           pickerInput("selectedCountry",
                       strong("Country"),
-                      dplyr::select(filter(read_xlsx(here("data", "misc", "population.xlsx")),
+                      dplyr::select(filter(read_xlsx(here("data", "misc", "recommendedRasterAggregationFactors.xlsx")),
                                            shortList == "TRUE"),
                                     Country),
                       options = pickerOptions(title = "Please select a country")),
