@@ -50,8 +50,14 @@ suppressPackageStartupMessages({
   library(tools)
 })
 
+## TODO: include instructions in the README on installing the following package;
+## it's quite easy.
+library(spatialEpisim.foundation)
+
 here::i_am("global.R")
 
+## NOTE: this is alike the parameter data in (non-spatial) Episim. It provides
+## useful defaults for various combinations of model parameters and options.
 epiparms <- read_excel(here("data", "misc", "epiparms.xlsx"))
 
 ## List of countries that need "the" prepended to their name
