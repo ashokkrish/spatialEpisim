@@ -51,22 +51,8 @@ server <- function(input, output, session) {
     createLeafletPlot(input$selectedCountry, NULL, susceptible())
   })
 
-  ## END OF WORLD_POP_VISUALIZER?
-
-  ## FIXME: what the hell? This is a no-op, and then there is code that treats
-  ## this like a reactive.
-  ##
-  ## observeEvent(input$level1List, {
-  ##   level1Country(input$selectedCountry)
-  ## })
-
   output$croppedLeafletMap <- renderLeaflet({
-    req(!is.null(input$selectedCountry) && !is.null(input$level1List))
-    ## FIXME: see the observer prior to this. What the hell is this code?
-    ## req(input$selectedCountry == level1Country())
-    susc <- susceptible()$Susceptible
-    level1Names <- input$level1List
-    createLeafletPlot(input$selectedCountry, level1Names, susc)
+    createLeafletPlot(req(input$selectedCountry), req(input$level1List), susceptible())
   })
 
   ## FIXME: rewrite this so that it isn't spoopy.
@@ -78,7 +64,7 @@ server <- function(input, output, session) {
 
     png(outfile, width = 1024, height = 768)
     createBasePlot(input$selectedCountry,
-                   susceptible()$Susceptible,
+                   susceptible(),
                    TRUE)
     dev.off()
 
@@ -227,11 +213,11 @@ server <- function(input, output, session) {
         req(input$level1List != "")
         isolate(createCroppedRaster(selectedCountry = input$selectedCountry,
                                     level1Region = input$level1List,
-                                    susceptible()$Susceptible,
+                                    susceptible(),
                                     directOutput = TRUE))
       } else {
         isolate(createBasePlot(selectedCountry = input$selectedCountry,
-                               susceptible()$Susceptible,
+                               susceptible(),
                                directOutput = TRUE))
       }
 
@@ -433,21 +419,10 @@ server <- function(input, output, session) {
   })
 
   observe({
-    ## TODO: validate all inputs.
+    ## TODO: validate all inputs before proceeding with the rest of the
+    ## statements in the expression.
 
-    ## NOTE: the purpose of the RasterStack class is to collect related rasters
-    ## with the same dimensions, CRS, and projection. We can be guaranteed of
-    ## this by the class.
-    compartmentLayers <- createRasterStack(selectedCountry = input$selectedCountry,
-                            rasterAgg = input$agg,
-
-                            ## MAYBE FIXME: I'm unsure these are necessary or
-                            ## truly useful.
-                            isCropped = input$cropLev1,
-                            level1Names = input$level1List,
-
-                            ## NOTE: this reactive and argument make sense.
-                            Susceptible = susceptible())
+    SVEIRD.SpatRaster <- getSVEIRD.SpatRaster(subregions, susceptible(), input$agg)
 
     output$tableSeed <- renderDT({
       datatable(req(seedData), # TODO: must be read and created prior
@@ -476,10 +451,14 @@ server <- function(input, output, session) {
     radius <- sum(1, if(input$lambda > input$agg)
                        round(((input$lambda - input$agg)/input$agg) + 1e-16))
 
+    ## TODO: other code depends, in bad fashion, on this function having
+    ## multiple, awful side effects (creating plots, MP4, XLSX, etc.); that must
+    ## be addressed. The new function called here is good, though. DONT change
+    ## it to accommodate other bad code elsewhere.
     with(isolate(reactiveValuesToList(input)), {
       modelArguments <-
         list(modelSelect,
-             compartmentLayers,
+             SVEIRD.SpatRaster,
              date,
              selectedCountry,
              FALSE,
@@ -511,7 +490,7 @@ server <- function(input, output, session) {
              nbhd,
              psidiag)
       names(modelArguments) <- formals(SVEIRD.BayesianDataAssimilation)
-      do.call(SVEIRD.BayesianDataAssimilation, modelArguments)
+      model <- do.call(SVEIRD.BayesianDataAssimilation, modelArguments)
     })
 
     ## NOTE: this summary doesn't need to include user-input model configuration
@@ -522,15 +501,15 @@ server <- function(input, output, session) {
         tribble(~Variable, ~Value,
                 ## TODO: reformat this text.
                 "WorldPop Raster Dimension",
-                paste0(compartmentLayers$nRows, " rows x ",
-                       compartmentLayers$nCols, " columns = ",
-                       compartmentLayers$nCells, " grid cells"),
+                paste0(SVEIRD.SpatRaster$nRows, " rows x ",
+                       SVEIRD.SpatRaster$nCols, " columns = ",
+                       SVEIRD.SpatRaster$nCells, " grid cells"),
 
                 "Aggregated Raster Dimension",
                 sprintf("%s rows ✕ %s columns = %s grid cells",
-                        compartmentLayers$rows, # TODO: verify
-                        compartmentLayers$columns, # TODO: verify
-                        compartmentLayers$cells) # TODO: verify
+                        SVEIRD.SpatRaster$rows, # TODO: verify
+                        SVEIRD.SpatRaster$columns, # TODO: verify
+                        SVEIRD.SpatRaster$cells) # TODO: verify
                 ),
         rownames = FALSE,
         options = list(dom = 't',
