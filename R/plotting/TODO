@@ -1,0 +1,3 @@
+## NOTE: these two functions were used to plot values from the SVERID simulation.
+## TODO animate the Infected over time and space
+## TODO: plot location(s) of initial infection(s), death(s), susceptible people, and inhabited cells... all in one?
