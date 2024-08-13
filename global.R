@@ -5,11 +5,9 @@ options(conflicts.policy = list(warn = FALSE),
 ## in spatialEpisim. TODO: remove all packages which are dependencies of
 ## spatialEpisim.foundation; there's no need to load them twice.
 suppressPackageStartupMessages({
-  library(av)
   library(bslib)
-  library(cptcity)
+  library(cptcity) # used just for seminf haxby colour palette
   library(countrycode)
-  library(deSolve) # ::solve?
   library(DT)
 
   library(htmltools)
