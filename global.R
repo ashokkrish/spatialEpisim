@@ -12,6 +12,9 @@ suppressPackageStartupMessages({
   library(deSolve) # ::solve?
   library(DT)
 
+  library(htmltools)
+  library(bslib)
+
   library(leaflet)
   library(maps)
 
