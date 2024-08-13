@@ -1,3 +1,5 @@
+## PROG TODO: the application should be usable without uploading any data if a
+## user simply selects some sane defaults like country and perhaps cropping.
 server <- function(input, output, session) {
   selectedCountryISO3C <-
     reactive(countrycode(sourcevar = input$selectedCountry,
@@ -12,232 +14,116 @@ server <- function(input, output, session) {
     susceptibleSpatRaster <- getCountryPopulation.SpatRaster(selectedCountryISO3C())
   })
 
-  #--------------------------------------------------------------------------#
-  # Display the file inputs for generating the transmission path             #
-  #--------------------------------------------------------------------------#
-  output$transmissionPathFileInputs <- renderUI({
-    req(!is.null(input$selectedCountry) && input$selectedCountry != "")
-
-    tagList(
-      fileInput(inputId = "latLonData",
-                label = strong("Health Zone centroid coordinates"),
-                placeholder = "Upload Lat-Lon data",
-                accept = acceptedFileTypes),
-      fileInput(inputId = "incidenceData",
-                label = strong("Incidence & Deaths"),
-                placeholder = "Upload Incidence/Death data",
-                accept = acceptedFileTypes)
-    )
-  })
-
-  # NOTE: the date input slider needs to be limited to the range of dates the
-  # observed data. THEM: Dynamically generate a date slider that contains the dates
-  # for all the observed data in the incidence/death file.
   output$transmissionPathDateInput <- renderUI({
-    req(input$appMode == "Visualizer")
-
-    dateInfo <- colnames(transmissionPathData())[4:length(colnames(transmissionPathData()))]
-
     sliderTextInput(
-      inputId = "transPathDate",
+      inputId = "visualizerDateSlider",
       label = strong("Date"),
-      choices = dateInfo,
-      selected = dateInfo[1],
+      choices = as.vector(animatedProportionalSymbolMapData()$Date),
+      selected = (animatedProportionalSymbolMapData()$Date)[1],
       animate = animationOptions(interval = 250, loop = FALSE))
   })
 
-  output$leafletMap <- renderLeaflet({
-    req(input$selectedCountry)
-    createLeafletPlot(input$selectedCountry, NULL, susceptible())
-  })
-
+  output$leafletMap <- renderLeaflet({ createLeafletPlot(req(input$selectedCountry), NULL, susceptible()) })
   output$croppedLeafletMap <- renderLeaflet({
     createLeafletPlot(req(input$selectedCountry), req(input$level1List), susceptible())
   })
 
   ## FIXME: rewrite this so that it isn't spoopy.
   output$terraOutputImage <- renderImage({
-    ## TODO: that's not what is happening when the user hasn't selected a country!
-    shiny::validate(need(input$selectedCountry, message = "Loading app..."))
-
     outfile <- tempfile(fileext = '.png')
-
     png(outfile, width = 1024, height = 768)
-    createBasePlot(input$selectedCountry,
-                   susceptible(),
-                   TRUE)
+    createBasePlot(req(input$selectedCountry), susceptible(), TRUE)
     dev.off()
-
-    list(src = outfile,
-         contentType = 'image/png',
-         width = 1024,
-         height = 768,
-         alt = "Base plot image not found")
+    list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
   }, deleteFile = TRUE)
 
   output$transmission <- renderLeaflet({
     shiny::validate(need(input$selectedCountry))
     shiny::validate(need(input$cropLev1))
     shiny::validate(need(input$level1List))
-
-    createLeafletBubblePlot(input$selectedCountry,
-                            input$level1List,
-                            transmissionPathData(),
-                            1)
+    createLeafletBubblePlot(input$selectedCountry, input$level1List, animatedProportionalSymbolMapData(), 1)
   })
 
   observe({
-    req(!is.null(input$transPathDate))
+    visualizerDate <- req(input$visualizerDateSlider)
+    plotData <- animatedProportionalSymbolMapData()
 
-    transDate <- input$transPathDate
-
-    plotData <- transmissionPathData()
-
+    ## FIXME: what?
     # To access a column inside the leafletProxy function the column name must
     # be called directly (can't use a variable storing the column name) so we
     # must set the column we want to a known name ("Current")
-    colnames(plotData)[colnames(plotData) == transDate] <- "Current"
+    colnames(plotData)[colnames(plotData) == visualizerDate] <- "Current"
 
-    labelText <- paste0(
-      "Location: ", plotData$Location, "<br/>",
-      "Count: ", plotData$Current, "<br/>") %>%
-      lapply(htmltools::HTML)
+    labelText <- htmltools::HTML(sprintf(r"[Location: %s<br/>Count: %s<br/>]", plotData$Location, plotData$Current))
 
     # To update the map, clear out the old markers and draw new ones using the
     # data from the newly selected date
-    leafletProxy("transmission",
-                 data = plotData) %>%
+    leafletProxy("transmission", data = plotData) %>%
       clearMarkers() %>%
-      addCircleMarkers(lng = ~Longitude,
-                       lat = ~Latitude,
-                       radius = ~Current^0.35*2,
+      addCircleMarkers(lng = ~ Longitude,
+                       lat = ~ Latitude,
+                       radius = ~ Current^0.35 * 2,
                        weight = 1,
                        opacity = 1,
-                       color = ~ifelse(Current > 0, "black", "transparent"),
-                       fillColor = ~ifelse(Current > 0, colorPalette(Current), "transparent"),
+                       color = ~ ifelse(Current > 0, "black", "transparent"),
+                       fillColor = ~ ifelse(Current > 0, colorPalette(Current), "transparent"),
                        fillOpacity = 0.8,
                        label = labelText)
   })
 
-  output$lollipop <- renderPlotly({
-    p <- plotLolliChart(input$selectedCountry, input$incidenceData$datapath)
-    ggplotly(p)
-  })
+  output$lollipop <- renderPlotly({ ggplotly(plotLolliChart(input$selectedCountry, input$incidenceData$datapath)) })
 
   output$timeSeries <- renderPlotly({
-    ## TODO: this needs to be updated so that it plots the users data.
-    plotTimeSeries(here("data", "observeddata", "Ebola_Incidence_Data.xlsx"),
-                 sprintf("Time-Series Graph of Incidence/Death in %s",
-                         paste0(if (input$selectedCountry %in% prependList)
-                                  "the ", input$selectedCountry)),
-                 "Time",
-                 "Incidence/Death",
-                 "#0f0f0f",
-                 "Area") %>%
-    ggplotly()
+    ## TODO: this plotting function needs to take data, not a filename; incidenceData, likewise, needs to be data, not a
+    ## filename.
+    ggplotly(plotTimeSeries(input$incidenceData,
+                            sprintf("Time-Series Graph of Incidence/Death in %s",
+                                    paste(if (input$selectedCountry %in% prependList) "the",
+                                          input$selectedCountry)),
+                            "Time",
+                            "Incidence/Death",
+                            "#0f0f0f", # FIXME: NO MAGIC NUMBERS!
+                            "Area"))
   })
 
-
-  transmissionPathData <- reactive({
+  ## TODO: the sort of data we'd like, given my plans to use Leaflet.TimeDimension to replace this (see issue №44), is
+  ## GeoJSON. Converting a dataframe to GeoJSON is easy, the only thing needed is to understand the shape of the data
+  ## that that Leaflet.TimeDimension would prefer. Long? Wide? Tidy? See the following link for more information.
+  ## https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html
+  animatedProportionalSymbolMapData <- reactive({
     req(input$appMode == "Visualizer")
 
-    incidenceData <- openDataFile(input$incidenceData)
+    incidence <- as.data.frame(t(openDataFile(input$incidenceData)))
+    incidence <- incidence[3:nrow(incidence), ]
+    colnames(incidence) <- "comment<-"(incidence[2, ], "Convert the Date column observations to column names")
+
     latLonData <- openDataFile(input$latLonData)
-
-    incidence <- as.data.frame(t(incidenceData))
-    incidenceCols <- incidence[2,]
-    incidence <- incidence[3:nrow(incidence),]
     colnames(latLonData) <- c("Location", "Latitude", "Longitude")
-    colnames(incidence) <- incidenceCols
-
     plotData <- cbind(latLonData, lapply(incidence, as.numeric))
   })
 
-  observeEvent({input$selectedCountry
-                input$appMode}, {
-    if(!is.null(input$selectedCountry) && input$selectedCountry != "" && input$appMode == "Visualizer") {
-      shinyjs::show(id = "maptabPanels")
-    } else {
-      shinyjs::hide(id = "maptabPanels")
-    }
-  })
-
-  observeEvent({input$selectedCountry
-                input$appMode}, priority = 100, {
-    if(input$appMode == "Visualizer") {
-      updateTabsetPanel(inputId = "vizTabSet", selected = "Leaflet Plot")
-    }
-  })
-
-  observeEvent({input$cropLev1
-                input$selectedCountry
-                input$level1List
-                input$appMode}, priority = 100, {
-    if(input$cropLev1  == TRUE && input$appMode == "Visualizer" && !is.null(input$level1List)) {
-      showTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
-    } else if((input$cropLev1  == FALSE && input$appMode == "Visualizer") || is.null(input$level1List)) {
-      hideTab(inputId = 'vizTabSet', target = 'Leaflet Cropped Plot')
-      updateTabsetPanel(inputId = "vizTabSet", selected = "Leaflet Plot")
-    }
-  })
-
-  observeEvent(input$visReset, {
-    updateCheckboxInput(inputId = "cropLev1", value = FALSE)
-    updatePickerInput(inputId = "selectedCountry", selected = "")
-  })
-
-  ## FIXME: a better option would be to enable or disable the buttons of the tab
-  ## when the data is valid or invalid.
-  ## observe({
-  ##   if(input$appMode == "Visualizer") {
-  ##     if(iv_dataupload$is_valid()) {
-  ##       showTab(inputId = 'vizTabSet', target = "Transmission Path")
-  ##       showTab(inputId = 'vizTabSet', target = "Lollipop Chart")
-  ##       showTab(inputId = 'vizTabSet', target = "Time-Series Graph")
-  ##     } else {
-  ##       hideTab(inputId = 'vizTabSet', target = "Transmission Path")
-  ##       hideTab(inputId = 'vizTabSet', target = "Lollipop Chart")
-  ##       hideTab(inputId = 'vizTabSet', target = "Time-Series Graph")
-  ##     }
-  ##   }
-  ## })
-
-  ## FIXME: plot the susceptible layer, cropped or not.
-  observeEvent(input$go, {
-    output$outputImage <- renderImage({
+  observe({
+    output$inputSummaryPlotBelowDataTable <- renderImage({
 
       outfile <- tempfile(fileext = '.png')
       png(outfile, width = 768, height = 768)
 
-      if(input$cropLev1) {
-        req(input$level1List != "")
-        isolate(createCroppedRaster(selectedCountry = input$selectedCountry,
-                                    level1Region = input$level1List,
-                                    susceptible(),
-                                    directOutput = TRUE))
-      } else {
-        isolate(createBasePlot(selectedCountry = input$selectedCountry,
-                               susceptible(),
-                               directOutput = TRUE))
-      }
+      if (input$cropLev1 && input$level1List != "")
+        createCroppedRaster(selectedCountry = input$selectedCountry,
+                            level1Region = input$level1List,
+                            susceptible(),
+                            directOutput = TRUE)
+      else
+        createBasePlot(selectedCountry = input$selectedCountry, susceptible(), directOutput = TRUE)
 
       dev.off()
 
-      list(src = outfile,
-           contentType = 'image/png',
-           width = 768,
-           height = 768,
-           alt = "Base plot image not found")
+      list(src = outfile, contentType = 'image/png', alt = "Base plot image not found")
       # The above line adjusts the dimensions of the base plot rendered in UI
     }, deleteFile = TRUE)
-  })
+  }) %>% bindEvent(input$go)
 
-  observeEvent(input$resetAll, {
-    shinyjs::reset("dashboard")
-    ## NOTE: the application should be usable without uploading any data if a
-    ## user simply selects some sane defaults like country and perhaps cropping.
-    ## shinyjs::disable(id = "go")
-  })
+  observeEvent(input$resetAll, { shinyjs::reset("dashboard") })
 
   provinces <- reactive({
     path <- here("gadm", sprintf("gadm36_%s_1_sp.rds", req(selectedCountryISO3C())))
@@ -260,19 +146,19 @@ server <- function(input, output, session) {
     defaults <-
       filter(epiparms,
              ISONumeric == req(selectedCountryISO3C()),
-             model == isolate(req(input$selectedCountry))) |>
+             ## FIXME: model should not be a duplicate of the selected country, when ISONumeric is already the selected
+             ## country.
+             model == isolate(req(input$selectedCountry))) %>%
       slice_head()
     if(count(defaults) == 1) defaultteNumericInputs(defaults, session = session)
   })
 
-  ## FIXME: why was the code that Ashok, Michael, and others wrote printing
-  ## these information on this event? What did they want to know about the files
-  ## uploaded that they didn't already know when they made the file?
+  ## FIXME: why was the code that Ashok, Michael, and others wrote printing these information on this event? What did
+  ## they want to know about the files uploaded that they didn't already know when they made the file?
   observe({
-    print(paste("DEBUG:", read.csv(input$dataAssimZones$datapath)))
-    print(paste("DEBUG:", as.character(input$dataAssimZones[1])))
-  }) |>
-    bindEvent(input$dataAssimZones)
+    print(paste("DEBUG:", read.csv(input$dataAssimZones$datapath))) # a path to a directory or file
+    print(paste("DEBUG:", as.character(input$dataAssimZones[1]))) # perhaps health zones?
+  }) %>% bindEvent(input$dataAssimZones)
 
   ## MAYBE FIXME: I anticipate that if a user uploads some compartment's data
   ## then decides they want another compartment, their upload will be removed if
@@ -298,18 +184,10 @@ server <- function(input, output, session) {
                            accept = acceptedFileTypes)
                })))
 
-  ## MAYBE TODO: inline the pipeline into the following observable.
-  recommendedRasterAggregationFactor <-
-    reactive({
-      filter(population,
-             Country == input$selectedCountry) |>
-        dplyr::select(reco_rasterAgg) |>
-        slice_head()
-    })
-
-  observe(updateSliderInput(session,
-                            "agg",
-                            value = recommendedRasterAggregationFactor()))
+  recommendedRasterAggregationFactor <- reactive({
+    filter(population, Country == input$selectedCountry) %>% dplyr::select(reco_rasterAgg) %>% slice_head()
+  })
+  observe(updateSliderInput(session, "agg", value = recommendedRasterAggregationFactor()))
 
   observeEvent(input$go, {
     output$infectedExposedPlot <- renderPlotly({
@@ -317,31 +195,13 @@ server <- function(input, output, session) {
         compartments = c("E", "I"),
         selectedCountry = input$selectedCountry,
         plotTitle =
-          "Time-series plot of Exposed and Infectious \n compartments in " |>
+          "Time-series plot of Exposed and Infectious \n compartments in " %>%
           paste0(input$selectedCountry),
         xTitle = paste0("Day (from ", input$date, ")"),
         yTitle = "Compartment Value",
         lineThickness = lineThickness)
       ggplotly(p)
     })
-
-    spatialEpisimThemeAndOptions <-
-      theme(plot.title = element_text(size = 18,
-                                      face = "bold",
-                                      margin = margin(0, 0, 25, 0),
-                                      hjust = 0.5),
-            axis.title.x = element_text(size = 14,
-                                        face = "bold",
-                                        margin = margin(25, 0, 0, 0)),
-            axis.title.y = element_text(size = 14,
-                                        face = "bold",
-                                        margin = margin(0, 25, 0, 0)),
-            axis.text.x.bottom = element_text(size = 14),
-            axis.text.y.left = element_text(size = 14),
-            axis.line = element_line(linewidth = 0.5),
-            plot.margin = unit(c(1, 1, 1, 0),"cm"),
-            legend.title = element_text(size = 10, face = "bold"),
-            legend.box = "horizontal")
 
     ## FIXME: kill this; awful. No.
     simulationSummaryPath <-
@@ -364,23 +224,12 @@ server <- function(input, output, session) {
                            color = colour,
                            mapping = aes(x = ymd(Date),
                                          y = !!variableExpression)) +
-                 spatialEpisimThemeAndOptions +
                  coord_cartesian(clip="off"))
       }
 
-    ## FIXME: these are kind of awful; DONT do it this way.
-    output$cumulativeDeaths <-
-      list("red", D, "Estimated Cumulative Deaths") %>%
-      do.call(what = plotSimulationSummaryVariable, args = .) %>%
-      renderPlotly()
-    output$dailyIncidence <-
-      list("blue", newI, "Estimated Daily Incidence") %>%
-      do.call(what = plotSimulationSummaryVariable, args = .) %>%
-      renderPlotly()
-    output$cumulativeIncidence <-
-      list("cyan", cumI, "Estimated Cumulative Daily Incidence") %>%
-      do.call(what = plotSimulationSummaryVariable, args = .) %>%
-      renderPlotly()
+    output$cumulativeDeaths <- renderPlotly(plotSimulationSummaryVariable("red", D, "Estimated Cumulative Deaths"))
+    output$dailyIncidence <- renderPlotly(plotSimulationSummaryVariable("blue", newI, "Estimated Daily Incidence"))
+    output$cumulativeIncidence <- renderPlotly(plotSimulationSummaryVariable("cyan", cumI, "Estimated Cumulative Daily Incidence"))
 
     ## TODO: inline the plotting function in global.R, rather than in a separate
     ## file in R, especially if it is unused elsewhere in the project. If it is
@@ -396,17 +245,14 @@ server <- function(input, output, session) {
     })
   })
 
-  observeEvent(input$selectedCountry, {
+  ## TODO: this shoudl be improved massively.
+  observe({
     sheetName <- sprintf("%s_initialSeedData", selectedCountryISO3C())
-
     output$downloadData <- downloadHandler(
       filename = \() paste(sheetName, Sys.Date(), ".csv",  sep = ""),
       content = function(sheetName) {
         write.csv(tibble(
-          coordinates = coordinates(readRDS(here("gadm",
-                                                 paste0("gadm36_",
-                                                        selectedCountryISO3C(),
-                                                        "_1_sp.rds")))),
+          coordinates = coordinates(readRDS(here("gadm", paste0("gadm36_", selectedCountryISO3C(), "_1_sp.rds")))),
           Location = coordinates$NAME_1,
           lat = coordinates[, 2], # TODO: these indices need to be verified.
           lat = coordinates[, 1], # TODO: these indices need to be verified.
@@ -416,7 +262,7 @@ server <- function(input, output, session) {
           InitialRecovered = 0,
           InitialDead = 0), sheetName, row.names = FALSE)
       })
-  })
+  }) %>% bindEvent(input$selectedCountry)
 
   observe({
     ## TODO: validate all inputs before proceeding with the rest of the
@@ -536,8 +382,6 @@ server <- function(input, output, session) {
                                  activeCol = 6)
     })
 
-    ## TODO: display multiple animations or a selection among available options.
-
     ## NOTE: when the user has run a simulation, scroll to the top of the page so
     ## that they can see the tab panel buttons and the output. TODO: include a
     ## scroll to top button in the UI when appropriate, and otherwise make the
@@ -545,12 +389,6 @@ server <- function(input, output, session) {
     ## area (make them scroll separately).
     shinyjs::show(id = "tabsetContainer")
     updateTabsetPanel(inputId = 'tabSet', selected = 'Input Summary')
-    runjs("window.scrollTo(0, 0)")
+    runjs(r"[window.scrollTo(0, 0);]")
   }) %>% bindEvent(input$go)
-
-  ## FIXME: update this, obviously, using the new seed data validation that Toby wrote.
-  observe({
-    if (iv_seeddataupload$is_valid()) shinyjs::enable(id = "seedRadius")
-    else shinyjs::disable(id = "seedRadius")
-  }) %>% bindEvent(input$seedData)
 }

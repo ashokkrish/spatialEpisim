@@ -12,7 +12,6 @@ authors <- tabPanel("Authors", includeMarkdown(here("include", "authors.md")))
 
 sidebar <-
   sidebarPanel(
-    useShinyjs(),
     div(id = "dashboard",
         radioButtons(inputId = "appMode",
                      label = strong("Application mode"),
@@ -49,13 +48,21 @@ sidebar <-
                                value = 50),
                    content = "rasterAggregationFactor"))),
 
-        conditionalPanel("input.appMode == 'Visualizer'",
-                         uiOutput("transmissionPathFileInputs"),
+        conditionalPanel("input.appMode === 'Visualizer'",
+                         conditionalPanel(r"--(input.selectedCountry !== null && input.selectedCountry.length > 0)--",
+                                          tagList(fileInput(inputId = "latLonData",
+                                                            label = strong("Health Zone centroid coordinates"),
+                                                            placeholder = "Upload Lat-Lon data",
+                                                            accept = acceptedFileTypes),
+                                                  fileInput(inputId = "incidenceData",
+                                                            label = strong("Incidence & Deaths"),
+                                                            placeholder = "Upload Incidence/Death data",
+                                                            accept = acceptedFileTypes))),
                          uiOutput("transmissionPathDateInput"),
-                         actionButton("visReset", "Reset Values")),
+                         actionButton("resetVisualizer", "Reset Values")),
 
         conditionalPanel(
-          "input.appMode == 'Simulator' && input.selectedCountry !== ''",
+          "input.appMode === 'Simulator' && input.selectedCountry !== ''",
 
           checkboxGroupButtons(
             inputId = "enabledCompartments",
@@ -212,7 +219,7 @@ sidebar <-
                            class = "act-btn")))))
 visualizer <-
   conditionalPanel(
-    "input.appMode == 'Visualizer'",
+    "input.appMode === 'Visualizer'",
     div(id = "maptabPanels",
         tabsetPanel(id = 'vizTabSet',
                     tabPanel(id = "main",
@@ -226,15 +233,17 @@ visualizer <-
                     tabPanel(title = "terra Plot",
                              imageOutput("terraOutputImage")),
 
-                    tabPanel(title = "Transmission Path",
-                             leafletOutput("transmission")),
+                    ## FIXME TODO: this is broken until I have JavaScript to check the input validator.
+                    conditionalPanel(input.iv_dataupload$is_valid(),
+                                     tabPanel(title = "Transmission Path",
+                                              leafletOutput("transmission")),
 
-                    tabPanel(title = "Lollipop Chart",
-                             plotlyOutput("lollipop")),
+                                     tabPanel(title = "Lollipop Chart",
+                                              plotlyOutput("lollipop")),
 
-                    tabPanel(title = "Time-Series Graph",
-                             uiOutput("timeSeriesOptions"),
-                             plotlyOutput("timeSeries")))))
+                                     tabPanel(title = "Time-Series Graph",
+                                              uiOutput("timeSeriesOptions"),
+                                              plotlyOutput("timeSeries"))))))
 
 simulator <-
   conditionalPanel(
@@ -244,7 +253,7 @@ simulator <-
                     tabPanel(title = "Input Summary",
                              verbatimTextOutput("summary"),
                              DTOutput("summaryTable"),
-                             imageOutput("outputImage")),
+                             imageOutput("inputSummaryPlotBelowDataTable")),
 
                     tabPanel(title = "Model", id = "modelTab",
                              h3("Schematic Diagram"),
@@ -279,12 +288,12 @@ simulator <-
                              plotlyOutput("cumulativeIncidence"),
                              plotlyOutput("fullPlot")))))
 
-model <- tabPanel(title = "Model",
-                  sidebarLayout(sidebar, mainPanel(visualizer, simulator)))
+model <- tabPanel(title = "Model", sidebarLayout(sidebar, mainPanel(visualizer, simulator)))
 
 ui <- fluidPage(withTags(head(link(rel = "stylesheet",
                                    type="text/css",
                                    href="spatialEpisimBanner.css"))),
+                useShinyjs(), # PROG: this is required for much of our functionality.
                 navbarPage(HTML(titleHTML), model, authors),
                 add_busy_spinner("cube-grid",
                                  "#18536F",
