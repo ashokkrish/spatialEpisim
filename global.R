@@ -1,38 +1,25 @@
-## MAYBE TODO: https://rgdal.r-forge.r-project.org/reference/showWKT.html.
-## Investigate the consequences of this option and document why it is set. Why
-## are warnings on exportToProj4 disabled? Why were warnings encountered
-## (presumably) when this option was originally set?
-options("rgdal_show_exportToProj4_warnings" = "none",
-        conflicts.policy = list(warn = FALSE),
+options(conflicts.policy = list(warn = FALSE),
         scipen = 999)
 
-## MAYBE FIXME: I have a strong feeling not all of these libraries are actually
-## used in spatialEpisim.
+## FIXME: I have a strong feeling not all of these libraries are actually used
+## in spatialEpisim. TODO: remove all packages which are dependencies of
+## spatialEpisim.foundation; there's no need to load them twice.
 suppressPackageStartupMessages({
   library(av)
   library(bslib)
   library(cptcity)
   library(countrycode)
-  library(deSolve)
+  library(deSolve) # ::solve?
   library(DT)
-  library(htmltools)
-
-  library(lattice)
-  library(latticeExtra)
 
   library(leaflet)
   library(maps)
 
-  library(markdown)
-
   library(plotly)
-  library(rasterVis)
 
   library(readxl)
   library(writexl)
 
-  library(sf)
-  library(sp)
   library(terra)
 
   library(shiny)
@@ -45,14 +32,12 @@ suppressPackageStartupMessages({
 
   library(tidyverse)
   library(here)
-
-  library(urltools)
-  library(tools)
 })
 
 ## TODO: include instructions in the README on installing the following package;
-## it's quite easy.
+## it's quite easy. DONT suppress messages from our own backend dependency.
 library(spatialEpisim.foundation)
+library(reactChartEditor)
 
 here::i_am("global.R")
 
@@ -97,7 +82,6 @@ openDataFile <- function(datafile) {
          xls = read_xls(datafile$datapath),
          xlsx = read_xlsx(datafile$datapath),
          txt = read_tsv(datafile$datapath, show_col_types = FALSE),
-
          validate("Improper file format."))
 }
 
