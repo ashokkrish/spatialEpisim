@@ -6,7 +6,7 @@ server <- function(input, output, session) {
                          "country.name",
                          "iso3c"))
 
-  observe_helpers(help_dir = "helpfiles", withMathJax = TRUE)
+  observe_helpers(help_dir = "markdown", withMathJax = TRUE)
 
   ## NOTE: this is not aggregated. The aggregated form is only available from getSVEIRD.SpatRaster().
   susceptible <- reactive({

@@ -8,7 +8,7 @@ titleHTML <-
         "Spatial Tracking of Infectious Diseases using Mathematical Models",
         sep = ": ")
 
-authors <- tabPanel("Authors", includeMarkdown(here("include", "authors.md")))
+authors <- tabPanel("Authors", includeMarkdown(here("markdown", "authors.md")))
 
 sidebar <-
   sidebarPanel(
