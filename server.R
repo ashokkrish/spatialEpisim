@@ -1,5 +1,3 @@
-## PROG TODO: the application should be usable without uploading any data if a
-## user simply selects some sane defaults like country and perhaps cropping.
 server <- function(input, output, session) {
   observe_helpers(help_dir = "markdown", withMathJax = TRUE)
 
