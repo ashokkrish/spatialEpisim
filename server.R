@@ -28,11 +28,11 @@ server <- function(input, output, session) {
     createLeafletPlot(req(input$selectedCountry), req(input$level1List), susceptible())
   })
 
-  ## FIXME: rewrite this so that it isn't spoopy.
+  ## TODO: this needs to be refactored. This isn't a clean way plotting.
   output$terraOutputImage <- renderImage({
     outfile <- tempfile(fileext = '.png')
     png(outfile, width = 1024, height = 768)
-    createBasePlot(req(input$selectedCountry), susceptible(), TRUE)
+    populationChoropleth(req(input$selectedCountry), susceptible(), TRUE)
     dev.off()
     list(src = outfile, contentType = 'image/png', width = 1024, height = 768, alt = "Base plot image not found")
   }, deleteFile = TRUE)
@@ -114,7 +114,7 @@ server <- function(input, output, session) {
                             susceptible(),
                             directOutput = TRUE)
       else
-        createBasePlot(selectedCountry = input$selectedCountry, susceptible(), directOutput = TRUE)
+        populationChoropleth(selectedCountry = input$selectedCountry, susceptible(), directOutput = TRUE)
 
       dev.off()
 
