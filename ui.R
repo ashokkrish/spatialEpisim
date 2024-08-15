@@ -30,8 +30,15 @@ ui <- fluidPage( # UI ----
   tags$head(
     tags$link(rel = "stylesheet",
               type="text/css",
-              href="spatialEpisimBanner.css")
+              href="spatialEpisimBanner.css"),
+     tags$link(rel = "stylesheet", 
+              type="text/css", 
+              href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css"),
+     tags$script(src = "https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"),
+     tags$script(src = "https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"),
+     tags$script(src = "addTimeDimension.js")
   ),
+
 
   div(
     class = "navTitle",

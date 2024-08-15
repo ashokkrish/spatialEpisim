@@ -244,21 +244,128 @@ server <- function(input, output, session) {
     }
   }, deleteFile = TRUE)
 
-  output$transmission <- renderLeaflet({
-    req(!is.null(input$selectedCountry))
-    req(iv_dataupload$is_valid())
 
-    level1Names <- NULL
+createGeoFeatures <- function(incidenceData, palette_colors, bins) {
+  incidenceData %>%
+    pivot_longer(cols = -c(Location, Latitude, Longitude), 
+                names_to = "date", 
+                values_to = "cases") %>%
+    filter(cases != 0) %>%
+    mutate(
+      color = palette_colors[findInterval(cases, bins, rightmost.closed = TRUE)],
+      time = paste0(date, "T00:00:00.000Z"),
+      label = paste0(Location, " - Cases: ", cases)
+    ) %>%
+    pmap(function(Longitude, Latitude, time, color, label, ...) {
+      list(
+        type = "Feature",
+        geometry = list(
+          type = "Point",
+          coordinates = list(Longitude, Latitude)
+        ),
+        properties = list(
+          time = time,
+          color = color,
+          label = label
+        )
+      )
+    })
+}
 
-    if(input$cropLev1 == TRUE){
+transPathDataToJSON <- function (incidenceData, pal) {
 
-      if(!is.null(input$level1List) && !("" %in% input$level1List)){
-        level1Names <- input$level1List
-      }
+  bins <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
+  palette_colors <- pal(length(bins) - 1)
+
+  features <- createGeoFeatures(incidenceData, palette_colors, bins)
+
+  geoJSONstring <- paste0(
+    '{"type": "FeatureCollection", "features": [',
+    paste0(
+      sapply(features, function(feature) {
+        paste0(
+          '{"type": "', feature$type, '", ',
+          '"geometry": {"type": "', feature$geometry$type, '", ',
+          '"coordinates": [', paste(feature$geometry$coordinates, collapse = ","), ']}, ',
+          '"properties": {"time": "', feature$properties$time, '", ',
+          '"color": "', feature$properties$color, '", ',
+          '"label": "', feature$properties$label, '"}}'
+        )
+      }), collapse = ","
+    ),
+    ']}'
+  )
+}
+
+output$transmission <- renderLeaflet({
+  req(!is.null(input$selectedCountry))
+  req(iv_dataupload$is_valid())
+
+  level1Names <- NULL
+
+
+  if(input$cropLev1 == TRUE){
+    if(!is.null(input$level1List) && !("" %in% input$level1List)){
+      level1Names <- input$level1List
     }
+  }
+  
+    inputISO <- countrycode(input$selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+    gadmFileName <- paste0("gadm36_", toupper(inputISO), "_1_sp.rds")   # name of the .rds file 
+    gadmFolder <- "gadm/"
+    level1Identifier <- readRDS(paste0(gadmFolder, gadmFileName))
 
-    createLeafletBubblePlot(input$selectedCountry, level1Names, transPathData(), 1)
-  })
+    if(!is.null(level1Names)){
+    level1Identifier <- level1Identifier[which(level1Identifier$NAME_1 %in% level1Names), ]}
+  
+    valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
+
+      ramp <- c(
+            '#617AEC', 
+            '#0027E0', 
+            '#0C81F8', 
+            '#43CAFF', 
+            '#7BEBC8', 
+            '#DFF58D', 
+            '#FFA044', 
+            '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+
+  incidenceData <- transPathData()
+
+  geoJson <- transPathDataToJSON(transPathData(), pal)
+
+  leaflet(NULL,
+          width = 1024, 
+          height = 768,
+          options = leafletOptions(zoomSnap = 0.25, zoomDelta=0.25)) %>%
+    addProviderTiles("Esri.WorldGrayCanvas") %>%
+    addPolygons(data = level1Identifier,
+                color = "#444444", 
+                weight = 1.5, 
+                smoothFactor = 1,
+                opacity = 1.0, 
+                fillColor = "#F5F5F5",
+                fillOpacity = 0.75,
+                popup = paste(level1Identifier$NAME_1),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = FALSE)) %>%
+    addLegend(pal = colorBin(palette = pal(9)[-1],
+                             bins = valueRange,
+                             domain = valueRange),
+              values = valueRange,
+              opacity = 0.75,
+              title = "Obs. persons",
+              position = "topright") %>%
+    htmlwidgets::onRender("
+      function(el, x) {
+        var map = this;
+        dataAsJson = JSON.parse(data);
+        addTimeDimensionToLeaflet(map, dataAsJson);
+      }
+    ", data = geoJson)
+
+})
 
   #--------------------------------------------------------------------------#
   # Proxy map for the leaflet plot to dynamically update the transmission
