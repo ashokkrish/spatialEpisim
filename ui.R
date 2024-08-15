@@ -233,9 +233,10 @@ ui <- fluidPage( # UI ----
                                             tabPanel(title = "Transmission Path",
 
                                                      br(),
-                                                     leafletOutput("transmission",
-                                                                   width = 1024,
-                                                                   height = 768),
+
+                                                       div(style = "width: 100%; height: 80vh; position: relative;",
+                                                            leafletOutput("transmission", width = "100%", height = "100%")
+                                                        ),
                                                      br(),
                                                      br()
                                             ),

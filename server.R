@@ -335,10 +335,8 @@ output$transmission <- renderLeaflet({
 
   geoJson <- transPathDataToJSON(transPathData(), pal)
 
-  leaflet(NULL,
-          width = 1024, 
-          height = 768,
-          options = leafletOptions(zoomSnap = 0.25, zoomDelta=0.25)) %>%
+  leaflet(
+    options = leafletOptions(zoomSnap = 0.25, zoomDelta=0.25)) %>%
     addProviderTiles("Esri.WorldGrayCanvas") %>%
     addPolygons(data = level1Identifier,
                 color = "#444444", 
@@ -364,7 +362,6 @@ output$transmission <- renderLeaflet({
         addTimeDimensionToLeaflet(map, dataAsJson);
       }
     ", data = geoJson)
-
 })
 
   #--------------------------------------------------------------------------#
