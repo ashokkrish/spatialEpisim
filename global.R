@@ -1,6 +1,3 @@
-options(conflicts.policy = list(warn = FALSE),
-        scipen = 999)
-
 ## FIXME: I have a strong feeling not all of these libraries are actually used
 ## in spatialEpisim. TODO: remove all packages which are dependencies of
 ## spatialEpisim.foundation; there's no need to load them twice.
