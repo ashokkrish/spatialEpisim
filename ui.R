@@ -87,8 +87,7 @@ sidebar <-
                             "Recovered",
                             "Dead"),
             choiceValues = c("S", "V", "E", "I", "R", "D"),
-            ## TODO: enforce that these are always selected (i.e., disable them).
-            selected = c("S", "E", "I"),
+            selected = c("S", "V", "E", "I", "R", "D"),
             checkIcon =
               withTags(list(yes = i(class = "fa fa-check-square"),
                             no = i(class = "fa fa-square-o")))),

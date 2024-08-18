@@ -1,4 +1,12 @@
 server <- function(input, output, session) {
+  ## NOTE: this needs to be done before anything else, so it's the first thing
+  ## we request the server do.
+  updateCheckboxGroupButtons(
+    inputId = "enabledCompartments",
+    disabledChoices = c("S", "E", "I",
+                        ## TODO: when model customization is implemented, remove
+                        ## V, R, and D from this vector.
+                        "V", "R", "D"))
   observe_helpers(help_dir = "markdown", withMathJax = TRUE)
 
   selectedCountryISO3C <-
