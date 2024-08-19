@@ -1,49 +1,33 @@
-makePlot <- function (compartments, selectedCountry, plotTitle, xTitle, yTitle, lineThickness) {
-  compColors <- data.frame(row.names = c("S", "V", "E", "I", "R", "D"), val=c("yellow", "blue", "orange", "red", "green", "black"))
+##' Make a line plot of multiple compartments with particular colours
+##' @title Compartment data line plot
+##' @param compartments The names of compartments to plot, which appear in the `input` argumenmt.
+##' @param plotTitle The title of the plot.
+##' @param xTitle The title of the horizontal axis.
+##' @param yTitle The title of the vertical axis.
+##' @param lineThickness the preferred line thickness.
+##' @param input A data frame with a shape as described in the details.
+##' @returns a ggplot2 object
+##' @author Bryce Carson
+##' @author Ashok Krishnamurthy
+linePlotCompartmentValue <- function (compartments, plotTitle, xTitle, yTitle, lineThickness = 1.5, input) {
+  compColors <- "names<-"(c("yellow", "blue", "orange", "red", "green", "black"),
+                          c("S", "V", "E", "I", "R", "D"))
 
-  outfile <- tempfile(fileext = '.png')
-  png(outfile, width = 800, height = 600)
-  df <- as.data.frame(read_xlsx(paste0("www/MP4/", countrycode(selectedCountry, "country.name", "iso3c"), "_summary.xlsx")))
-
-  plotData = data.frame(Date = ymd(df[,"Date"]))
-
-  for (comp in compartments){
-    plotData[comp] <- df[,comp]
-  }
-
-  plotData <- as.data.frame(pivot_longer(plotData, all_of(compartments), names_to = "Compartment", values_to = "Count"))
-  plotData$Compartment <- factor(plotData$Compartment, levels = compartments)
-
-                                        # , mapping = aes_string("Date", compartments[1], group = 1)
-
-  p = ggplot(plotData,
-             aes(x = Date, y = Count, color = Compartment)) +
-    geom_line(linewidth = lineThickness) +
-    labs(title = plotTitle,
+  plot <-
+    plotData %<>%
+    dplyr::mutate(Date = lubridate::ymd(input$Date)) %>%
+    dplyr::pivot_longer(dplyr::all_of(compartments),
+                        names_to = "Compartment",
+                        values_to = "Count") %>%
+    dplyr::mutate(Compartment = factor(Compartment, levels = compartments)) %>%
+    ggplot2::ggplot(aes(x = Date, y = Count, color = Compartment)) +
+    ggplot2::geom_line(linewidth = lineThickness) +
+    ggplot2::labs(title = plotTitle,
          x = xTitle,
          y = yTitle,
-         color = "") +
-    scale_x_date(date_labels = "%d %b %Y") +
-    theme(
-      plot.title = element_text(size = 18,
-                                face = "bold",
-                                margin = margin(0, 0, 25, 0),
-                                hjust = 0.5),
-      axis.title.x = element_text(size = 14,
-                                  face = "bold",
-                                  margin = margin(25, 0, 0, 0)),
-      axis.title.y = element_text(size = 14,
-                                  face = "bold",
-                                  margin = margin(0, 25, 0, 0)),
-      axis.text.x.bottom = element_text(size = 14),
-      axis.text.y.left = element_text(size = 14),
-      axis.line = element_line(linewidth = 0.5),
-      plot.margin = unit(c(1, 1, 1, 0),"cm"),
-      legend.title = element_text(size = 10,
-                                  face = "bold"),
-      legend.box = "horizontal"
-    ) +
-    scale_color_manual(
+         color = NULL) +
+    ggplot2::scale_x_date(date_labels = "%d %b %Y") +
+    ggplot2::scale_color_manual(
       values = c(
         "S" = "yellow",
         "V" = "blue",
@@ -53,14 +37,12 @@ makePlot <- function (compartments, selectedCountry, plotTitle, xTitle, yTitle, 
         "D" = "black"
       )
     ) +
-    coord_cartesian(clip="off")
+    ggplot2::coord_cartesian(clip = "off")
 
+  ## When there is more than one compartment to plot, there should be a legend.
   if(length(compartments) == 1) {
-    p <- p + theme( legend.position = 'none')
+    p <- p + ggplot2::theme(legend.position = 'none')
   }
-
-  plot(p)
-  dev.off()
 
   return(p)
 }

@@ -1,6 +1,6 @@
 lightTheme <- bs_theme(
   version = 4,
-  bg = "#ffffff",  # Corrected the extra '#' character
+  bg = "#ffffff",
   fg = "#000000",
   primary = "#003352",
   secondary = "#007fb5",
@@ -11,15 +11,15 @@ lightTheme <- bs_theme(
   "navbar-border-color" = "#003352", # Navbar border color
   "navbar-padding-y" = "1.5rem" # Increase navbar padding (adjust height)
 )
-## Override the default arguments
+
+## NOTE: override the default arguments.
 wellPanel <- \(...) div(..., class = "well", style = "margin-bottom: 0.75rem;")
 plotlyOutput <- \(...) plotly::plotlyOutput(..., width = 800, height = 600)
 leafletOutput <- \(...) leaflet::leafletOutput(..., width = 1024, height = 768)
 
 titleHTML <-
-  paste("<em>spatialEpisim</em>",
-        "Spatial Tracking of Infectious Diseases using Mathematical Models",
-        sep = ": ")
+  paste0("<em>spatialEpisim:</em>",
+         "Spatial Tracking of Infectious Diseases using Mathematical Models")
 
 authors <- tabPanel("Authors", includeMarkdown(here("markdown", "authors.md")))
 
@@ -37,22 +37,22 @@ sidebar <-
           id = "country-raster-selection",
           pickerInput("selectedCountry",
                       strong("Country"),
-                      dplyr::select(filter(read_xlsx(here("data", "misc", "recommendedRasterAggregationFactors.xlsx")),
+                      dplyr::select(filter(readxl::read_xlsx(here("data", "misc", "recommendedRasterAggregationFactors.xlsx")),
                                            shortList == "TRUE"),
                                     Country),
                       options = pickerOptions(title = "Please select a country")),
-          conditionalPanel("input.selectedCountry != ''",
+          conditionalPanel(condition = "input.selectedCountry != ''",
                            helper(checkboxInput(
                              inputId = "cropLev1",
                              label = strong("Limit simulation to state(s)/province(s) (crop to selection)"),
                              value = FALSE),
                              content = "cropSelectedCountry"),
                            conditionalPanel(
-                             "input.cropLev1",
-                             selectizeInput("level1List", NULL, NA, NA, TRUE, TRUE,
+                             condition = "input.cropLev1 == 1",
+                             selectizeInput("provinces", NULL, NA, NA, TRUE, TRUE,
                                             options = list(placeholder = "Select state(s)/province(s)")))),
           conditionalPanel(
-            "input.appMode == 'Simulator' && input.selectedCountry !== ''",
+            condition = "input.appMode == 'Simulator' && input.selectedCountry !== ''",
             helper(sliderInput(inputId = "agg",
                                label = "Aggregation Factor",
                                min = 1,
@@ -61,9 +61,9 @@ sidebar <-
                                value = 50),
                    content = "rasterAggregationFactor"))),
 
-        conditionalPanel("input.appMode === 'Visualizer'",
-                         conditionalPanel(r"--(input.selectedCountry !== null && input.selectedCountry.length > 0)--",
-                                          tagList(fileInput(inputId = "latLonData",
+        conditionalPanel(condition = "input.appMode === 'Visualizer'",
+                         conditionalPanel(condition = r"--(input.selectedCountry !== null && input.selectedCountry.length > 0)--",
+                                          tagList(fileInput(inputId = "stateObservationsLatitudeLongitude",
                                                             label = strong("Health Zone centroid coordinates"),
                                                             placeholder = "Upload Lat-Lon data",
                                                             accept = acceptedFileTypes),
@@ -75,7 +75,7 @@ sidebar <-
                          actionButton("resetVisualizer", "Reset Values")),
 
         conditionalPanel(
-          "input.appMode === 'Simulator' && input.selectedCountry !== ''",
+          condition = "input.appMode === 'Simulator' && input.selectedCountry !== ''",
 
           checkboxGroupButtons(
             inputId = "enabledCompartments",
@@ -102,7 +102,7 @@ sidebar <-
 
           h5("Model Parameters"),
           conditionalPanel(
-            r"--{input.modelSelect.includes('V')}--",
+            r"[input.modelSelect.includes('V')]",
             id = "vaccination-enabled",
             numericInput(
               "alpha",
@@ -142,14 +142,14 @@ sidebar <-
                        label = "Number of Iterations (days)",
                        min = 1, max = 3650, value = 100, step = 1),
 
+###############
+          ## Seed data ##
+###############
           wellPanel(helper(fileInput(inputId = "seedData",
                                      label = "Upload Seed Data",
                                      placeholder = "Upload seed data (.csv or .xls or .xlsx)",
                                      accept = acceptedFileTypes),
                            content = "seedData"),
-                    downloadButton('downloadData',
-                                   label = "Generate Seed Data Template",
-                                   style = "length:800px"),
                     radioButtons(inputId = "seedRadius",
                                  label = strong("Insert infection data in"),
                                  choiceNames = list("a single cell", "a Moore neighbourhood of cells"),
@@ -157,70 +157,70 @@ sidebar <-
                                  selected = 0,
                                  inline = TRUE)),
 
+#######################
+          ## Data assimilation ##
+#######################
           wellPanel(id = "data-assimilation",
-                    ## FIXME: the material switch isn't interactive.
-                    materialSwitch(
-                      inputId = "data-assimilation",
-                      label = h5("Bayesian data assimilation"),
-                      value = FALSE,
-                      status = "primary",
-                      inline = TRUE),
+                    h5("Bayesian data assimilation"),
+                    checkboxInput("enablebayes", label = "Enable data assimilation"),
 
                     ## FIXME: the condition panel isn't hiding its children when
                     ## the condition doesn't evaluate to true.
-                    conditionalPanel(
-                      "input.enableDataAssimilation == true",
+                    conditionalPanel("input.enablebayes == 1",
 
-                      helper(fileInput(inputId = "dataAssimZones",
-                                       label = "Reporting health zones coordinates",
-                                       accept = acceptedFileTypes),
-                             type = "inline",
-                             content = "Latitute-longitude coordinates of reporting health zones."),
+                                     helper(fileInput(inputId = "dataAssimZones",
+                                                      label = "Reporting health zones coordinates",
+                                                      accept = acceptedFileTypes),
+                                            type = "inline",
+                                            content = "Latitute-longitude coordinates of reporting health zones."),
 
-                      h5(HTML("Model error covariance matrix (&#936;) formulation")),
-                      selectInput("covarianceSelect",
-                                  "Choose variance-covariance function",
-                                  list(`Distance-Based Decay` = "DBD",
-                                       Balgovind = "Balgovind",
-                                       Exponential = "Exponential",
-                                       Gaussian = "Guassian",
-                                       Spherical = "Spherical"),
-                                  "DBD",
-                                  width = "1000px"),
-                      numericInput("QCorrLength",
-                                   "Choose correlation length parameter for generating Q",
-                                   0.675, 0,
-                                   step = 0.001),
-                      numericInput("QVar",
-                                   "Choose variance parameter for generating Q",
-                                   0.55, 0,
-                                   step = 0.01),
-                      numericInput("nbhd",
-                                   "Choose neighborhood parameter for generating Q",
-                                   3, 0,
-                                   step = 1),
-                      helper(content = "psi",
-                             numericInput("psidiag",
-                                          HTML("Replacement value for elements of &#936; equal to zero"),
-                                          0.001, 0,
-                                          step = 0.001)),
+                                     h5(HTML("Model error covariance matrix (&#936;) formulation")),
+                                     selectInput("covarianceSelect",
+                                                 "Choose variance-covariance function",
+                                                 list(`Distance-Based Decay` = "DBD",
+                                                      Balgovind = "Balgovind",
+                                                      Exponential = "Exponential",
+                                                      Gaussian = "Guassian",
+                                                      Spherical = "Spherical"),
+                                                 "DBD",
+                                                 width = "1000px"),
+                                     numericInput("QCorrLength",
+                                                  "Choose correlation length parameter for generating Q",
+                                                  0.675, 0,
+                                                  step = 0.001),
+                                     numericInput("QVar",
+                                                  "Choose variance parameter for generating Q",
+                                                  0.55, 0,
+                                                  step = 0.01),
+                                     numericInput("nbhd",
+                                                  "Choose neighborhood parameter for generating Q",
+                                                  3, 0,
+                                                  step = 1),
+                                     helper(content = "psi",
+                                            numericInput("psidiag",
+                                                         HTML("Replacement value for elements of &#936; equal to zero"),
+                                                         0.001, 0,
+                                                         step = 0.001)),
 
-                      checkboxGroupButtons(
-                        inputId = "selectedCompartments",
-                        label = h5("Observed compartment(s)"),
-                        choiceNames = c("Vaccinated",
-                                        "Exposed",
-                                        "Infected",
-                                        "Recovered",
-                                        "Dead"),
-                        choiceValues = c("V", "E", "I", "R", "D"),
-                        selected = NA,
-                        checkIcon =
-                          withTags(list(yes = i(class = "fa fa-check-square"),
-                                        no = i(class = "fa fa-square-o")))),
+                                     checkboxGroupButtons(
+                                       inputId = "selectedCompartments",
+                                       label = h5("Observed compartment(s)"),
+                                       choiceNames = c("Vaccinated",
+                                                       "Exposed",
+                                                       "Infected",
+                                                       "Recovered",
+                                                       "Dead"),
+                                       choiceValues = c("V", "E", "I", "R", "D"),
+                                       selected = NA,
+                                       checkIcon =
+                                         withTags(list(yes = i(class = "fa fa-check-square"),
+                                                       no = i(class = "fa fa-square-o")))),
 
-                      uiOutput("dataAssimilationCompartmentDataUploaders"))),
+                                     uiOutput("dataAssimilationCompartmentDataUploaders"))),
 
+##############
+          ## Ignition ##
+##############
           div(id = "actionButtons",
               actionButton(inputId = "go",
                            label = "Run Simulation",
@@ -229,38 +229,39 @@ sidebar <-
               actionButton(inputId = "resetAll",
                            label = "Reset Values",
                            class = "act-btn")))))
+
 visualizer <-
   conditionalPanel(
-    "input.appMode === 'Visualizer'",
+    condition = "input.appMode === 'Visualizer'",
     div(id = "maptabPanels",
         tabsetPanel(id = 'vizTabSet',
-                    tabPanel(id = "main",
-                             title ="Leaflet Plot",
-                             leafletOutput("leafletMap")),
+                    tabPanel(id = "main", title ="Leaflet Plot", leafletOutput("leafletMap")),
 
                     tabPanel(title = "Leaflet Cropped Plot",
                              value = "Leaflet Cropped Plot",
                              leafletOutput("croppedLeafletMap")),
 
-                    tabPanel(title = "Terra Plot",
-                             imageOutput("terraOutputImage")),
+                    tabPanel(title = "Terra Plot", imageOutput("terraOutputImage"))
 
                     ## FIXME TODO: this is broken until I have JavaScript to check the input validator.
-                    conditionalPanel(input.iv_dataupload$is_valid(),
-                                     tabPanel(title = "Transmission Path",
-                                              leafletOutput("transmission")),
+                    ## conditionalPanel(condition = input.iv_dataupload$is_valid(),
+                    ##                  ## TODO: integrate the new Leaflet.TimeDimension plot feature
+                    ##                  ## which was pushed that was pushed to main.
+                    ##                  ## tabPanel(title = "Transmission Path", leafletOutput("transmission")),
 
-                                     tabPanel(title = "Lollipop Chart",
-                                              plotlyOutput("lollipop")),
+                    ##                  ## TODO
+                    ##                  ## tabPanel(title = "Lollipop Chart", plotlyOutput("lollipop")),
 
-                                     tabPanel(title = "Time-Series Graph",
-                                              uiOutput("timeSeriesOptions"),
-                                              plotlyOutput("timeSeries"))))))
+                    ##                  ## tabPanel(title = "Time-Series Graph",
+                    ##                  ##          uiOutput("timeSeriesOptions"),
+                    ##                  ##          plotlyOutput("timeSeries"))
+                    ##                  )
+                    )))
 
 simulator <-
   conditionalPanel(
-    "input.appMode == 'Simulator'",
-    div(id = "tabsetContainer",
+    condition = "input.appMode == 'Simulator'",
+    div(id = "simulator",
         tabsetPanel(id = "tabSet", selected = "Input Summary",
                     tabPanel(title = "Input Summary",
                              verbatimTextOutput("summary"),
@@ -269,11 +270,11 @@ simulator <-
 
                     tabPanel(title = "Model", id = "modelTab",
                              h3("Schematic Diagram"),
-                             conditionalPanel(r"[input.modelSelect === "SVEIRD"]",
+                             conditionalPanel(condition = r"[input.modelSelect.includes('V')]",
                                               img(src = "SVEIRD.png",
                                                   height = 400,
                                                   contentType = "image/png")),
-                             conditionalPanel(r"[input.modelSelect === "SEIRD"]",
+                             conditionalPanel(condition = r"[!input.modelSelect.includes('V')]",
                                               img(src = "SEIRD.png",
                                                   height = 400,
                                                   contentType = "image/png")),
@@ -283,15 +284,16 @@ simulator <-
                                  height = 400,
                                  contentType = "image/png")),
 
-                    tabPanel(title = "Initial Seed Data",
-                             DTOutput("tableSeed"),
-                             leafletOutput("seedPlot")),
+                    ## MAYBE TODO
+                    ## tabPanel(title = "Initial Seed Data",
+                    ##          DTOutput("tableSeed"),
+                    ##          leafletOutput("seedPlot")),
 
-                    tabPanel(title = "MP4 Animation",
-                             uiOutput("outputVideo")),
+                    ## TODO: waiting on №7 and №11 counterpart to №44; the
+                    ## solution to №44 is being extended to this.
+                    ## tabPanel(title = "MP4 Animation", uiOutput("outputVideo")),
 
-                    tabPanel(title = "Output Summary",
-                             DTOutput("outputSummary")),
+                    tabPanel(title = "Output Summary", DTOutput("outputSummary")),
 
                     tabPanel(title = "Plot", id = "plotTab",
                              plotlyOutput("infectedExposedPlot"),
@@ -303,9 +305,8 @@ simulator <-
 model <- tabPanel(title = "Model", sidebarLayout(sidebar, mainPanel(visualizer, simulator)))
 
 ui <- fluidPage(useShinyjs(),
+                use_waitress(),
                 navbarPage(HTML(titleHTML), model, authors),
-                add_busy_spinner("cube-grid",
-                                 "#18536F",
-                                 margins = c("50%","50%")),
+                add_busy_spinner("cube-grid", "#18536F", margins = c("50%","50%")),
                 title = "spatialEpisim",
                 theme = lightTheme)
