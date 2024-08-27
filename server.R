@@ -1794,7 +1794,7 @@ observeEvent(input$seedData, {
                                     QVar = input$QVar,
                                     QCorrLength = input$QCorrLength,
                                     nbhd = input$nbhd,
-                                    psiDiag = sidiag)
+                                    psiDiag = input$psiDiag)
 
     row1  <- data.frame(Variable = "Country", Value = input$selectedCountry)
     row2  <- data.frame(Variable = "WorldPop Raster Dimension", Value = paste0(rs$nRows, " rows x ", rs$nCols, " columns = ", rs$nCells, " grid cells"))
