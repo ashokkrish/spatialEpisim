@@ -209,29 +209,136 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
     #print(paste("Dimension of Death Matrix: ", dim(death_data)[1], dim(death_data)[2]))
 
-    #------------------#
-    # Read in H matrix #
-    #------------------#
+    ## DONT change this here, change it in spatialEpisim.foundation is needed,
+    ## then copy over the function defintion here.
+    linearInterpolationOperator <- function(layers,
+                                            healthZoneCoordinates,
+                                            neighbourhood.order = 2,
+                                            compartmentsReported = 1) {
+      stopifnot(neighbourhood.order %in% c(0, 1, 2))
+      if (neighbourhood.order == 2)
+        stopifnot(terra::ncell(layers) >= 5 && terra::nrow(layers) >= 5) # required for 2nd order
+      stopifnot(compartmentsReported %in% 1:2)
 
-    source("R/H_Matrix.R") # read in H matrix code
+      queensNeighbours <- function(order, cell, ncols) {
+        stopifnot(order %in% 1:2)
 
-    #Hlist <- generateLIO2(stack$rasterStack, sitRepData, states_observable =  2)
-    Hlist <- generateLIO2(stack$rasterStack, sitRepData, states_observable =  1)
-    states_observable <- Hlist$states_observable
-    Hmat <- Hlist$Hmat
-    #print(paste("Dimension of the Linear Interpolation Operator: ", dim(Hmat)[1], dim(Hmat)[2]))
+        if (order == 1) {
+          neighbouringCells <-
+            c((cell - ncols - 1) : (cell - ncols + 1),
+              cell - 1 , cell + 1,
+              (cell + ncols - 1) : (cell + ncols + 1))
+          stopifnot(length(neighbouringCells) == 8)
+        } else if (order == 2) {
+          neighbouringCells <-
+            c((cell - ncols * 2 - 2) : (cell - ncols * 2 + 2),
+              cell - ncols - 2 , cell - ncols + 2,
+              cell - 2 , cell + 2,
+              cell + ncols - 2 , cell + ncols + 2,
+              (cell + ncols * 2 - 2) : (cell + ncols * 2 + 2))
+          stopifnot(length(neighbouringCells) == 16)
+        }
 
-    Locations <- Hlist$Locations
-    nHealthZones <- as.numeric(dim(Locations)[1])
-    #print(Locations)
+        neighbouringCells
+      }
+
+      extend.length <- 5
+      layers <- terra::extend(layers, extend.length)
+
+      ## NOTE: cells contains the index into the rasters in layers (when converted
+      ## to a matrix). Extract coordinates as cbind(lon, lat); it's stored as
+      ## cbind(lat, lon).
+      cells <- terra::cellFromXY(layers, terra::as.matrix(healthZoneCoordinates[, 3:2]))
+      if (any(duplicated(cells))) {
+        warning("[Linear interpolation operator] Raster aggregation factor is too high to differentiate between two (or more) health zones (they correspond to the same grid cell).")
+        tibble::tibble("Health Zone" = healthZoneCoordinates[, 1], Cell = cells) %>%
+          dplyr::group_by(Cell) %>%
+          dplyr::filter(dplyr::n() != 1) %>%
+          print()
+      }
+      if (any(is.na(cells)))
+        warning("Ignoring NAs in [cells] object corresponding to coordinates out of bounds of [layers] SpatRaster.")
+
+      cells <- cells[!is.na(cells)]
+
+      ## NOTE: preallocate the linear forward interpolation matrix, with
+      ## dimensions q * p (health zones by cells in the SpatRaster).
+      H <- base::matrix(0, nrow(healthZoneCoordinates), terra::ncell(layers))
+
+      ## NOTE: these are the weightings used for the chess queen zeroth, first,
+      ## and second order neighbours. The zeroth order neighbor is the position of
+      ## the queen itself.
+      neighbour.weights <-
+        switch(neighbourhood.order + 1, # the first of ... applies to zero, etc.
+               1,
+               c(2, 1) * 0.1,
+               c(3, 2, 1) * 35^-1)
+
+      for (index in seq_along(cells)) {
+        H[index, cells[index]] <- neighbour.weights[1]
+
+        if (neighbourhood.order != 0) {
+          neighbour.1st <- queensNeighbours(1, cells[index], terra::ncol(layers))
+          H[index, neighbour.1st] <- neighbour.weights[2]
+        }
+
+        if (neighbourhood.order == 2) {
+          neighbour.2nd <- queensNeighbours(2, cells[index], terra::ncol(layers))
+          if(anyDuplicated(c(neighbour.1st, neighbour.2nd)) > 0)
+            simpleError("Duplicate cell indices among neighbours of multiple localities.")
+          H[index, neighbour.2nd] <- neighbour.weights[3]
+        }
+      }
+
+      ## TODO: move the following NOTE to a better place than here; perhaps to the
+      ## function documentation details. This should be tested using automatic
+      ## testing with various input values. NOTE: this corresponds to the
+      ## hand-written note I made after discussionwith Ashok. He told me that the
+      ## sum of all cells needs to be equivalent to one; the sum of all cells is
+      ## per-health zone, ergo the first condition checks that the sum of the entire
+      ## matrix (with nrow := health zones) is the same as the number of health
+      ## zones (because each should sum to one). NOTE: each row corresponds to one
+      ## of the neighourhoods pictures in the plots "ashok.png" or "me.png".
+      stopifnot(dplyr::near(sum(H), nrow(healthZoneCoordinates)))
+      stopifnot(dplyr::near(sum(matrix(H[1, ],
+                                       ncol = ncol(layers),
+                                       byrow = TRUE)),
+                            1))
+
+      ## NOTE: the extended areas of the matrix are now dropped to return the matrix
+      ## to the expected size for the input.
+      H <-
+        apply(X = H,
+              MARGIN = 1, # apply the function to rows
+              FUN =
+                function(row) {
+                  m <- matrix(row, byrow = TRUE, ncol = ncol(layers))
+                  m[(extend.length + 1):(base::nrow(m) - extend.length),
+                  (extend.length + 1):(base::ncol(m) - extend.length)] %>%
+                    Matrix::t() %>% # row-major order (byrow)
+                    as.vector()
+                }) %>% Matrix::t() # rows should be health zones
+
+      if (compartmentsReported == 2) H <- Matrix::bdiag(H, H)
+
+      stopifnot(sum(.rowSums(H, m = nrow(H), n = ncol(H))) == nrow(healthZoneCoordinates))
+
+      return(H)
+    }
+    states_observable <- 1
+    healthZoneCoordinates <- openDataFile(sitRepData)
+    stopifnot(hasName(healthZoneCoordinates, "HealthZone"))
+    stopifnot(hasName(healthZoneCoordinates, "Latitude"))
+    stopifnot(hasName(healthZoneCoordinates, "Longitude"))
+    Hmat <- linearInterpolationOperator(terra::rast(stack$rasterStack), healthZoneCoordinates)
+    nHealthZones <- nrow(healthZoneCoordinates)
 
     #------------------#
     # Read in Q matrix #
     #------------------#
-
     source("R/Q_matrix.R")
     
-    QMat <- genQ(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  1) #states_observable = 2
+    QMat <- genQ(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  states_observable) #states_observable = 2
     
     Q <- QMat$Q
     # plot(Q[1:101,1])

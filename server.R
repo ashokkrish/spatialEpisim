@@ -1787,7 +1787,7 @@ observeEvent(input$seedData, {
                                     isCropped = input$cropLev1,
                                     level1Names = input$level1List,
                                     DA = input$dataAssim,
-                                    sitRepData = input$dataAssimZones$datapath,
+                                    sitRepData = input$dataAssimZones,
                                     dataI = input$assimIData$datapath,
                                     dataD = input$assimDData$datapath,
                                     varCovarFunc = input$covarianceSelect,
