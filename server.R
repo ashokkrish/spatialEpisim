@@ -11,39 +11,23 @@ server <- function(input, output, session) {
   updateCheckboxGroupButtons(inputId = "selectedCompartments", # TODO: rename to observed/reported
                              disabledChoices = c("S", "V", "R", "D"))
 
+  observe_helpers(help_dir = "markdown", withMathJax = TRUE)
+
+  ISO3C <- reactive(countrycode(sourcevar = input$selectedCountry, "country.name", "iso3c"))
   ## FIXME: this is not necessary when things are done properly. I'll figure out
   ## paths later.
   temporaryDirectory <- tempdir()
   dir.create(temporaryDirectory, showWarnings = FALSE)
-
-  observe_helpers(help_dir = "markdown", withMathJax = TRUE)
-  
-  ISO3C <- reactive(countrycode(sourcevar = input$selectedCountry, "country.name", "iso3c"))
-  ###########################################################################
-  ## The following objects are specific to the visualizer component of the ##
-  ## application.                                                          ##
-  ###########################################################################
-
-  ##########################################################################
-  ## "provinces" is a SpatVector for the currently selected country, with ##
-  ## resolution of the first (top-level) administrative boundaries. The   ##
-  ## names are in provinceNames, and if a subregion of the country is     ##
-  ## desired then it is in subregionsSpatVector.                          ##
-  ##########################################################################
-  ##########################################################################
-  ## The following objects and expressions are specific to the simulation ##
-  ## component of the application.                                        ##
-  ##########################################################################
   provinces <- reactive(getCountrySubregions.SpatVector(req(ISO3C()), folder = tempdir()))
-  provinceNames <- reactive(provinces()$NAME_1)
-  observe(updateSelectizeInput(session, "provinces", choices = provinceNames()))
+  observe(updateSelectizeInput(session, "provinces", choices = provinces()$NAME_1))
 
-  ## NOTE: this is not aggregated. The aggregated form is only available from getSVEIRD.SpatRaster().
+  ## NOTE: this is not aggregated. The aggregated form is only available from
+  ## getSVEIRD.SpatRaster().
   populationSpatRaster <- reactive({
     shiny::validate(need(ISO3C(), "A country must be selected."))
     susceptibleSpatRaster <- getCountryPopulation.SpatRaster(ISO3C())
   })
-  observeEvent(input$resetAll, shinyjs::reset("dashboard"))
+  observeEvent(input$resetAll, shinyjs::reset("dashboard")) ## TODO: review the usage of this.
 
   ## MAYBE FIXME: I anticipate that if a user uploads some compartment's data
   ## then decides they want another compartment, their upload will be removed if
