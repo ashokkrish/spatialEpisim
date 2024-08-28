@@ -7,16 +7,16 @@
 ##' @returns a data.frame or tibble of the read data file
 openDataFile <- function(rowOfFileInput.data.frame) {
   switch(
-    tolower(tools::file_ext(datafile$name)),
+    tolower(tools::file_ext(rowOfFileInput.data.frame$name)),
 
     ## Textual data formats
-    csv = read_csv(datafile$datapath, show_col_types = FALSE),
-    txt = read_tsv(datafile$datapath, show_col_types = FALSE),
+    csv = read_csv(rowOfFileInput.data.frame$datapath, show_col_types = FALSE),
+    txt = read_tsv(rowOfFileInput.data.frame$datapath, show_col_types = FALSE),
 
     ## Spreadsheet formats
-    ods = read_ods(datafile$datapath),
-    xls = read_xls(datafile$datapath),
-    xlsx = read_xlsx(datafile$datapath),
+    ods = read_ods(rowOfFileInput.data.frame$datapath),
+    xls = read_xls(rowOfFileInput.data.frame$datapath),
+    xlsx = read_xlsx(rowOfFileInput.data.frame$datapath),
 
     validate("Improper file format.") # ERROR
   )
