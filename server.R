@@ -139,7 +139,6 @@ server <- function(input, output, session) {
          pos = modelArguments)
       modelArguments <- as.list(modelArguments)
     } else {
-      browser()
       modelArguments$healthZoneCoordinates <- openDataFile(req(input$healthZoneCoordinates))
       if (!is.null(input$dataAssimilation_I))
         modelArguments$incidenceData <- openDataFile(req(input$dataAssimilation_I))
