@@ -13,7 +13,7 @@ suppressPackageStartupMessages({
 
   library(plotly)
 
-  library(readods)
+  library(readODS)
   library(readxl)
   library(writexl)
 
