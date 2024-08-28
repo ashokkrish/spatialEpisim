@@ -42,7 +42,7 @@ library(reactcharteditor)
 here::i_am("global.R")
 
 ## These provides useful defaults for various combinations of model parameters
-## and options, and a 
+## and options, and a set of countries which the application is usable with.
 epiparms <- load(here("data", "epiparms.RData"))
 shortList <- load(here("data", "shortlist.RData"))
 
