@@ -94,7 +94,6 @@ server <- function(input, output, session) {
       spatialEpisim.foundation::getSVEIRD.SpatRaster(terra::subset(provinces(),
                                                                    provinces()$NAME_1 %in% input$provinces),
                                                      populationSpatRaster(),
-                                                     ## FIXME: Error in eval: object 'input' not found; I cannot access the input object here, but it is accessible immediately outside this?
                                                      input$agg)
 
     seedData <- openDataFile(input$seedData)
