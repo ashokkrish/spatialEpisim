@@ -14,6 +14,7 @@ suppressPackageStartupMessages({
 
   library(plotly)
 
+  library(readods)
   library(readxl)
   library(writexl)
 
@@ -53,43 +54,11 @@ prependList <- c("Czech Republic",
 
 grey6 <- "#0f0f0f" # the common name for this hexadecimal RGB colour
 
-valueRange <- c(0, 5, 10, 25, 50, 100, 250, 1000, 10000)
 colourPalette <-
-  colorBin(cptcity::cpt("jjg_misc_seminf_haxby",
-                        colorRampPalette = TRUE)(9)[-1],
-           domain = valueRange,
-           bins = length(valueRange))
-
-mimetypes <- c("text/csv",
-               "text/comma-separated-values",
-               "text/plain",
-               ".csv",
-               ".xls",
-               ".xlsx",
-               ".txt")
-
-## MAYBE TODO: replace with read_table?
-openDataFile <- function(datafile) {
-  switch(tolower(tools::file_ext(datafile$name)),
-         csv = read_csv(datafile$datapath, show_col_types = FALSE),
-         xls = read_xls(datafile$datapath),
-         xlsx = read_xlsx(datafile$datapath),
-         txt = read_tsv(datafile$datapath, show_col_types = FALSE),
-         validate("Improper file format."))
-}
-
-## NOTE: borrowed from Episim; the features I use—validated inputs, inputs
-## updated with rows of a dataframe filtered on some input, et cetera—should be
-## made into a package that both use and which others can use.
-updateNumericInputs <- function(defaults, session) {
-  if (any(is.null(dim(defaults)), dim(defaults)[1] != 1)) {
-    warning("The `defaults` dataframe is not a single row!")
-    warning(defaults) # DONT remove this. It's intentional, not for development.
-  }
-  iwalk(defaults, \(value, inputId) {
-    updateNumericInput(session, inputId, value = value)
-  })
-}
+  c(0, 5, 10, 25, 50, 100, 250, 1000, 10000) %>%
+  colorBin(cptcity::cpt("jjg_misc_seminf_haxby", colorRampPalette = TRUE)(9)[-1],
+           domain = .,
+           bins = length(.))
 
 lineThickness <- 1.5
 
