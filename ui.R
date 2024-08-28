@@ -150,11 +150,11 @@ sidebar <-
                                      accept = mimetypes),
                            content = "seedData"),
                     radioButtons(inputId = "seedRadius",
-                                 label = strong("Insert infection data in"),
-                                 choiceNames = list("a single cell", "a Moore neighbourhood of cells"),
+                                 label = strong("Seed (spread) initial infections and exposures across a Moore neighbourhood of cells?"),
+                                 choiceNames = list("No (terra::cellFromXY only)", "Yes (equitably spread)"),
                                  choiceValues = list(0, 1),
                                  selected = 0,
-                                 inline = TRUE)),
+                                 inline = FALSE)),
 
           #######################
           ## Data assimilation ##
