@@ -80,7 +80,7 @@ server <- function(input, output, session) {
                                                      populationSpatRaster(),
                                                      input$agg)
 
-    seedData <- openDataFile(input$seedData)
+    uploadedSeedData <- openDataFile(input$uploadedSeedData)
 
     modelArguments <-
       list(
@@ -95,7 +95,7 @@ server <- function(input, output, session) {
         n.days = input$timestep, ## Temporal parameter; TODO: rename "timestep"
 
         ## Model parameters
-        seedData = seedData,
+        seedData = uploadedSeedData,
         neighbourhood.order = as.numeric(input$seedRadius),
         input$lambda,
         layers = SVEIRD.SpatRaster,
@@ -139,19 +139,12 @@ server <- function(input, output, session) {
          pos = modelArguments)
       modelArguments <- as.list(modelArguments)
     } else {
-      ## FIXME:
-      ## Warning: Error in $<-.data.frame: replacement has 0 rows, data has 1
-      ##   86: stop
-      ##   85: $<-.data.frame
-      ##   80: <Anonymous>
-      ##   78: observe [/home/bryce/Documents/src/r/spatialEpisim/server.R#161]
-      ##   77: <observer>
-      ##    6: runApp
-      ##    5: print.shiny.appobj
-      ##    3: ss
-      ##    2: .ess.source
-      ##    1: base::as.environment("ESSR")$.ess.eval
+      browser()
       modelArguments$healthZoneCoordinates <- openDataFile(req(input$healthZoneCoordinates))
+      if (!is.null(input$dataAssimilation_I))
+        modelArguments$incidenceData <- openDataFile(req(input$dataAssimilation_I))
+      if (!is.null(input$dataAssimilation_D))
+        modelArguments$deathData <- openDataFile(req(input$dataAssimilation_D))
     }
     model <- do.call(spatialEpisim.foundation::SVEIRD.BayesianDataAssimilation, modelArguments)
 

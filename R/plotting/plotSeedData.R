@@ -7,7 +7,7 @@ library(countrycode)
 library(raster)
 #library(ggforce)
 
-createBubblePlot <- function(countryName, level1Names = NULL, displayCountryName, seedData, startDate, source) {
+createBubblePlot <- function(countryName, level1Names = NULL, displayCountryName, uploadedSeedData, startDate, source) {
 
   worldmap <- map_data("world")
   
@@ -32,7 +32,7 @@ createBubblePlot <- function(countryName, level1Names = NULL, displayCountryName
   
   #print(base_map)
   
-  my_df <- read.csv(paste0("seeddata/", seedData), header = T)
+  my_df <- read.csv(paste0("seeddata/", uploadedSeedData), header = T)
   
   # print(my_df) # This should print the CSV file rows and columns
   # names(my_df)
@@ -57,8 +57,8 @@ createBubblePlot <- function(countryName, level1Names = NULL, displayCountryName
 # Example Function Calls #
 #------------------------#
 
-# createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = c("Ituri", "Nord-Kivu"), displayCountryName = "the DRC", seedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
+# createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = c("Ituri", "Nord-Kivu"), displayCountryName = "the DRC", uploadedSeedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
 # 
-# createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = NULL, displayCountryName = "the DRC", seedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
+# createBubblePlot(countryName = "Democratic Republic of Congo", level1Names = NULL, displayCountryName = "the DRC", uploadedSeedData = "COD_InitialSeedData.csv", startDate = "2018-08-01", source = "(Source: WHO)")
 # 
-# createBubblePlot(countryName = "Nigeria", level1Names=NULL, displayCountryName = "Nigeria", seedData = "NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")
+# createBubblePlot(countryName = "Nigeria", level1Names=NULL, displayCountryName = "Nigeria", uploadedSeedData = "NGA_InitialSeedDataSep 1, 2020.csv", startDate = "2020-09-01", source = "(Source: Nigerian Centre for Disease Control)")

@@ -23,6 +23,182 @@ titleHTML <-
 
 authors <- tabPanel("Authors", includeMarkdown(here("markdown", "authors.md")))
 
+simulatorUI <-
+  div(
+    checkboxGroupButtons(
+      inputId = "enabledCompartments",
+      label = h5("Enabled SEI-type compartment(s)"),
+      choiceNames = c("Susceptible",
+                      "Vaccinated",
+                      "Exposed",
+                      "Infected",
+                      "Recovered",
+                      "Dead"),
+      choiceValues = c("S", "V", "E", "I", "R", "D"),
+      selected = c("S", "V", "E", "I", "R", "D"),
+      checkIcon =
+        withTags(list(yes = i(class = "fa fa-check-square"),
+                      no = i(class = "fa fa-square-o")))),
+
+    conditionalPanel(
+      r"[input.enabledCompartments.includes('V')]",
+      id = "vaccination-enabled",
+      numericInput(
+        "alpha",
+        HTML("Daily Vaccination Rate (&#945;)"),
+        1.5e-4, 0, 1, 0.00001)),
+    numericInput("beta",
+                 HTML("Daily Exposure Rate (&#946;)"),
+                 5.5e-2, 0, 1, 0.00001),
+    numericInput("gamma",
+                 HTML("Daily Infection Rate (&#947;)"),
+                 9e-3, 0, 1, 0.00001),
+    numericInput("sigma",
+                 HTML("Daily Recovery Rate (&#963;)"),
+                 5.6e-2, 0, 1, 0.00001),
+    numericInput("delta",
+                 HTML("Daily Death Rate (&#948;)"),
+                 1.5e-3, 0, 1, 0.00001),
+    ## LAMBDA λ
+    sprintf(r"--[Distance Parameter (&#955; %s)]--",
+            r"--[\(\frac{\Delta \overline{km}}{day}\)]--") %>%
+    HTML() %>%
+    numericInput("lambda", ., 1.5e1, 1, 50, 1) %>%
+    withMathJax() %>%
+    helper(content = "lambda"),
+
+    h5("Time and date options"),
+    dateInput('date',
+              "Choose simulation start date",
+              value = "1970-01-01",
+              max = Sys.Date(),
+              format = "yyyy-mm-dd",
+              startview = "month",
+              weekstart = 0,
+              language = "en",
+              width = NULL),
+    numericInput(inputId = "timestep",
+                 label = "Number of Iterations (days)",
+                 min = 1, max = 3650, value = 100, step = 1),
+
+    wellPanel(helper(fileInput(inputId = "uploadedSeedData",
+                               label = "Upload Seed Data",
+                               placeholder = "Initial compartment values",
+                               accept = mimetypes),
+                     content = "seedData"),
+              radioButtons(inputId = "seedRadius",
+                           label = strong("Seed (spread) initial infections and exposures across a Moore neighbourhood of cells?"),
+                           choiceNames = list("No (terra::cellFromXY only)", "Yes (equitably spread)"),
+                           choiceValues = list(0, 1),
+                           selected = 0,
+                           inline = FALSE)),
+
+    wellPanel(id = "data-assimilation",
+              h5("Bayesian data assimilation"),
+              checkboxInput("enablebayes", label = "Enable data assimilation"),
+
+              conditionalPanel("input.enablebayes == 1",
+
+                               div(helper(fileInput(inputId = "healthZoneCoordinates",
+                                                    label = "Reporting health zones coordinates",
+                                                    accept = mimetypes),
+                                          type = "inline",
+                                          content = "Latitute-longitude coordinates of reporting health zones."),
+
+                                   checkboxGroupButtons(
+                                     inputId = "selectedCompartments",
+                                     label = h5("Observed compartment(s)"),
+                                     choiceNames = c("Vaccinated",
+                                                     "Exposed",
+                                                     "Infected",
+                                                     "Recovered",
+                                                     "Dead"),
+                                     choiceValues = c("V", "E", "I", "R", "D"),
+                                     selected = NA,
+                                     checkIcon =
+                                       withTags(list(yes = i(class = "fa fa-check-square"),
+                                                     no = i(class = "fa fa-square-o")))),
+
+                                   uiOutput("dataAssimilationCompartmentDataUploaders")),
+
+                               div(
+                                 h5(HTML("Model error covariance matrix (&#936;) formulation")),
+                                 selectInput("covarianceSelect",
+                                             "Choose variance-covariance function",
+                                             list(`Distance-Based Decay` = "DBD",
+                                                  Balgovind = "Balgovind",
+                                                  Exponential = "Exponential",
+                                                  Gaussian = "Guassian",
+                                                  Spherical = "Spherical"),
+                                             "DBD",
+                                             width = "1000px"),
+                                 numericInput("QCorrLength",
+                                              "Choose correlation length parameter for generating Q",
+                                              0.675, 0,
+                                              step = 0.001),
+                                 numericInput("QVar",
+                                              "Choose variance parameter for generating Q",
+                                              0.55, 0,
+                                              step = 0.01),
+                                 numericInput("nbhd",
+                                              "Choose neighborhood parameter for generating Q",
+                                              3, 0,
+                                              step = 1),
+                                 helper(content = "psi",
+                                        numericInput("psidiag",
+                                                     HTML("Replacement value for elements of &#936; equal to zero"),
+                                                     0.001, 0,
+                                                     step = 0.001))
+                               ))),
+
+    wellPanel(
+      h5("Determinism"),
+      radioButtons(inputId = "stochasticSelect",
+                   label = NULL,
+                   choiceValues = list("Deterministic", "Stochastic"),
+                   choiceNames = list("Deterministic", "Stochastic"),
+                   selected = "Deterministic",
+                   inline = TRUE,
+                   width = "100%")),
+
+    wellPanel(id = "actionButtons",
+        actionButton(inputId = "go",
+                     label = "Run Simulation",
+                     class = "act-btn"),
+
+        actionButton(inputId = "resetAll",
+                     label = "Reset Values",
+                     class = "act-btn"))
+  )
+
+visualizer <-
+  conditionalPanel(
+    condition = "input.appMode === 'Visualizer'",
+    div(id = "maptabPanels",
+        tabsetPanel(id = 'vizTabSet',
+                    tabPanel(id = "main", title ="Leaflet Plot", leafletOutput("leafletMap")),
+
+                    tabPanel(title = "Leaflet Cropped Plot",
+                             value = "Leaflet Cropped Plot",
+                             leafletOutput("croppedLeafletMap")),
+
+                    tabPanel(title = "Terra Plot", imageOutput("terraOutputImage"))
+
+                    ## FIXME TODO: this is broken until I have JavaScript to check the input validator.
+                    ## conditionalPanel(condition = input.iv_dataupload$is_valid(),
+                    ##                  ## TODO: integrate the new Leaflet.TimeDimension plot feature
+                    ##                  ## which was pushed that was pushed to main.
+                    ##                  ## tabPanel(title = "Transmission Path", leafletOutput("transmission")),
+
+                    ##                  ## TODO
+                    ##                  ## tabPanel(title = "Lollipop Chart", plotlyOutput("lollipop")),
+
+                    ##                  ## tabPanel(title = "Time-Series Graph",
+                    ##                  ##          uiOutput("timeSeriesOptions"),
+                    ##                  ##          plotlyOutput("timeSeries"))
+                    ##                  )
+                    )))
+
 sidebar <-
   sidebarPanel(
     div(id = "dashboard",
@@ -43,7 +219,7 @@ sidebar <-
           conditionalPanel(condition = "input.selectedCountry != ''",
                            helper(checkboxInput(
                              inputId = "cropLev1",
-                             label = strong("Limit simulation to state(s)/province(s) (crop to selection)"),
+                             label = "Limit simulation to state(s)/province(s) (crop to selection)",
                              value = FALSE),
                              content = "cropSelectedCountry"),
                            conditionalPanel(
@@ -75,185 +251,7 @@ sidebar <-
 
         conditionalPanel(
           condition = "input.appMode === 'Simulator' && input.selectedCountry !== ''",
-
-          checkboxGroupButtons(
-            inputId = "enabledCompartments",
-            label = h5("Enabled SEI-type compartment(s)"),
-            choiceNames = c("Susceptible",
-                            "Vaccinated",
-                            "Exposed",
-                            "Infected",
-                            "Recovered",
-                            "Dead"),
-            choiceValues = c("S", "V", "E", "I", "R", "D"),
-            selected = c("S", "V", "E", "I", "R", "D"),
-            checkIcon =
-              withTags(list(yes = i(class = "fa fa-check-square"),
-                            no = i(class = "fa fa-square-o")))),
-
-          radioButtons(inputId = "stochasticSelect",
-                       label = strong("Model Stochasticity"),
-                       choiceValues = list("Deterministic", "Stochastic"),
-                       choiceNames = list("Deterministic", "Stochastic"),
-                       selected = "Deterministic",
-                       inline = TRUE,
-                       width = "1000px"),
-
-          h5("Model Parameters"),
-          conditionalPanel(
-            r"[input.enabledCompartments.includes('V')]",
-            id = "vaccination-enabled",
-            numericInput(
-              "alpha",
-              HTML("Daily Vaccination Rate (&#945;)"),
-              1.5e-4, 0, 1, 0.00001)),
-          numericInput("beta",
-                       HTML("Daily Exposure Rate (&#946;)"),
-                       5.5e-2, 0, 1, 0.00001),
-          numericInput("gamma",
-                       HTML("Daily Infection Rate (&#947;)"),
-                       9e-3, 0, 1, 0.00001),
-          numericInput("sigma",
-                       HTML("Daily Recovery Rate (&#963;)"),
-                       5.6e-2, 0, 1, 0.00001),
-          numericInput("delta",
-                       HTML("Daily Death Rate (&#948;)"),
-                       1.5e-3, 0, 1, 0.00001),
-          ## LAMBDA λ
-          sprintf(r"--[Distance Parameter (&#955; %s)]--",
-                  r"--[\(\frac{\Delta \overline{km}}{day}\)]--") %>%
-          HTML() %>%
-          numericInput("lambda", ., 1.5e1, 1, 50, 1) %>%
-          withMathJax() %>%
-          helper(content = "lambda"),
-
-          h5("Time and date options"),
-          dateInput('date',
-                    "Choose simulation start date",
-                    value = "1970-01-01",
-                    max = Sys.Date(),
-                    format = "yyyy-mm-dd",
-                    startview = "month",
-                    weekstart = 0,
-                    language = "en",
-                    width = NULL),
-          numericInput(inputId = "timestep",
-                       label = "Number of Iterations (days)",
-                       min = 1, max = 3650, value = 100, step = 1),
-
-          ###############
-          ## Seed data ##
-          ###############
-          wellPanel(helper(fileInput(inputId = "seedData",
-                                     label = "Upload Seed Data",
-                                     placeholder = "Upload seed data (.csv or .xls or .xlsx)",
-                                     accept = mimetypes),
-                           content = "seedData"),
-                    radioButtons(inputId = "seedRadius",
-                                 label = strong("Seed (spread) initial infections and exposures across a Moore neighbourhood of cells?"),
-                                 choiceNames = list("No (terra::cellFromXY only)", "Yes (equitably spread)"),
-                                 choiceValues = list(0, 1),
-                                 selected = 0,
-                                 inline = FALSE)),
-
-          #######################
-          ## Data assimilation ##
-          #######################
-          wellPanel(id = "data-assimilation",
-                    h5("Bayesian data assimilation"),
-                    checkboxInput("enablebayes", label = "Enable data assimilation"),
-
-                    conditionalPanel("input.enablebayes == 1",
-
-                                     helper(fileInput(inputId = "healthZoneCoordinates",
-                                                      label = "Reporting health zones coordinates",
-                                                      accept = mimetypes),
-                                            type = "inline",
-                                            content = "Latitute-longitude coordinates of reporting health zones."),
-
-                                     h5(HTML("Model error covariance matrix (&#936;) formulation")),
-                                     selectInput("covarianceSelect",
-                                                 "Choose variance-covariance function",
-                                                 list(`Distance-Based Decay` = "DBD",
-                                                      Balgovind = "Balgovind",
-                                                      Exponential = "Exponential",
-                                                      Gaussian = "Guassian",
-                                                      Spherical = "Spherical"),
-                                                 "DBD",
-                                                 width = "1000px"),
-                                     numericInput("QCorrLength",
-                                                  "Choose correlation length parameter for generating Q",
-                                                  0.675, 0,
-                                                  step = 0.001),
-                                     numericInput("QVar",
-                                                  "Choose variance parameter for generating Q",
-                                                  0.55, 0,
-                                                  step = 0.01),
-                                     numericInput("nbhd",
-                                                  "Choose neighborhood parameter for generating Q",
-                                                  3, 0,
-                                                  step = 1),
-                                     helper(content = "psi",
-                                            numericInput("psidiag",
-                                                         HTML("Replacement value for elements of &#936; equal to zero"),
-                                                         0.001, 0,
-                                                         step = 0.001)),
-
-                                     checkboxGroupButtons(
-                                       inputId = "selectedCompartments",
-                                       label = h5("Observed compartment(s)"),
-                                       choiceNames = c("Vaccinated",
-                                                       "Exposed",
-                                                       "Infected",
-                                                       "Recovered",
-                                                       "Dead"),
-                                       choiceValues = c("V", "E", "I", "R", "D"),
-                                       selected = NA,
-                                       checkIcon =
-                                         withTags(list(yes = i(class = "fa fa-check-square"),
-                                                       no = i(class = "fa fa-square-o")))),
-
-                                     uiOutput("dataAssimilationCompartmentDataUploaders"))),
-
-##############
-          ## Ignition ##
-##############
-          div(id = "actionButtons",
-              actionButton(inputId = "go",
-                           label = "Run Simulation",
-                           class = "act-btn"),
-
-              actionButton(inputId = "resetAll",
-                           label = "Reset Values",
-                           class = "act-btn")))))
-
-visualizer <-
-  conditionalPanel(
-    condition = "input.appMode === 'Visualizer'",
-    div(id = "maptabPanels",
-        tabsetPanel(id = 'vizTabSet',
-                    tabPanel(id = "main", title ="Leaflet Plot", leafletOutput("leafletMap")),
-
-                    tabPanel(title = "Leaflet Cropped Plot",
-                             value = "Leaflet Cropped Plot",
-                             leafletOutput("croppedLeafletMap")),
-
-                    tabPanel(title = "Terra Plot", imageOutput("terraOutputImage"))
-
-                    ## FIXME TODO: this is broken until I have JavaScript to check the input validator.
-                    ## conditionalPanel(condition = input.iv_dataupload$is_valid(),
-                    ##                  ## TODO: integrate the new Leaflet.TimeDimension plot feature
-                    ##                  ## which was pushed that was pushed to main.
-                    ##                  ## tabPanel(title = "Transmission Path", leafletOutput("transmission")),
-
-                    ##                  ## TODO
-                    ##                  ## tabPanel(title = "Lollipop Chart", plotlyOutput("lollipop")),
-
-                    ##                  ## tabPanel(title = "Time-Series Graph",
-                    ##                  ##          uiOutput("timeSeriesOptions"),
-                    ##                  ##          plotlyOutput("timeSeries"))
-                    ##                  )
-                    )))
+          simulatorUI)))
 
 simulator <-
   conditionalPanel(

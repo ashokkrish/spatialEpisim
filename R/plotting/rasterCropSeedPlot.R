@@ -1,4 +1,4 @@
-createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL, susceptibleLayer, seedDataPath, seedRadius = 0) {
+createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL, susceptibleLayer, uploadedSeedDataPath, seedRadius = 0) {
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') # Converts country name to ISO Alpha
 
   Susceptible <- susceptibleLayer
@@ -26,7 +26,7 @@ createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL
     names(rasterStack) <- c("Susceptible", "Vaccinated", "Exposed", "Infected", "Recovered", "Dead", "Inhabitable", "Level1Raster")
     rasterStack <- crop(rasterStack, inhabitableTrim)
     croppedInfected <- rasterStack[["Infected"]]
-    seedData <- read.csv(seedDataPath, header = T)
+    seedData <- read.csv(uploadedSeedDataPath, header = T)
     numLocations <- dim(seedData)[1]
     numCellsPerRegion <- (2*seedRadius + 1)^2
 
@@ -63,7 +63,7 @@ createCroppedSeedPlot <- function(selectedCountry, isCropped, level1Names = NULL
     vcellSize <- res(rasterStack[["Infected"]])[2]
     midLongitude <-(LLCornerLongitude + ULCornerLongitude)/2
     midCol <- trunc(abs((midLongitude - (ULCornerLongitude-hcellSize/2))/hcellSize)) + 1
-    seedData <- read.csv(seedDataPath, header = T)
+    seedData <- read.csv(uploadedSeedDataPath, header = T)
     numLocations <- dim(seedData)[1]
     numLocations <- dim(seedData)[1] #nrow(data())
     numCellsPerRegion <- (2*seedRadius + 1)^2
