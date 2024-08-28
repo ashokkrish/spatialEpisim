@@ -168,7 +168,7 @@ server <- function(input, output, session) {
       ##    3: ss
       ##    2: .ess.source
       ##    1: base::as.environment("ESSR")$.ess.eval
-      modelArguments$healthZoneCoordinates <- openDataFile(req(input$dataAssimZones))
+      modelArguments$healthZoneCoordinates <- openDataFile(req(input$healthZoneCoordinates))
     }
     model <- do.call(spatialEpisim.foundation::SVEIRD.BayesianDataAssimilation, modelArguments)
 

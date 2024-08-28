@@ -2,7 +2,6 @@
 ## in spatialEpisim. TODO: remove all packages which are dependencies of
 ## spatialEpisim.foundation; there's no need to load them twice.
 suppressPackageStartupMessages({
-  library(bslib)
   library(cptcity) # used just for seminf haxby colour palette
   library(countrycode)
   library(DT)

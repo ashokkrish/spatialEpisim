@@ -141,9 +141,9 @@ sidebar <-
                        label = "Number of Iterations (days)",
                        min = 1, max = 3650, value = 100, step = 1),
 
-###############
+          ###############
           ## Seed data ##
-###############
+          ###############
           wellPanel(helper(fileInput(inputId = "seedData",
                                      label = "Upload Seed Data",
                                      placeholder = "Upload seed data (.csv or .xls or .xlsx)",
@@ -156,18 +156,16 @@ sidebar <-
                                  selected = 0,
                                  inline = TRUE)),
 
-#######################
+          #######################
           ## Data assimilation ##
-#######################
+          #######################
           wellPanel(id = "data-assimilation",
                     h5("Bayesian data assimilation"),
                     checkboxInput("enablebayes", label = "Enable data assimilation"),
 
-                    ## FIXME: the condition panel isn't hiding its children when
-                    ## the condition doesn't evaluate to true.
                     conditionalPanel("input.enablebayes == 1",
 
-                                     helper(fileInput(inputId = "dataAssimZones",
+                                     helper(fileInput(inputId = "healthZoneCoordinates",
                                                       label = "Reporting health zones coordinates",
                                                       accept = mimetypes),
                                             type = "inline",
