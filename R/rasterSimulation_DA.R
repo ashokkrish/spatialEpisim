@@ -23,10 +23,10 @@ source("R/distwtRaster.R") # This code sets the Euclidean distance and the weigh
 # Compartmental model simulation with an option to include Bayesian Data Assimilation #
 #-------------------------------------------------------------------------------------#
 
-SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCountry, directOutput,  
-                                            rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda, 
-                                            timestep, seedFile, seedRadius, deterministic, isCropped, 
-                                            level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc, 
+SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCountry, directOutput,
+                                            rasterAgg, alpha, beta, gamma, sigma, delta, radius, lambda,
+                                            timestep, seedFile, seedRadius, deterministic, isCropped,
+                                            level1Names, DA = F, sitRepData, dataI, dataD, varCovarFunc,
                                             QVar, QCorrLength, nbhd, psiDiag)
 {
   unlink("www/MP4", recursive = TRUE, force = TRUE) # Delete the MP4
@@ -46,16 +46,16 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
   Level1Raster <- stack$rasterStack$Level1Raster
 
   Level1Identifier <- stack$Level1Identifier
-  
+
   # print(Level1Identifier$NAME_1)  # List of states/provinces/regions
 
   # plot(Level1Raster)
   # plot(Level1Identifier, add = TRUE)
-  # 
+  #
   # print(Susceptible);  print(Vaccinated); print(Exposed); print(Infected); print(Recovered); print(Dead)
-  # 
+  #
   # dim(Susceptible); dim(Vaccinated); dim(Exposed); dim(Infected); dim(Recovered); dim(Dead); dim(Inhabitable); dim(Level1Raster)
-  # 
+  #
   # print(table(values(Inhabitable)))
 
   names <- c("Date", "N", "S", "V", "E", "I", "R", "D",
@@ -122,7 +122,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
-  
+
   valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
   valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
   valExposed <- terra::as.matrix(Exposed, wide = TRUE)
@@ -134,34 +134,34 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
   # print("-------------------")
 
   #par(mfrow = c(1, 2))
-  
+
   # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
   #      main = "Location of Initial Infections",
   #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
   #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  # 
+  #
   # plot(Level1Identifier, add = TRUE)
-  # 
+  #
   # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1,
   #      main = "Location of Initial Deaths",
   #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
   #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  # 
+  #
   # plot(Level1Identifier, add = TRUE)
-  # 
+  #
   # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # plot(Level1Identifier, add = TRUE)
-  # 
+  #
   # plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabitable Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
   # plot(Level1Identifier, add = TRUE)
 
   # writeRaster(Infected, "seed.tif", overwrite = TRUE)
 
-  sumS <- sum(values(Susceptible)) 
+  sumS <- sum(values(Susceptible))
   sumV <- sum(values(Vaccinated))
-  sumE <- sum(values(Exposed)) 
+  sumE <- sum(values(Exposed))
   sumI <- sum(values(Infected))
-  sumR <- sum(values(Recovered)) 
+  sumR <- sum(values(Recovered))
   sumD <- sum(values(Dead))
 
   # print(sumS); print(sumV); print(sumE); print(sumI); print(sumR); print(sumD)
@@ -319,12 +319,13 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
                     as.vector()
                 }) %>% Matrix::t() # rows should be health zones
 
-      if (compartmentsReported == 2) H <- Matrix::bdiag(H, H)
+      if (compartmentsReported == 2) H <- as.matrix(Matrix::bdiag(H, H))
 
-      stopifnot(sum(.rowSums(H, m = nrow(H), n = ncol(H))) == nrow(healthZoneCoordinates))
+      stopifnot(sum(.rowSums(H, m = nrow(H), n = ncol(H))) == (compartmentsReported * nrow(healthZoneCoordinates)))
 
       return(H)
     }
+
     states_observable <- 1
     healthZoneCoordinates <- openDataFile(sitRepData)
     stopifnot(hasName(healthZoneCoordinates, "HealthZone"))
@@ -337,25 +338,25 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     # Read in Q matrix #
     #------------------#
     source("R/Q_matrix.R")
-    
+
     QMat <- genQ(nrows, ncols, varCovarFunc, QVar, QCorrLength, nbhd, states_observable =  states_observable) #states_observable = 2
-    
+
     Q <- QMat$Q
     # plot(Q[1:101,1])
     # plot(Q[1,1:101])
     # print(diag(Q)[1:200])
     # print(det(Q))
-    
+
     # print(paste("Dimension of the Model Error Covariance Matrix: ", dim(Q)[1], dim(Q)[2]))
 
     QFull <- QMat$QFull
     # print(det(QFull))
     # print(paste("Dimension of the Block Diagonal Model Error Covariance Matrix: ", dim(QFull)[1], dim(QFull)[2]))
-    
+
     QHt <- QFull%*%t(Hmat)
 
     HQHt <- Hmat%*%QHt
-    
+
     #print(HQHt)
     #print(paste("Dimension of HQHt Matrix: ", dim(HQHt)[1], dim(HQHt)[2]))
 
@@ -367,16 +368,16 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     # table(rowSums(HQHt))
     # table(colSums(HQHt))
       print(diag(HQHt))
-    
+
       print(paste("det(HQHt) is:", det(HQHt)))
 
     # eigen(HQHt)$values
       print(sum(eigen(HQHt)$values)) # Sum of eigenvalues is equal to q
-     
+
     #----------------------#
     # Plot the HQHt matrix #
     #----------------------#
-     
+
     # source("R/plotHQHt.R")
     # plotHQHt(HQHt)
   }
@@ -411,7 +412,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     summary[t, 21]  <- radius
     summary[t, 22]  <- lambda
     summary[t, 23]  <- model
-    
+
     valInhabitable <- terra::as.matrix(Inhabitable, wide = TRUE)
     valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
     valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
@@ -428,61 +429,61 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     #-------------------------------#
     # Generating the I_tilda matrix #
     #-------------------------------#
-  
+
     I_tilda <- wtd_nbrs_sum(input_matrix = valInfected, radius = radius, lambda = lambda)
 
     nLiving <- valSusceptible + valVaccinated + valExposed + valInfected + valRecovered
-    
+
     #--------------------------------------------------------------------#
     # Some susceptible people are going to be newly vaccinated           #
     #--------------------------------------------------------------------#
     newVaccinated <- alpha*valSusceptible
-    newVaccinated[valSusceptible < 1] <- 0 
-    
+    newVaccinated[valSusceptible < 1] <- 0
+
     dailyVaccinated <- sum(newVaccinated)
-    
+
     #--------------------------------------------------------------------#
     # Some susceptible people who come in contact with nearby infected   #
     # are going to be newly exposed                                      #
     #--------------------------------------------------------------------#
     pSusceptible <- valSusceptible/nLiving
     pSusceptible[is.nan(pSusceptible)] <- 0
-    
+
     if(deterministic) {
       newExposed <- beta*pSusceptible*I_tilda
     } else {
       rpois(1, beta*pSusceptible*I_tilda)
     }
-    newExposed[valSusceptible < 1] <- 0 
-    newExposed[I_tilda < 1] <- 0 
-    
+    newExposed[valSusceptible < 1] <- 0
+    newExposed[I_tilda < 1] <- 0
+
     dailyExposed <- sum(newExposed)
     cumExposed <- cumExposed + sum(newExposed)
-    
+
     #----------------------------------------------------------#
     # Some exposed people are going to become newly infectious #
     #----------------------------------------------------------#
     newInfected <- gamma*valExposed
     newInfected[valExposed < 1] <- 0
-    
+
     dailyInfected <- sum(newInfected)
     cumInfected   <- cumInfected + sum(newInfected)
-    
+
     #-----------------------------------------------------------#
     # Some infectious people are going to either recover or die #
     #-----------------------------------------------------------#
     newRecovered <- sigma*valInfected
     newRecovered[valInfected < 1] <- 0
-    
+
     dailyRecovered <- sum(newRecovered)
     cumRecovered <- cumRecovered + sum(newRecovered)
-    
+
     newDead <- delta*valInfected
     newDead[valInfected < 1] <- 0
-    
+
     dailyDead <- sum(newDead)
     cumDead <- cumDead + sum(newDead)
-    
+
     #-----------------------------------#
     # Store the next state of each cell #
     #-----------------------------------#
@@ -492,15 +493,15 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
     nextInfected <- valInfected + newInfected - newDead - newRecovered
     nextRecovered <- valRecovered + newRecovered
     nextDead <- valDead + newDead
-    
-    
+
+
     nextSusceptible[nLiving <= 0] <- 0
     nextVaccinated[nLiving <= 0] <- 0
     nextExposed[nLiving <= 0] <- 0
     nextInfected[nLiving <= 0] <- 0
     nextRecovered[nLiving <= 0] <- 0
     nextDead[nLiving <= 0] <- 0
-  
+
 
     Susceptible <- nextSusceptible
     Vaccinated <- nextVaccinated
@@ -518,15 +519,15 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
     ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(stack$rasterStack)
     crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(stack$rasterStack)
-    
+
     # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
     # pal <- colorRampPalette(ramp)
-    # 
+    #
     # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
     #      main = "Location of Infections after iteration t",
     #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
     #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-    # 
+    #
     # plot(Level1Identifier, add = TRUE)
     # print(Infected)
     #
@@ -583,23 +584,23 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           # We track the  "Infectious" and "Dead" epidemic compartments
 
           print('Running Data Assimilation...')
-          
+
           preDASusceptible <- Susceptible
           preDAVaccinated <- Vaccinated
           preDAExposed <- Exposed
           preDAInfected <- Infected
           preDARecovered <- Recovered
           preDADead <- Dead
-          
+
           rat <- sum(terra::as.matrix(Exposed, wide = TRUE))/(sum(terra::as.matrix(Infected, wide = TRUE))+0.000000001)
 
           Infected <- terra::as.matrix(Infected, wide = TRUE) # default is byrow = F
-          
-          # print(dim(Infected)) 
+
+          # print(dim(Infected))
           # Dead <- as.matrix(Dead, byrow = T) # default is byrow = F
 
           Xf.OSI <- t(t(as.vector(t(Infected))))
-          
+
           # Xf.OSI <- t(cbind(t(as.vector(Infected)), t(as.vector(Dead))))
 
           # print(paste("Dimension of the state vector:")); print(dim(Xf.OSI))
@@ -638,7 +639,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
           #Dvector <- t(cbind(t(incidence), t(death)))
           Dvector <- incidence
-          
+
           # print(Dvector)
 
           #-------------------------------------#
@@ -648,15 +649,15 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           # sum(Dvector < 1)
           Dvector_revised <- ifelse(Dvector < 1, psiDiag, Dvector) # If a diagonal entry is zero change it to 0.1/1.
           # sum(Dvector_revised < 1)
-          
+
           q <- nHealthZones*states_observable
 
           M <- diag(as.vector(Dvector_revised))
-          
+
           #M <- M*exp(-t/10)
-          
+
           # print(M)
-          
+
           # print(det(HQHt+M))
 
           # library(MASS)
@@ -688,12 +689,12 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           # det(solve(HQHt))
           # eigen(solve(HQHt))$values # Inverse of HQHt is also not positive definite since all of its eigenvalues are not strictly positive.
           # # sum(eigen(solve(HQHt))$values)
-          
+
           # The gain matrix, Ke.OSI, determines how the observational data are to be assimilated
           Ke.OSI <- QHt%*%solve(HQHt + M)
-          
+
           # print(dim(Ke.OSI))
-          
+
           #write.matrix(Ke.OSI, file = 'Kal_Gain.csv') #solve((HQHt + M), t(QHt))
 
           #print(paste("Dimension of the Kalman Gain Matrix:")); print(dim(Ke.OSI))
@@ -711,7 +712,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           cbind(t(t(as.numeric(Dvector))), HXf, t(t(as.numeric(Dvector))) - HXf)
 
           Y <- t(t(as.numeric(Dvector))) - HXf
-          
+
           print(sum(Y))
           print(sum(Ke.OSI%*%Y))
 
@@ -720,7 +721,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           #---------------------------------#
 
           which(Xf.OSI > 0)
-          
+
           #sum(Ke.OSI%*%Y < 0)
           length(which(Ke.OSI%*%Y < 0))
           length(which(Ke.OSI%*%Y > 0))
@@ -729,13 +730,13 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           Xa.OSI <- Xf.OSI + Ke.OSI%*%Y
 
           #print(length(Xa.OSI[Xa.OSI < 0]))
-          
+
           #print(summary(Xa.OSI[Xa.OSI < 0]))
-          
+
           # print(which.max(Xa.OSI))
 
           Xa.OSI[Xa.OSI < 0] <- 0 # This will set all negative values to zero. TBW convinced me.
-          
+
           #print(length(Xa.OSI[Xa.OSI < 0]))
 
           # Xa.OSI <- abs(Xf.OSI + Ke.OSI%*%Y)
@@ -784,7 +785,7 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           I <- matrix(Xa.OSI[1:p], nrow = nrows, ncol = ncols, byrow = T) # AK
 
           # print('max index is')
-          # 
+          #
           # print(which(I == max(I), arr.ind=TRUE))
 
           # write.matrix(I, file = 'infected.csv')
@@ -796,21 +797,21 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
           #D[D < 1] <- 0 # Prevent tiny values for the number of dead
 
-          dim(Xa.OSI); dim(I); 
-          # dim(D); 
-          min(I); 
-          #min(D); 
-          max(I); 
+          dim(Xa.OSI); dim(I);
+          # dim(D);
+          min(I);
+          #min(D);
+          max(I);
           #max(D)
 
           # For all uninhabitable cells set the number of infected and dead = 0. THIS IS VERY CRITICAL!!!
 
           # for(i in 1:nrows)
-          # { 								# nrows
+          # {                 # nrows
           #   for(j in 1:ncols)
-          #   {							  # ncols
+          #   {               # ncols
           #     if (stack$rasterStack$Inhabitable[i,j] == 0)
-          #     {						  # Inhabitable
+          #     {             # Inhabitable
           #       #I[i,j] <- D[i,j] <- 0
           #       I[i,j] <- 0
           #     }
@@ -818,22 +819,22 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
           # }
           # I[stack$rasterStack$Inhabitable[stack$rasterStack$Inhabitable == 0]] <- 0
           I[valInhabitable == 0] <- 0
-          
+
           values(stack$rasterStack$Infected) <- I
           # values(stack$rasterStack$Dead) <- D
           Infected <- stack$rasterStack$Infected
           # Dead <- stack$rasterStack$Dead
           cumInfected <- cumInfected + sum(I - terra::as.matrix(preDAInfected, wide = TRUE))
-          
+
           # cumDead <- cumDead + sum(D - as.matrix(preDADead))
           # print(sum(D - as.matrix(preDADead)))
-          
+
           # deadDiff <- preDADead - Dead
           # Recovered <- preDARecovered + deadDiff
             Exposed <- rat*Infected
           # exposedDiff <- preDAExposed - Exposed
           # Susceptible <- preDASusceptible + exposedDiff
-          
+
           # stack$rasterStack$Recovered <- Recovered
             stack$rasterStack$Exposed <- Exposed
           # stack$rasterStack$Susceptible <- Susceptible
@@ -866,17 +867,17 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 
   ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
   pal <- colorRampPalette(ramp)
-  
+
   for (t in 1:timestep){
     fname = paste0("MP4/", inputISO, "_", rasterLayer, "_", sprintf("%04d", t), ".png")
-    printStackLayer(rasterStack = allRasters[[t]]$rasterStack, 
-                    rasterLayer = rasterLayer, 
-                    directOutput = directOutput, 
-                    Level1Identifier = stack$Level1Identifier, 
-                    selectedCountry = selectedCountry, 
-                    rasterAgg = rasterAgg, 
-                    fname = fname, 
-                    maxVal = maxRasterLayerVal, 
+    printStackLayer(rasterStack = allRasters[[t]]$rasterStack,
+                    rasterLayer = rasterLayer,
+                    directOutput = directOutput,
+                    Level1Identifier = stack$Level1Identifier,
+                    selectedCountry = selectedCountry,
+                    rasterAgg = rasterAgg,
+                    fname = fname,
+                    maxVal = maxRasterLayerVal,
                     includeLabels = T,
                     isCropped)
 
@@ -887,8 +888,8 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
   # MERGE THE PNGs TO A GET AN MP4 VIDEO
   setwd("www/MP4")
   videoDuration <- 15 # in seconds
-  av::av_encode_video(list.files(pattern = ".png"), 
-                      framerate = timestep/videoDuration, 
+  av::av_encode_video(list.files(pattern = ".png"),
+                      framerate = timestep/videoDuration,
                       output = paste0(rasterLayer, "_MP4.mp4"))
   setwd("./../..")
 
@@ -933,20 +934,20 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
 # radius <- 1 # apply formula as discussed
 # lambda <- 15
 # timestep <- 564
-# 
+#
 # seedFile <- "seeddata/COD_InitialSeedData.csv"
 # seedRadius <- 1
-# 
+#
 # deterministic <- T
 # isCropped <- T
 # level1Names <- c("Ituri", "Nord-Kivu")
-# 
-# DA <- T # F # 
-# 
+#
+# DA <- T # F #
+#
 # sitRepData <- "observeddata/Ebola_Health_Zones_LatLon.csv"
 # dataI <- "observeddata/Ebola_Incidence_Data.xlsx"
 # dataD <- "observeddata/Ebola_Death_Data.xlsx"
-# 
+#
 # varCovarFunc <- "DBD" # "Balgovind"
 # QVar <- 0.55
 # QCorrLength <- 0.675
