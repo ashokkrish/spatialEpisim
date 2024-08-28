@@ -1,8 +1,7 @@
-## FIXME: I have a strong feeling not all of these libraries are actually used
-## in spatialEpisim. TODO: remove all packages which are dependencies of
-## spatialEpisim.foundation; there's no need to load them twice.
+## MAYBE FIXME: I have a strong feeling not all of these packages are actually
+## used in spatialEpisim.
 suppressPackageStartupMessages({
-  library(cptcity) # used just for seminf haxby colour palette
+  library(cptcity)
   library(countrycode)
   library(DT)
 
