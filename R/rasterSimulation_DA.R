@@ -249,12 +249,17 @@ SpatialCompartmentalModelWithDA <- function(model, stack, startDate, selectedCou
       ## to a matrix). Extract coordinates as cbind(lon, lat); it's stored as
       ## cbind(lat, lon).
       cells <- terra::cellFromXY(layers, terra::as.matrix(healthZoneCoordinates[, 3:2]))
+
       if (any(duplicated(cells))) {
-        warning("[Linear interpolation operator] Raster aggregation factor is too high to differentiate between two (or more) health zones (they correspond to the same grid cell).")
-        tibble::tibble("Health Zone" = healthZoneCoordinates[, 1], Cell = cells) %>%
+        overaggregatedHealthZones <- tibble::tibble("Health Zone" = healthZoneCoordinates[, 1], Cell = cells) %>%
           dplyr::group_by(Cell) %>%
-          dplyr::filter(dplyr::n() != 1) %>%
-          print()
+          dplyr::filter(dplyr::n() != 1)
+
+        warning(sprintf("[Linear interpolation operator] Raster aggregation factor is too high to differentiate between two (or more) health zones (they correspond to the same grid cell).\n%s",
+                        ## Based on the helpful answer by Richie Cotton on SO:
+                        ## https://stackoverflow.com/a/26083626/14211497, which the following is
+                        ## based on.
+                        paste(capture.output(print(overaggregatedHealthZones)), collapse = "\n")))
       }
       if (any(is.na(cells)))
         warning("Ignoring NAs in [cells] object corresponding to coordinates out of bounds of [layers] SpatRaster.")
