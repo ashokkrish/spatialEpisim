@@ -42,11 +42,12 @@ library(reactcharteditor)
 
 here::i_am("global.R")
 
-## NOTE: this is alike the parameter data in (non-spatial) Episim. It provides
-## useful defaults for various combinations of model parameters and options.
-epiparms <- read_excel(here("data", "misc", "epiparms.xlsx"))
+## These provides useful defaults for various combinations of model parameters
+## and options, and a 
+epiparms <- load(here("data", "epiparms.RData"))
+shortList <- load(here("data", "shortlist.RData"))
 
-## List of countries that need "the" prepended to their name
+## FIXME: it is debatable whether "the" should be prepended to any country name!
 prependList <- c("Czech Republic",
                  "Democratic Republic of Congo",
                  "Gambia",
@@ -61,13 +62,13 @@ colourPalette <-
            domain = valueRange,
            bins = length(valueRange))
 
-acceptedFileTypes <- c("text/csv",
-                       "text/comma-separated-values",
-                       "text/plain",
-                       ".csv",
-                       ".xls",
-                       ".xlsx",
-                       ".txt")
+mimetypes <- c("text/csv",
+               "text/comma-separated-values",
+               "text/plain",
+               ".csv",
+               ".xls",
+               ".xlsx",
+               ".txt")
 
 ## MAYBE TODO: replace with read_table?
 openDataFile <- function(datafile) {
@@ -91,8 +92,6 @@ updateNumericInputs <- function(defaults, session) {
     updateNumericInput(session, inputId, value = value)
   })
 }
-
-recommendations <- read_xlsx(here("data", "misc", "recommendedRasterAggregationFactors.xlsx"))
 
 lineThickness <- 1.5
 

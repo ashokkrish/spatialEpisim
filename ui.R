@@ -37,9 +37,8 @@ sidebar <-
           id = "country-raster-selection",
           pickerInput("selectedCountry",
                       strong("Country"),
-                      dplyr::select(filter(readxl::read_xlsx(here("data", "misc", "recommendedRasterAggregationFactors.xlsx")),
-                                           shortList == "TRUE"),
-                                    Country),
+                      dplyr::select(filter(shortlist, Shortlisted == TRUE),
+                                    "English Name"),
                       options = pickerOptions(title = "Please select a country")),
           conditionalPanel(condition = "input.selectedCountry != ''",
                            helper(checkboxInput(
@@ -52,7 +51,7 @@ sidebar <-
                              selectizeInput("provinces", NULL, NA, NA, TRUE, TRUE,
                                             options = list(placeholder = "Select state(s)/province(s)")))),
           conditionalPanel(
-            condition = "input.appMode == 'Simulator' && input.selectedCountry !== ''",
+            condition = "input.appMode === 'Simulator' && input.selectedCountry !== ''",
             helper(sliderInput(inputId = "agg",
                                label = "Aggregation Factor",
                                min = 1,
@@ -66,11 +65,11 @@ sidebar <-
                                           tagList(fileInput(inputId = "stateObservationsLatitudeLongitude",
                                                             label = strong("Health Zone centroid coordinates"),
                                                             placeholder = "Upload Lat-Lon data",
-                                                            accept = acceptedFileTypes),
+                                                            accept = mimetypes),
                                                   fileInput(inputId = "incidenceData",
                                                             label = strong("Incidence & Deaths"),
                                                             placeholder = "Upload Incidence/Death data",
-                                                            accept = acceptedFileTypes))),
+                                                            accept = mimetypes))),
                          uiOutput("transmissionPathDateInput"),
                          actionButton("resetVisualizer", "Reset Values")),
 
@@ -102,7 +101,7 @@ sidebar <-
 
           h5("Model Parameters"),
           conditionalPanel(
-            r"[input.modelSelect.includes('V')]",
+            r"[input.enabledCompartments.includes('V')]",
             id = "vaccination-enabled",
             numericInput(
               "alpha",
@@ -148,7 +147,7 @@ sidebar <-
           wellPanel(helper(fileInput(inputId = "seedData",
                                      label = "Upload Seed Data",
                                      placeholder = "Upload seed data (.csv or .xls or .xlsx)",
-                                     accept = acceptedFileTypes),
+                                     accept = mimetypes),
                            content = "seedData"),
                     radioButtons(inputId = "seedRadius",
                                  label = strong("Insert infection data in"),
@@ -170,7 +169,7 @@ sidebar <-
 
                                      helper(fileInput(inputId = "dataAssimZones",
                                                       label = "Reporting health zones coordinates",
-                                                      accept = acceptedFileTypes),
+                                                      accept = mimetypes),
                                             type = "inline",
                                             content = "Latitute-longitude coordinates of reporting health zones."),
 
@@ -270,11 +269,11 @@ simulator <-
 
                     tabPanel(title = "Model", id = "modelTab",
                              h3("Schematic Diagram"),
-                             conditionalPanel(condition = r"[input.modelSelect.includes('V')]",
+                             conditionalPanel(condition = r"[input.enabledCompartments.includes('V')]",
                                               img(src = "SVEIRD.png",
                                                   height = 400,
                                                   contentType = "image/png")),
-                             conditionalPanel(condition = r"[!input.modelSelect.includes('V')]",
+                             conditionalPanel(condition = r"[!input.enabledCompartments.includes('V')]",
                                               img(src = "SEIRD.png",
                                                   height = 400,
                                                   contentType = "image/png")),

@@ -8,6 +8,8 @@ server <- function(input, output, session) {
   updateCheckboxGroupButtons(inputId = "enabledCompartments",
                              disabledChoices = c("S", "E", "I", # forever disabled
                                                  "V", "R", "D")) # TODO: enable later
+  updateCheckboxGroupButtons(inputId = "selectedCompartments", # TODO: rename to observed/reported
+                             disabledChoices = c("S", "V", "R", "D"))
 
   ## FIXME: this is not necessary when things are done properly. I'll figure out
   ## paths later.
@@ -15,7 +17,7 @@ server <- function(input, output, session) {
   dir.create(temporaryDirectory, showWarnings = FALSE)
 
   observe_helpers(help_dir = "markdown", withMathJax = TRUE)
-
+  
   ISO3C <- reactive(countrycode(sourcevar = input$selectedCountry, "country.name", "iso3c"))
   ###########################################################################
   ## The following objects are specific to the visualizer component of the ##
@@ -64,14 +66,20 @@ server <- function(input, output, session) {
                                         R = "recovery/recovered",
                                         D = "death/dead"),
                                  "data to be assimilated with the model"),
-                           accept = acceptedFileTypes)
+                           accept = mimetypes)
                })))
 
   observe({
-    dplyr::filter(recommendations, Country == input$selectedCountry) %>%
-      dplyr::select(reco_rasterAgg) %>%
-      dplyr::slice_head() %>%
-      updateSliderInput(inputId = "agg", value = .)
+    factor <-
+    dplyr::filter(shortlist, `English Name` == req(input$selectedCountry)) %>%
+      dplyr::select(`Recommended Raster Aggregation Factor`)
+    
+    if (nrow(factor) > 1) {
+      warning(sprintf("There is more than one recommended raster aggregation factor for %s.", input$selectedCountry))
+      updateSliderInput(inputId = "agg", value = as.numeric(dplyr::slice_head(factor)))
+    } else {
+      updateSliderInput(inputId = "agg", value = as.numeric(factor))
+    }
   })
 
   observe({
@@ -89,7 +97,7 @@ server <- function(input, output, session) {
                                                      ## FIXME: Error in eval: object 'input' not found; I cannot access the input object here, but it is accessible immediately outside this?
                                                      input$agg)
 
-    print(openDataFile(input$seedData))
+    seedData <- openDataFile(input$seedData)
 
     modelArguments <-
       list(
@@ -104,22 +112,24 @@ server <- function(input, output, session) {
         n.days = input$timestep, ## Temporal parameter; TODO: rename "timestep"
 
         ## Model parameters
-        seedData = openDataFile(input$seedData),
-        neighbourhood.order = input$seedRadius,
+        seedData = seedData,
+        neighbourhood.order = as.numeric(input$seedRadius),
         input$lambda,
         layers = SVEIRD.SpatRaster,
         aggregationFactor = input$agg,
         startDate = input$date,
         countryCodeISO3C = ISO3C(),
+
+        ## TODO: move these to the common area below...
         input$dataAssimilation_I, # incidence
         input$dataAssimilation_D, # death
 
+        ## Model options
         simulationIsDeterministic = input$stochasticSelect == "Deterministic",
-        dataAssimilationEnabled = input$dataAssim,
+        dataAssimilationEnabled = input$enablebayes,
 
-        input$dataAssimZones,
-
-        ## Special parameters
+        ## BDA data, options, parameters, etc.
+        healthZoneCoordinates = NULL,
         variableCovarianceFunction = input$covarianceSelect,
         forecastError.cov.sdBackground = input$QVar,
         forecastError.cor.length = input$QCorrLength,
@@ -133,6 +143,33 @@ server <- function(input, output, session) {
                         after = list(fun = simulationWaitress$close))
       )
     names(modelArguments) <- names(formals(spatialEpisim.foundation::SVEIRD.BayesianDataAssimilation))
+    if (!input$enablebayes) {
+      modelArguments <- as.environment(modelArguments)
+      rm(list = c("incidenceData",
+                  "deathData",
+                  "healthZoneCoordinates",
+                  "variableCovarianceFunction",
+                  "forecastError.cov.sdBackground",
+                  "forecastError.cor.length",
+                  "neighbourhood.Bayes",
+                  "psi.diagonal"),
+         pos = modelArguments)
+      modelArguments <- as.list(modelArguments)
+    } else {
+      ## FIXME:
+      ## Warning: Error in $<-.data.frame: replacement has 0 rows, data has 1
+      ##   86: stop
+      ##   85: $<-.data.frame
+      ##   80: <Anonymous>
+      ##   78: observe [/home/bryce/Documents/src/r/spatialEpisim/server.R#161]
+      ##   77: <observer>
+      ##    6: runApp
+      ##    5: print.shiny.appobj
+      ##    3: ss
+      ##    2: .ess.source
+      ##    1: base::as.environment("ESSR")$.ess.eval
+      modelArguments$healthZoneCoordinates <- openDataFile(req(input$dataAssimZones))
+    }
     model <- do.call(spatialEpisim.foundation::SVEIRD.BayesianDataAssimilation, modelArguments)
 
     print(model)
