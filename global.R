@@ -36,7 +36,7 @@ suppressPackageStartupMessages({
 ## TODO: include instructions in the README on installing the following package;
 ## it's quite easy. DONT suppress messages from our own backend dependency.
 library(spatialEpisim.foundation)
-library(spatialEpisim.data) # TODO: move epiparms.xlsx into this package.
+library(spatialEpisim.data)
 library(reactcharteditor)
 
 here::i_am("global.R")
