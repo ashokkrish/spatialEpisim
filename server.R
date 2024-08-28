@@ -71,9 +71,9 @@ server <- function(input, output, session) {
 
   observe({
     factor <-
-    dplyr::filter(shortlist, `English Name` == req(input$selectedCountry)) %>%
+      dplyr::filter(shortlist, `English Name` == req(input$selectedCountry)) %>%
       dplyr::select(`Recommended Raster Aggregation Factor`)
-    
+
     if (nrow(factor) > 1) {
       warning(sprintf("There is more than one recommended raster aggregation factor for %s.", input$selectedCountry))
       updateSliderInput(inputId = "agg", value = as.numeric(dplyr::slice_head(factor)))
