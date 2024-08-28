@@ -33,8 +33,7 @@ suppressPackageStartupMessages({
   library(waiter)
 })
 
-## TODO: include instructions in the README on installing the following package;
-## it's quite easy. DONT suppress messages from our own backend dependency.
+## DONT suppress messages from our own back-end and front-end dependencies.
 library(spatialEpisim.foundation)
 library(spatialEpisim.data)
 library(reactcharteditor)
