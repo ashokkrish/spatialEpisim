@@ -108,8 +108,6 @@ ui <- fluidPage( # UI ----
                                                              ".csv",
                                                              ".xls",
                                                              ".xlsx"))),
-                              uiOutput("transPathDateInput"),
-                              br(),
                               uiOutput("resetButton")
                             ),
 

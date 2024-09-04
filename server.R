@@ -178,24 +178,6 @@ server <- function(input, output, session) {
   #==========================================================================#
   # World Pop Visualizer Components                                       ----
   #==========================================================================#
-  #--------------------------------------------------------------------------#
-  # Dynamically generate a date slider that contains the dates for all the
-  # observed data in the incidence/death file
-  #--------------------------------------------------------------------------#
-  output$transPathDateInput <- renderUI({
-    req(iv_dataupload$is_valid() && input$appMode == "Visualizer")
-
-    dateInfo <- colnames(transPathData())[4:length(colnames(transPathData()))]
-
-    sliderTextInput(
-      inputId = "transPathDate",
-      label = strong("Date"),
-      choices = dateInfo,
-      selected = dateInfo[1],
-      animate = animationOptions(interval = 250, loop = FALSE))
-  })
-
-
   output$resetButton <- renderUI({ ## resetButton ----
     if (!is.null(input$selectedCountry) && input$selectedCountry != ""){
       actionButton(
