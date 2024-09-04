@@ -67,15 +67,11 @@ ui <- fluidPage( # UI ----
                             uiOutput("countryDropdown"),
                             uiOutput("cropStateCheckbox"),
                             conditionalPanel("input.selectedCountry != ''",
-                                             helper(checkboxInput(
-                                               inputId = "cropLev1",
-                                               label = strong("Limit simulation to state(s)/province(s) (crop to selection)"),
-                                               value = FALSE),
-                                               content = "cropSelectedCountry"),
-                                             conditionalPanel(
-                                               condition = "input.cropLev1",
-                                               uiOutput("Level1Ui")),
-
+                                             helper(checkboxInput(inputId = "cropLev1",
+                                                                  label = strong("Limit simulation to state(s)/province(s) (crop to selection)"),
+                                                                  value = TRUE),
+                                                    content = "cropSelectedCountry"),
+                                             conditionalPanel(condition = "input.cropLev1", uiOutput("Level1Ui")),
                                              radioButtons(inputId = "appMode",
                                                           label = strong("Application mode"),
                                                           choices = list("Visualizer",
@@ -375,6 +371,7 @@ and use the simulated results responsibly. Authors are not liable for any direct
 or indirect consequences of this usage."),
 h2("Credits", style ="font-weight:bold"),
 p("We would like to express our gratitude to the authors of the following R packages used in our project:"),
+
 worldPopPanel <- bsCollapsePanel(
   title = "WorldPop",
   content = tags$div(style = "padding: 10px;",

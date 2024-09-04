@@ -796,7 +796,7 @@ observeEvent(input$seedData, {
       label = strong("Country"),
       choices = shortlist$Country,
       multiple = FALSE,
-      selected = NA,
+      selected = "Democratic Republic of Congo",
       options = pickerOptions(
         actionsBox = TRUE,
         title = "Please select a country")
@@ -815,7 +815,7 @@ observeEvent(input$seedData, {
   })
 
   #--------------------------------------------------------------------------#
-  # Create select box for choosing input country                             #
+  # Create select box for choosing input country provinces                   #
   #--------------------------------------------------------------------------#
   output$Level1Ui <- renderUI({
     req(!is.null(input$selectedCountry) && input$selectedCountry != "")
@@ -823,7 +823,6 @@ observeEvent(input$seedData, {
 
     upperISO3C <- toupper(selectedCountryISO3C())
 
-    ## FIXME NOTE: What does 36 mean?
     if (file.exists(paste0("gadm/", "gadm36_", upperISO3C, "_1_sp.rds"))){
       level1Options <<- readRDS(paste0("gadm/", "gadm36_", upperISO3C, "_1_sp.rds"))$NAME_1
     } else {
@@ -833,11 +832,9 @@ observeEvent(input$seedData, {
     selectizeInput(inputId = "level1List",
                    label = NULL,
                    choices = level1Options,
-                   ## selected = c("Ituri", "Nord-Kivu"),
-                   selected = NA,
+                   selected = c("Ituri", "Nord-Kivu"),
                    multiple = TRUE,
                    options = list(placeholder = "Select state(s)/province(s)"))
-
   })
 
   level1Country <- reactiveVal({
