@@ -1,7 +1,7 @@
-## What is lambda ($\lambda$)?
+## What is lambda ( $\lambda$ )?
 The average distance travelled per timestep (usually one day), given as an absolute magnitude in kilometers.
 
-## The relationship between the average distance travelled per timestep ($\lambda$) and the effective infectious area (neighbourhood)
+## The relationship between the average distance travelled per timestep ( $\lambda$ ) and the effective infectious area (neighbourhood)
 The population data, used for the susceptible compartment (less the initial
 values of the other compartments), is taken from the 2020 United
 Nations-adjusted population count. The raster data has a thirty arc-second

@@ -137,7 +137,10 @@ ui <- fluidPage( # UI ----
                                           helper(uiOutput("lambdaInput"), content = "lambda")),
 
                                 wellPanel(helper(uiOutput("seedUpload"),
-                                                 content = "seedData"),
+                                                 size = "l",
+                                                 type = "inline",
+                                                 title = "Seed data template (for the Democratic Republic of Congo)",
+                                                 content = HTML(r"--{<div class = "datatables html-widget html-widget-output shiny-report-size html-fill-item" id = "seedDataDT" style = "width:auto;height:auto;"></div>}--")),
                                           uiOutput("seedDataButton"),
                                           uiOutput("seedRadiusInput")),
 
