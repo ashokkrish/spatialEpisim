@@ -123,8 +123,6 @@ openDataFile <- function(datafile) {
   )
 }
 
-## MAYBE FIXME? Why was this included? Is there any styling that Ashok wants
-## that we don't have?
 appCSS <- ".mandatory_star {color: red;}"
 appCSS <- ".invisible {display:none;}"
 appCSS <- ".dropDown:hover {color:ADD8E6;background-color: #000000}"
