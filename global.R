@@ -61,9 +61,6 @@ population <- read_excel("misc/population.xlsx", 1)
 shortlist <- filter(population, shortList == "TRUE")
 epiparms <- read_excel("misc/epiparms.xlsx", 1)
 
-## MAYBE TODO: if countrycode doesn't provide a "use it in a sentence" form of
-## the country's name, it should. Contribute that upstream for everyone's
-## benefit.
 ### List of countries that need "the" prepended to their name
 prependList <- c("Czech Republic", 
                  "Democratic Republic of Congo",
