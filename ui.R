@@ -15,7 +15,7 @@ developer <- function(lastName, firstName, degree = "", affiliationIndex = 1, hr
 
 ui <- fluidPage( # UI ----
   tags$head(
-    tags$style(HTML("
+         tags$style(HTML("
       .label-text {
         font-size: 16px; /* Adjust label font size as needed */
       }
@@ -24,20 +24,20 @@ ui <- fluidPage( # UI ----
         font-size: 12px; /* Adjust option font size as needed */
       }
     "))
-  ),
+    ),
   theme = bs_theme(version = 4,
                    primary = "#18536F"),
   tags$head(
-    tags$link(rel = "stylesheet",
-              type="text/css",
-              href="spatialEpisimBanner.css"),
-     tags$link(rel = "stylesheet", 
-              type="text/css", 
-              href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css"),
-     tags$script(src = "https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"),
-     tags$script(src = "https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"),
-     tags$script(src = "addTimeDimension.js")
-  ),
+         tags$link(rel = "stylesheet",
+                   type="text/css",
+                   href="spatialEpisimBanner.css"),
+         tags$link(rel = "stylesheet", 
+                   type="text/css", 
+                   href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css"),
+         tags$script(src = "https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"),
+         tags$script(src = "https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"),
+         tags$script(src = "addTimeDimension.js")
+       ),
 
 
   div(
@@ -83,37 +83,37 @@ ui <- fluidPage( # UI ----
                                                           selected = "Simulator",
                                                           inline = TRUE)),
 
-                            # -------------------------------------------- #
-                            # Visualizer Inputs                            #
-                            # -------------------------------------------- #
+                                        # -------------------------------------------- #
+                                        # Visualizer Inputs                            #
+                                        # -------------------------------------------- #
                             conditionalPanel(
                               condition = "input.appMode == 'Visualizer'",
 
                               conditionalPanel(condition = "input.selectedCountry == 'Democratic Republic of Congo'",
                                                fileInput(inputId = "latLonData",
-                                                           label = strong("Upload Lat-Lon Data:"),
-                                                           placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
-                                                           accept = c(
-                                                             "text/csv",
-                                                             "text/comma-separated-values,text/plain",
-                                                             ".csv",
-                                                             ".xls",
-                                                             ".xlsx")),
-                                                 fileInput(inputId = "incidenceData",
-                                                           label = strong("Upload Incidence/Death Data:"),
-                                                           placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
-                                                           accept = c(
-                                                             "text/csv",
-                                                             "text/comma-separated-values,text/plain",
-                                                             ".csv",
-                                                             ".xls",
-                                                             ".xlsx"))),
+                                                         label = strong("Upload Lat-Lon Data:"),
+                                                         placeholder = "Upload Lat-Lon data (.csv or .xls or .xlsx)",
+                                                         accept = c(
+                                                           "text/csv",
+                                                           "text/comma-separated-values,text/plain",
+                                                           ".csv",
+                                                           ".xls",
+                                                           ".xlsx")),
+                                               fileInput(inputId = "incidenceData",
+                                                         label = strong("Upload Incidence/Death Data:"),
+                                                         placeholder = "Upload Incidence/Death data (.csv or .xls or .xlsx)",
+                                                         accept = c(
+                                                           "text/csv",
+                                                           "text/comma-separated-values,text/plain",
+                                                           ".csv",
+                                                           ".xls",
+                                                           ".xlsx"))),
                               uiOutput("resetButton")
                             ),
 
-                            # -------------------------------------------- #
-                            # Simulation Inputs                            #
-                            # -------------------------------------------- #
+                                        # -------------------------------------------- #
+                                        # Simulation Inputs                            #
+                                        # -------------------------------------------- #
                             conditionalPanel(
                               condition = "input.appMode == 'Simulator'",
 
@@ -149,19 +149,19 @@ ui <- fluidPage( # UI ----
                                 uiOutput("startDateInput"),
                                 uiOutput("timestepInput")),
 
-                              # actionButton("go","Run Simulation",
-                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                              # actionButton("resetAll","Reset Values",
-                              #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                        # actionButton("go","Run Simulation",
+                                        #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                        # actionButton("resetAll","Reset Values",
+                                        #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
 
                               br(),
                               br(),
 
                               uiOutput("dataAssimCheckbox"),
 
-                              # --------------------------------------------- #
-                              # Bayesian Assimilation Inputs                  #
-                              # --------------------------------------------- #
+                                        # --------------------------------------------- #
+                                        # Bayesian Assimilation Inputs                  #
+                                        # --------------------------------------------- #
                               conditionalPanel(
                                 condition = "input.dataAssim == '1'",
                                 uiOutput("dataAssimCmpts"),
@@ -178,20 +178,20 @@ ui <- fluidPage( # UI ----
                                 h5(HTML("Model error covariance matrix (&#936;) formulation"), style="font-weight: bold; font-size:11.5pt"),
                                 uiOutput("selectPsiDiag"),
 
-                                # actionButton("goDA","Run Simulation with DA",
-                                #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-                              ),
-                              # br(),
-                              # actionButton("resetAllDA","Reset Values",
-                              #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                        # actionButton("goDA","Run Simulation with DA",
+                                        #               style ="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                                ),
+                                        # br(),
+                                        # actionButton("resetAllDA","Reset Values",
+                                        #               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                               actionButton(inputId = "go",
                                            label = "Run Simulation",
                                            class = "act-btn"),
                               actionButton(inputId = "resetAll",
                                            label = "Reset Values",
                                            class = "act-btn"),
-                            )), # div "dashboard"
-                        ), # sidebarPanel
+                              )), # div "dashboard"
+                          ), # sidebarPanel
 
                         mainPanel( ## main panel ----
 
@@ -209,8 +209,8 @@ ui <- fluidPage( # UI ----
                                                                    height = 768),
                                                      br(),
                                                      br()
-                                                     #downloadButton('downloadPlot', 'Save Image')
-                                            ),
+                                        #downloadButton('downloadPlot', 'Save Image')
+                                                     ),
                                             tabPanel(title = "Leaflet Cropped Plot",
                                                      value = "Leaflet Cropped Plot",
 
@@ -220,24 +220,24 @@ ui <- fluidPage( # UI ----
                                                                    height = 768),
                                                      br(),
                                                      br()
-                                            ),
+                                                     ),
                                             tabPanel(title = "terra Plot",
 
                                                      br(),
                                                      imageOutput("terraOutputImage"),
                                                      br(),
                                                      br()
-                                            ),
+                                                     ),
                                             tabPanel(title = "Transmission Path",
 
                                                      br(),
 
-                                                       div(style = "width: 100%; height: 80vh; position: relative;",
-                                                            leafletOutput("transmission", width = "100%", height = "100%")
-                                                        ),
+                                                     div(style = "width: 100%; height: 80vh; position: relative;",
+                                                         leafletOutput("transmission", width = "100%", height = "100%")
+                                                         ),
                                                      br(),
                                                      br()
-                                            ),
+                                                     ),
                                             tabPanel(title = "Lollipop Chart",
 
                                                      br(),
@@ -245,7 +245,7 @@ ui <- fluidPage( # UI ----
                                                                   height = 1000),
                                                      br(),
                                                      br()
-                                            ),
+                                                     ),
                                             tabPanel(title = "Time-Series Graph",
 
                                                      br(),
@@ -255,12 +255,12 @@ ui <- fluidPage( # UI ----
                                                                   height = 800),
                                                      br(),
                                                      br())
-                                            # tabPanel(title ="Population Count by State/Province",
-                                            #          DT::dataTableOutput("aggTable")
-                                            #          )
-                                ) # tabSet
-                            ), # maptabPanels
-                          ),
+                                        # tabPanel(title ="Population Count by State/Province",
+                                        #          DT::dataTableOutput("aggTable")
+                                        #          )
+                                            ) # tabSet
+                                ), # maptabPanels
+                            ),
 
                           conditionalPanel(
                             condition = "input.appMode == 'Simulator'",
@@ -277,10 +277,10 @@ ui <- fluidPage( # UI ----
                                                      imageOutput("outputImage",
                                                                  height = "768px",
                                                                  width = "768px"),
-                                                     #imageOutput("croppedOutputImage"),
-                                                     #imageOutput("seededOutputImage"),
-                                                     #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
-                                            ),
+                                        #imageOutput("croppedOutputImage"),
+                                        #imageOutput("seededOutputImage"),
+                                        #downloadButton(outputId = "downloadSummary", label = "Save Input Summary as a PDF File")
+                                                     ),
 
                                             tabPanel(title = "Model", id = "modelTab",
                                                      h3("Schematic Diagram"),
@@ -293,11 +293,11 @@ ui <- fluidPage( # UI ----
                                                      br(),
                                                      imageOutput("modelImg",
                                                                  height = "400px")
-                                            ),
+                                                     ),
 
-                                            # tabPanel(title = "Schematic Diagram", id = "flowchartTab",
-                                            #
-                                            # ),
+                                        # tabPanel(title = "Schematic Diagram", id = "flowchartTab",
+                                        #
+                                        # ),
 
                                             tabPanel(title = "Initial Seed Data",
                                                      DTOutput("tableSeed"),
@@ -305,19 +305,19 @@ ui <- fluidPage( # UI ----
                                                      leafletOutput("seedPlot",
                                                                    width = 1024,
                                                                    height = 768)
-                                            ),
+                                                     ),
 
                                             tabPanel(title = "MP4 Animation",
                                                      br(),
                                                      br(),
                                                      uiOutput("outputVideo")#,
-                                                     #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
-                                            ),
+                                        #downloadButton(outputId = "downloadMP4", label = "Save MP4 Animation")
+                                                     ),
 
                                             tabPanel(title = "Output Summary",
                                                      DTOutput("outputSummary") ,
                                                      downloadButton(outputId = "downloadOutputSummary", label = "Download as Excel")
-                                            ),
+                                                     ),
 
                                             tabPanel(title = "Plot", id = "plotTab",
                                                      plotlyOutput("infectedExposedPlot", width = 800, height = 600),
@@ -325,15 +325,15 @@ ui <- fluidPage( # UI ----
                                                      plotlyOutput("dailyIncidence", width = 800, height = 600),
                                                      plotlyOutput("cumulativeIncidence", width = 800, height = 600),
                                                      plotlyOutput("fullPlot", width = 800, height = 600),
-                                                     # imageOutput("fracSusPlot"),
-                                                     #downloadButton(outputId = "downloadPlot", label = "Save Image")
-                                            )
-                                ) # tabsetPanel
-                            )
+                                        # imageOutput("fracSusPlot"),
+                                        #downloadButton(outputId = "downloadPlot", label = "Save Image")
+                                                     )
+                                            ) # tabsetPanel
+                                )
                           )
                         ), # mainPanel
-                      ) # sidebarLayout
-             ), # Model tabPanel
+                        ) # sidebarLayout
+                      ), # Model tabPanel
              
              ModelAuthorshipTab <- nav_panel(
                title = "Authors",
@@ -349,7 +349,7 @@ ui <- fluidPage( # UI ----
                        a("SpatialEpisim GitHub", href = "https://github.com/ashokkrish/spatialEpisim", target = "_blank")),
                      style = r"(a[href^='mailto']::before {content: '📧 ';} a[href^='tel']::before {content: '📞 ';})")),
                
-               #TODO: Need the link for research assistants who have not had
+                                        #TODO: Need the link for research assistants who have not had
                h2("Research Assistants", style = "font-weight:bold"),
                developer("Carson", "Bryce", "B.Sc", href = "https://github.com/bryce-carson/"),
                developer("Le", "Khanh", href = "https://github.com/kle6951/"),
@@ -363,7 +363,7 @@ ui <- fluidPage( # UI ----
                
                h2("Acknowledgment", style = "font-weight:bold"),
                list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Michael Myer, Tom Bayliss White, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, Jason Szeto, and Jake Doody.", br(), 
-               )),
+                      )),
                
                h2("Disclaimer", style ="font-weight:bold"),
                p("This tool uses a mathematical model to simulate a variety of CoViD-19, Ebola, and
@@ -387,10 +387,10 @@ worldPopPanel <- bsCollapsePanel(
                          "<a href='https://dx.doi.org/10.5258/SOTON/WP00671' target='_blank'>Link to the website</a>"
                        )
                      )
-  ),
+                     ),
   style = "primary"
 ),
 uiOutput("packageList"),
-             ), #Author Tab Panel
-  ) # navbarPage
+), #Author Tab Panel
+) # navbarPage
 )
