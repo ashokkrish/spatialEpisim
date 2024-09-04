@@ -41,15 +41,14 @@ ui <- fluidPage( # UI ----
 
 
   div(
-    class = "navTitle",
-
-    span(
-      class = "pageTitle",
-      tags$em("spatialEpisim"),
-      ": Spatial Tracking of Infectious Diseases using Mathematical Models",
-      br()
-    )
-  ),
+    style = "background-color: #18536F; padding: 10px; width: 100%; box-sizing: border-box; display: flex; align-items: center;
+    height: 100px;",
+    div(
+      h1(
+        strong("The Krishnamurthy Lab Spatio-Temporal Epidemic Modelling app"),
+        style = "margin: 0px 0px; color: white; font-size: 35px"
+      )
+    )),
 
   add_busy_spinner(spin = "cube-grid",
                    color = "#18536F",
