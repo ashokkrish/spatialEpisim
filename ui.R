@@ -159,7 +159,22 @@ ui <- fluidPage( # UI ----
                                         # --------------------------------------------- #
                               conditionalPanel(
                                 condition = "input.dataAssim == '1'",
-                                uiOutput("dataAssimCmpts"),
+                                helper(checkboxGroupButtons(
+                                  inputId = "selectedCompartments",
+                                  label = "Select observable compartment(s)",
+                                  choices = c("V", "E", "I", "R", "D"),
+                                  selected = c("I"),
+                                  checkIcon = list(
+                                    yes = tags$i(class = "fa fa-check-square",
+                                                 style = "color: steelblue"),
+                                    no = tags$i(class = "fa fa-square-o",
+                                                style = "color: steelblue")),
+                                  disabled = TRUE
+                                ),
+                                content = "selectedCompartmentsUnimplemented"),
+                                br(),
+
+
                                 uiOutput("dataAssimZones"),
                                 uiOutput("dataAssimFileI"),
                                 uiOutput("dataAssimFileD"),

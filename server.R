@@ -1184,21 +1184,11 @@ observeEvent(input$seedData, {
   #--------------------------------------------------------------------------#
   # Data Assimilation settings                                               #
   #--------------------------------------------------------------------------#
-
-  output$dataAssimCmpts <- renderUI({
-    validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-
-    checkboxGroupInput(inputId = "selectedCompartments",
-                       "Select observable compartment(s)",
-                       choices = c("V", "E", "I", "R", "D"),
-                       selected = c("I"),
-                       inline = TRUE,
-    )
-  })
   showI <- reactive({
     "I" %in% input$selectedCompartments
   })
 
+  # Unsupported regardless
   showD <- reactive({
     "D" %in% input$selectedCompartments
   })
@@ -1248,14 +1238,6 @@ observeEvent(input$seedData, {
       )
     }
   })
-  # output$dataAssimCmpts <- renderUI({
-  #   validate(need(input$dataAssim == TRUE, "")) #catches UI Warning
-  #
-  #   selectizeInput(inputId = "level1List", "Select observable compartments",
-  #                  choices = c("V", "E", "I", "R", "D"),
-  #                  selected = "", multiple = TRUE,
-  #                  options = list(placeholder = ""))
-  #})
 
   #--------------------------------------------------------------------------#
   # Change the function which generates the Q matrix     #
