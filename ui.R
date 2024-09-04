@@ -31,8 +31,8 @@ ui <- fluidPage( # UI ----
          tags$link(rel = "stylesheet",
                    type="text/css",
                    href="spatialEpisimBanner.css"),
-         tags$link(rel = "stylesheet", 
-                   type="text/css", 
+         tags$link(rel = "stylesheet",
+                   type="text/css",
                    href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css"),
          tags$script(src = "https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"),
          tags$script(src = "https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"),
@@ -334,7 +334,7 @@ ui <- fluidPage( # UI ----
                         ), # mainPanel
                         ) # sidebarLayout
                       ), # Model tabPanel
-             
+
              ModelAuthorshipTab <- nav_panel(
                title = "Authors",
                h2("Principal investigator", style = "font-weight:bold"),
@@ -348,23 +348,23 @@ ui <- fluidPage( # UI ----
                        a("akrishnamurthy@mtroyal.ca", href = "mailto:akrishnamurthy@mtroyal.ca"), br(),
                        a("SpatialEpisim GitHub", href = "https://github.com/ashokkrish/spatialEpisim", target = "_blank")),
                      style = r"(a[href^='mailto']::before {content: '📧 ';} a[href^='tel']::before {content: '📞 ';})")),
-               
+
                                         #TODO: Need the link for research assistants who have not had
                h2("Research Assistants", style = "font-weight:bold"),
                developer("Carson", "Bryce", "B.Sc", href = "https://github.com/bryce-carson/"),
                developer("Le", "Khanh", href = "https://github.com/kle6951/"),
                developer("Wondwossen", "Tobias", href = "https://github.com/Toby-exe"),
-               
+
                h2("Affiliations", style = "font-weight:bold"),
                p(tag("sup", 1), "Mount Royal University", br(),
                  "4825 Mount Royal Gate SW", br(),
                  "Calgary, Alberta, Canada", br(),
                  "T3E 6K6"),
-               
+
                h2("Acknowledgment", style = "font-weight:bold"),
-               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Michael Myer, Tom Bayliss White, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, Jason Szeto, and Jake Doody.", br(), 
+               list(p("Dr. Loren Cobb, Dr. Bedrich Sousedik, Michael Myer, Tom Bayliss White, Crystal Wai, Gursimran Dhaliwal, Timothy Pulfer, Ryan Darby, Jason Szeto, and Jake Doody.", br(),
                       )),
-               
+
                h2("Disclaimer", style ="font-weight:bold"),
                p("This tool uses a mathematical model to simulate a variety of CoViD-19, Ebola, and
 Measles outbreaks based on user-defined parameters. The output of the model
