@@ -6,10 +6,7 @@ prependList <- c("Czech Republic",
 
 grey6 <- "#0f0f0f" # the common name for this hexadecimal RGB colour
 
-colourPalette <-
-  c(0, 5, 10, 25, 50, 100, 250, 1000, 10000) %>%
-  colorBin(cptcity::cpt("jjg_misc_seminf_haxby", colorRampPalette = TRUE)(9)[-1],
-           domain = .,
-           bins = length(.))
+cuts <- c(NA, 10^(0:6))
+options(terra.plot = map.pal("haxby", length(cuts))[-1])
 
 lineThickness <- 1.5
