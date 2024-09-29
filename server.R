@@ -140,10 +140,24 @@ server <- function(input, output, session) {
       modelArguments <- as.list(modelArguments)
     } else {
       modelArguments$healthZoneCoordinates <- openDataFile(req(input$healthZoneCoordinates))
+
+      ## If the incidence data is present, read it; otherwise, remove the argument from the list of arguments.
       if (!is.null(input$dataAssimilation_I))
         modelArguments$incidenceData <- openDataFile(req(input$dataAssimilation_I))
+      else {
+        modelArguments <- as.environment(modelArguments)
+        rm(list = c("incidenceData"), pos = modelArguments)
+        modelArguments <- as.list(modelArguments)
+      }
+
+      ## If the death data is present, read it; otherwise, remove the argument from the list of arguments.
       if (!is.null(input$dataAssimilation_D))
         modelArguments$deathData <- openDataFile(req(input$dataAssimilation_D))
+      else {
+        modelArguments <- as.environment(modelArguments)
+        rm(list = c("deathData"), pos = modelArguments)
+        modelArguments <- as.list(modelArguments)
+      }
     }
     model <- do.call(spatialEpisim.foundation::SVEIRD.BayesianDataAssimilation, modelArguments)
 
