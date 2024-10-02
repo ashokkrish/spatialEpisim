@@ -1,5 +1,9 @@
-#+title: Literate SVEIRD Simulation (optionally with BDA)
-#+author: Bryce Carson
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-bigblow.setup
+#+TITLE: Literate SVEIRD Simulation (optionally with BDA)
+#+AUTHOR: Bryce Carson
+# Copyright © 2024 Bryce Carson
+
+This is a literate version of the SVEIRD "raster" simulation with Bayesian data assimilation.
 
 * Introduction
 The purpose of this literate program is to study, again, the flow control and
@@ -36,7 +40,7 @@ This is achieved, and I have diffs which prove that there are only insignificant
 whitespace changes between the old file and the tangled file produced from this
 literate source document.
 
-#+begin_src sh
+#+begin_src sh :exports both
   if $(diff --ignore-all-space rasterSimulation_DA.R literateRasterSimulationWithDA.R); then echo "Equivalent"; fi
 #+end_src
 
@@ -44,7 +48,7 @@ literate source document.
 : Equivalent
 
 *** TODO Remove all dead code
-* The Olde Code
+* The Olde Code's Organization
 The old code can be thought of as being organized into three major sections:
 1. its dependenecies
 2. its actual function definition
@@ -121,125 +125,13 @@ named (in my opinion).
 #+end_src
 
 *** The function body
-**** The simulation meat and potatoes
+The body of the function is documented at a higher-level of sectioning, given
+its length. See [[Simulation (optionally with data assimilation) cont.]].
+
+* Simulation (optionally with data assimilation) cont.
+** The simulation meat and potatoes
 #+begin_src R :noweb no-export :noweb-ref function body
-  <<unlink, delete, and recreate the MP4 output directory>>
-
-  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
-
-  Susceptible <- stack$rasterStack$Susceptible
-  Vaccinated <- stack$rasterStack$Vaccinated
-  Exposed <- stack$rasterStack$Exposed
-  Infected <- stack$rasterStack$Infected
-  Recovered <- stack$rasterStack$Recovered
-  Dead <- stack$rasterStack$Dead
-
-  Inhabitable <- stack$rasterStack$Inhabitable
-  Level1Raster <- stack$rasterStack$Level1Raster
-
-  Level1Identifier <- stack$Level1Identifier
-
-  # print(Level1Identifier$NAME_1)  # List of states/provinces/regions
-
-  # plot(Level1Raster)
-  # plot(Level1Identifier, add = TRUE)
-  #
-  # print(Susceptible);  print(Vaccinated); print(Exposed); print(Infected); print(Recovered); print(Dead)
-  #
-  # dim(Susceptible); dim(Vaccinated); dim(Exposed); dim(Infected); dim(Recovered); dim(Dead); dim(Inhabitable); dim(Level1Raster)
-  #
-  # print(table(values(Inhabitable)))
-
-  names <- c("Date", "N", "S", "V", "E", "I", "R", "D",
-             "newV", "newE", "newI", "newR","newD", "cumE", "cumI", "Alpha", "Beta", "Gamma", "Sigma", "Delta",
-             "Radius", "Lambda", "Model", "DA")
-
-  summary <- data.frame(matrix(data = 0, ncol = length(names), nrow = timestep))
-
-  colnames(summary) <- names
-
-  nrows <- nrow(stack$rasterStack) #
-  ncols <- ncol(stack$rasterStack) #
-
-  p <- nrows * ncols
-
-  <<seed the initial states from the provided seed data>>
-
-  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-  pal <- colorRampPalette(ramp)
-
-  valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
-  valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
-  valExposed <- terra::as.matrix(Exposed, wide = TRUE)
-  valInfected <- terra::as.matrix(Infected, wide = TRUE)
-  valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
-  valDead <- terra::as.matrix(Dead, wide = TRUE)
-  # print("new----------------")
-  # print(valVaccinated)
-  # print("-------------------")
-
-  #par(mfrow = c(1, 2))
-
-  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
-  #      main = "Location of Initial Infections",
-  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
-  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  #
-  # plot(Level1Identifier, add = TRUE)
-  #
-  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1,
-  #      main = "Location of Initial Deaths",
-  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
-  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  #
-  # plot(Level1Identifier, add = TRUE)
-  #
-  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  # plot(Level1Identifier, add = TRUE)
-  #
-  # plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabitable Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-  # plot(Level1Identifier, add = TRUE)
-
-  # writeRaster(Infected, "seed.tif", overwrite = TRUE)
-
-  sumS <- sum(values(Susceptible))
-  sumV <- sum(values(Vaccinated))
-  sumE <- sum(values(Exposed))
-  sumI <- sum(values(Infected))
-  sumR <- sum(values(Recovered))
-  sumD <- sum(values(Dead))
-
-  # print(sumS); print(sumV); print(sumE); print(sumI); print(sumR); print(sumD)
-
-  propVaccinated <- sumV/sumS
-  propExposed <- sumE/sumS
-  propInfected <- sumI/sumS
-  propRecovered <- sumR/sumS
-  propDead <- sumD/sumS
-
-  # print(propVaccinated)
-  # print(propExposed)
-  # print(propInfected)
-  # print(propRecovered)
-  # print(propDead)
-
-  print(paste("Susceptible Count before removing initial seed values: ", sum(values(Susceptible))))
-  # print(values(Susceptible))
-
-  Susceptible <- Susceptible - (Susceptible*propVaccinated) - (Susceptible*propExposed) - (Susceptible*propInfected) - (Susceptible*propRecovered) - (Susceptible*propDead)
-
-  print(paste("Susceptible Count after removing initial seed values: ", sum(values(Susceptible))))
-
-  datarow <- 1 # pre-allocating the row from which we read the data to assimilate each week
-  cumVaccinated <- round(sumV)
-  cumExposed <- round(sumE)
-  cumInfected <- round(sumI)
-  cumRecovered <- round(sumR)
-  cumDead <- round(sumD)
-
-  cumIncidence <- round(sumI)
-
-  <<Bayesian data assimilation>>
+  <<setup before the main loop of the simulation>>
 
   #-------------------------------#
   # MAIN LOOP FOR TIME INCREMENTS #
@@ -251,155 +143,25 @@ named (in my opinion).
   {					# time increments
     print(paste("time = ", t))
 
-    summary[t, 1]  <- toString(as.Date(startDate) + days(t - 1)) # Print the date at each time step
-    summary[t, 2]  <- round(sumS + sumV + sumE + sumI + sumR + sumD)
-    summary[t, 3]  <- round(sumS)
-    summary[t, 4]  <- round(sumV)            # Absorbing state
-    summary[t, 5]  <- round(sumE)            # This is the prevalence (active exposed cases) at time t, NOT the cumulative sum
-    summary[t, 6]  <- round(sumI)            # This is the prevalence (active infectious cases) at time t, NOT the cumulative sum
-    summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
-    summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
+    <<Write the current state of the simulation into the summary table>>
 
-    summary[t, 14]  <- round(cumExposed)
-    summary[t, 15]  <- round(cumInfected)
-    summary[t, 16]  <- alpha
-    summary[t, 17]  <- beta
-    summary[t, 18]  <- gamma
-    summary[t, 19]  <- sigma
-    summary[t, 20]  <- delta
-    summary[t, 21]  <- radius
-    summary[t, 22]  <- lambda
-    summary[t, 23]  <- model
+    <<Convert the components of the RasterStack to wide matrices>>
 
-    valInhabitable <- terra::as.matrix(Inhabitable, wide = TRUE)
-    valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
-    valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
-    valExposed <- terra::as.matrix(Exposed, wide = TRUE)
-    valInfected <- terra::as.matrix(Infected, wide = TRUE)
-    valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
-    valDead <- terra::as.matrix(Dead, wide = TRUE)
+    <<create empty values used hereafter in other calculations>>
 
-    nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
-    pSusceptible <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- matrix(0, nrows, ncols, byrow = T)
-
-    dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
-
-    #-------------------------------#
-    # Generating the I_tilda matrix #
-    #-------------------------------#
-
-    I_tilda <- wtd_nbrs_sum(input_matrix = valInfected, radius = radius, lambda = lambda)
+    <<Generating the I_tilda matrix>>
 
     nLiving <- valSusceptible + valVaccinated + valExposed + valInfected + valRecovered
 
-    #--------------------------------------------------------------------#
-    # Some susceptible people are going to be newly vaccinated           #
-    #--------------------------------------------------------------------#
-    newVaccinated <- alpha*valSusceptible
-    newVaccinated[valSusceptible < 1] <- 0
+    <<Some susceptible people are going to be newly vaccinated>>
+    <<Some susceptible people who come in contact with nearby infected are going to be newly exposed>>
+    <<Some exposed people are going to become newly infectious>>
+    <<Some infectious people are going to either recover or die>>
 
-    dailyVaccinated <- sum(newVaccinated)
-
-    #--------------------------------------------------------------------#
-    # Some susceptible people who come in contact with nearby infected   #
-    # are going to be newly exposed                                      #
-    #--------------------------------------------------------------------#
-    pSusceptible <- valSusceptible/nLiving
-    pSusceptible[is.nan(pSusceptible)] <- 0
-
-    if(deterministic) {
-      newExposed <- beta*pSusceptible*I_tilda
-    } else {
-      rpois(1, beta*pSusceptible*I_tilda)
-    }
-    newExposed[valSusceptible < 1] <- 0
-    newExposed[I_tilda < 1] <- 0
-
-    dailyExposed <- sum(newExposed)
-    cumExposed <- cumExposed + sum(newExposed)
-
-    #----------------------------------------------------------#
-    # Some exposed people are going to become newly infectious #
-    #----------------------------------------------------------#
-    newInfected <- gamma*valExposed
-    newInfected[valExposed < 1] <- 0
-
-    dailyInfected <- sum(newInfected)
-    cumInfected   <- cumInfected + sum(newInfected)
-
-    #-----------------------------------------------------------#
-    # Some infectious people are going to either recover or die #
-    #-----------------------------------------------------------#
-    newRecovered <- sigma*valInfected
-    newRecovered[valInfected < 1] <- 0
-
-    dailyRecovered <- sum(newRecovered)
-    cumRecovered <- cumRecovered + sum(newRecovered)
-
-    newDead <- delta*valInfected
-    newDead[valInfected < 1] <- 0
-
-    dailyDead <- sum(newDead)
-    cumDead <- cumDead + sum(newDead)
-
-    #-----------------------------------#
-    # Store the next state of each cell #
-    #-----------------------------------#
-    nextSusceptible <- valSusceptible - newExposed - newVaccinated
-    nextVaccinated <- valVaccinated + newVaccinated
-    nextExposed <- valExposed + newExposed - newInfected
-    nextInfected <- valInfected + newInfected - newDead - newRecovered
-    nextRecovered <- valRecovered + newRecovered
-    nextDead <- valDead + newDead
-
-
-    nextSusceptible[nLiving <= 0] <- 0
-    nextVaccinated[nLiving <= 0] <- 0
-    nextExposed[nLiving <= 0] <- 0
-    nextInfected[nLiving <= 0] <- 0
-    nextRecovered[nLiving <= 0] <- 0
-    nextDead[nLiving <= 0] <- 0
-
-
-    Susceptible <- nextSusceptible
-    Vaccinated <- nextVaccinated
-    Exposed <- nextExposed
-    Infected <- nextInfected
-    Recovered <- nextRecovered
-    Dead <- nextDead
-
-    Susceptible <- rast(Susceptible)
-    Vaccinated <- rast(Vaccinated)
-    Exposed <- rast(Exposed)
-    Infected <- rast(Infected)
-    Recovered <- rast(Recovered)
-    Dead <- rast(Dead)
-
-    ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(stack$rasterStack)
-    crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(stack$rasterStack)
-
-    # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
-    # pal <- colorRampPalette(ramp)
-    #
-    # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
-    #      main = "Location of Infections after iteration t",
-    #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
-    #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
-    #
-    # plot(Level1Identifier, add = TRUE)
-    # print(Infected)
-    #
-    # writeRaster(Infected, file = "infectedRaster.tif", overwrite = TRUE)
-
-    stack$rasterStack$Susceptible <- Susceptible
-    stack$rasterStack$Vaccinated <- Vaccinated
-    stack$rasterStack$Exposed <- Exposed
-    stack$rasterStack$Infected <- Infected
-    stack$rasterStack$Recovered <- Recovered
-    stack$rasterStack$Dead <- Dead
+    <<Store the next state of each cell>>
 
     # print('check')
-  # print(testData)
+    # print(testData)
     summary[t, 9]   <- dailyVaccinated
     summary[t, 10]  <- dailyExposed
     summary[t, 11]  <- dailyInfected
@@ -413,12 +175,12 @@ named (in my opinion).
     #print(sumS)
 
     <<Bayesian data assimilation part two>>
+      allRasters[[t]] <- stack
+    }   # time increments
+  # DA T/F
+     ########## DA Ends ##########
 
-  # save(stack$rasterStack[["Infected"]], file = "infectedRaster.RData")
-
-  # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
-  #
-  # plot(Level1Identifier, add = TRUE)
+    <<print statements №5>>
 
   <<print the individual timesteps for the Infected layer before merging into MP4>>
 
@@ -483,7 +245,252 @@ named (in my opinion).
   }
 #+end_src
 
-**** Bayesian data assimilation
+#+name: Generating the I_tilda matrix
+#+begin_src R
+  #-------------------------------#
+  # Generating the I_tilda matrix #
+  #-------------------------------#
+  I_tilda <- wtd_nbrs_sum(input_matrix = valInfected, radius = radius, lambda = lambda)
+#+end_src
+
+#+name: Some susceptible people are going to be newly vaccinated
+#+begin_src R
+  #--------------------------------------------------------------------#
+  # Some susceptible people are going to be newly vaccinated           #
+  #--------------------------------------------------------------------#
+  newVaccinated <- alpha*valSusceptible
+  newVaccinated[valSusceptible < 1] <- 0
+
+  dailyVaccinated <- sum(newVaccinated)
+#+end_src
+
+#+name: Some susceptible people who come in contact with nearby infected are going to be newly exposed
+#+begin_src R
+  #--------------------------------------------------------------------#
+  # Some susceptible people who come in contact with nearby infected   #
+  # are going to be newly exposed                                      #
+  #--------------------------------------------------------------------#
+  pSusceptible <- valSusceptible/nLiving
+  pSusceptible[is.nan(pSusceptible)] <- 0
+
+  if(deterministic) {
+    newExposed <- beta*pSusceptible*I_tilda
+  } else {
+    rpois(1, beta*pSusceptible*I_tilda)
+  }
+  newExposed[valSusceptible < 1] <- 0
+  newExposed[I_tilda < 1] <- 0
+
+  dailyExposed <- sum(newExposed)
+  cumExposed <- cumExposed + sum(newExposed)
+#+end_src
+
+#+name: Some exposed people are going to become newly infectious
+#+begin_src R
+  #----------------------------------------------------------#
+  # Some exposed people are going to become newly infectious #
+  #----------------------------------------------------------#
+  newInfected <- gamma*valExposed
+  newInfected[valExposed < 1] <- 0
+
+  dailyInfected <- sum(newInfected)
+  cumInfected   <- cumInfected + sum(newInfected)
+#+end_src
+
+#+name: Some infectious people are going to either recover or die
+#+begin_src R
+  #-----------------------------------------------------------#
+  # Some infectious people are going to either recover or die #
+  #-----------------------------------------------------------#
+  newRecovered <- sigma*valInfected
+  newRecovered[valInfected < 1] <- 0
+
+  dailyRecovered <- sum(newRecovered)
+  cumRecovered <- cumRecovered + sum(newRecovered)
+
+  newDead <- delta*valInfected
+  newDead[valInfected < 1] <- 0
+
+  dailyDead <- sum(newDead)
+  cumDead <- cumDead + sum(newDead)
+#+end_src
+
+#+name: create empty values used hereafter in other calculations
+#+begin_src R
+  nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
+  pSusceptible <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- matrix(0, nrows, ncols, byrow = T)
+
+  dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
+#+end_src
+
+#+name: Store the next state of each cell
+#+begin_src R
+  #-----------------------------------#
+  # Store the next state of each cell #
+  #-----------------------------------#
+  nextSusceptible <- valSusceptible - newExposed - newVaccinated
+  nextVaccinated <- valVaccinated + newVaccinated
+  nextExposed <- valExposed + newExposed - newInfected
+  nextInfected <- valInfected + newInfected - newDead - newRecovered
+  nextRecovered <- valRecovered + newRecovered
+  nextDead <- valDead + newDead
+
+
+  nextSusceptible[nLiving <= 0] <- 0
+  nextVaccinated[nLiving <= 0] <- 0
+  nextExposed[nLiving <= 0] <- 0
+  nextInfected[nLiving <= 0] <- 0
+  nextRecovered[nLiving <= 0] <- 0
+  nextDead[nLiving <= 0] <- 0
+
+
+  Susceptible <- nextSusceptible
+  Vaccinated <- nextVaccinated
+  Exposed <- nextExposed
+  Infected <- nextInfected
+  Recovered <- nextRecovered
+  Dead <- nextDead
+
+  Susceptible <- rast(Susceptible)
+  Vaccinated <- rast(Vaccinated)
+  Exposed <- rast(Exposed)
+  Infected <- rast(Infected)
+  Recovered <- rast(Recovered)
+  Dead <- rast(Dead)
+
+  ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(stack$rasterStack)
+  crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(stack$rasterStack)
+
+  <<print statements №4>>
+
+  stack$rasterStack$Susceptible <- Susceptible
+  stack$rasterStack$Vaccinated <- Vaccinated
+  stack$rasterStack$Exposed <- Exposed
+  stack$rasterStack$Infected <- Infected
+  stack$rasterStack$Recovered <- Recovered
+  stack$rasterStack$Dead <- Dead
+#+end_src
+
+#+name: Convert the components of the RasterStack to wide matrices
+#+begin_src R
+  valInhabitable <- terra::as.matrix(Inhabitable, wide = TRUE)
+  valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
+  valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
+  valExposed <- terra::as.matrix(Exposed, wide = TRUE)
+  valInfected <- terra::as.matrix(Infected, wide = TRUE)
+  valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
+  valDead <- terra::as.matrix(Dead, wide = TRUE)
+#+end_src
+
+#+name: setup before the main loop of the simulation
+#+begin_src R
+  <<unlink, delete, and recreate the MP4 output directory>>
+
+  inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
+
+  Susceptible <- stack$rasterStack$Susceptible
+  Vaccinated <- stack$rasterStack$Vaccinated
+  Exposed <- stack$rasterStack$Exposed
+  Infected <- stack$rasterStack$Infected
+  Recovered <- stack$rasterStack$Recovered
+  Dead <- stack$rasterStack$Dead
+
+  Inhabitable <- stack$rasterStack$Inhabitable
+  Level1Raster <- stack$rasterStack$Level1Raster
+
+  Level1Identifier <- stack$Level1Identifier
+
+  <<print statements №1>>
+
+  names <- c("Date", "N", "S", "V", "E", "I", "R", "D",
+             "newV", "newE", "newI", "newR","newD", "cumE", "cumI", "Alpha", "Beta", "Gamma", "Sigma", "Delta",
+             "Radius", "Lambda", "Model", "DA")
+
+  summary <- data.frame(matrix(data = 0, ncol = length(names), nrow = timestep))
+
+  colnames(summary) <- names
+
+  nrows <- nrow(stack$rasterStack) #
+  ncols <- ncol(stack$rasterStack) #
+
+  p <- nrows * ncols
+
+  <<seed the initial states from the provided seed data>>
+
+  ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  pal <- colorRampPalette(ramp)
+
+  valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
+  valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
+  valExposed <- terra::as.matrix(Exposed, wide = TRUE)
+  valInfected <- terra::as.matrix(Infected, wide = TRUE)
+  valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
+  valDead <- terra::as.matrix(Dead, wide = TRUE)
+  <<print statements №2>>
+
+  sumS <- sum(values(Susceptible))
+  sumV <- sum(values(Vaccinated))
+  sumE <- sum(values(Exposed))
+  sumI <- sum(values(Infected))
+  sumR <- sum(values(Recovered))
+  sumD <- sum(values(Dead))
+
+  # print(sumS); print(sumV); print(sumE); print(sumI); print(sumR); print(sumD)
+
+  propVaccinated <- sumV/sumS
+  propExposed <- sumE/sumS
+  propInfected <- sumI/sumS
+  propRecovered <- sumR/sumS
+  propDead <- sumD/sumS
+
+  <<print statements №3>>
+
+  Susceptible <- Susceptible - (Susceptible*propVaccinated) - (Susceptible*propExposed) - (Susceptible*propInfected) - (Susceptible*propRecovered) - (Susceptible*propDead)
+
+  print(paste("Susceptible Count after removing initial seed values: ", sum(values(Susceptible))))
+
+  datarow <- 1 # pre-allocating the row from which we read the data to assimilate each week
+  cumVaccinated <- round(sumV)
+  cumExposed <- round(sumE)
+  cumInfected <- round(sumI)
+  cumRecovered <- round(sumR)
+  cumDead <- round(sumD)
+
+  cumIncidence <- round(sumI)
+
+  <<Bayesian data assimilation>>
+#+end_src
+
+*** Write values into the summary table
+
+#+begin_src R :noweb-ref Write the current state of the simulation into the summary table
+  summary[t, 1]  <- toString(as.Date(startDate) + days(t - 1)) # Print the date at each time step
+  summary[t, 2]  <- round(sumS + sumV + sumE + sumI + sumR + sumD)
+  summary[t, 3]  <- round(sumS)
+  summary[t, 4]  <- round(sumV)            # Absorbing state
+  summary[t, 5]  <- round(sumE)            # This is the prevalence (active exposed cases) at time t, NOT the cumulative sum
+  summary[t, 6]  <- round(sumI)            # This is the prevalence (active infectious cases) at time t, NOT the cumulative sum
+  summary[t, 7]  <- round(cumRecovered)    # round(sumR)   # Absorbing state
+  summary[t, 8]  <- round(cumDead)         # round(sumD)   # Absorbing state
+#+end_src
+
+The ninth through thirteenth values are not available yet, supposedly, and are
+written into this table at the very end of the timestep.
+
+#+begin_src R :noweb-ref Write the current state of the simulation into the summary table
+  summary[t, 14]  <- round(cumExposed)
+  summary[t, 15]  <- round(cumInfected)
+  summary[t, 16]  <- alpha
+  summary[t, 17]  <- beta
+  summary[t, 18]  <- gamma
+  summary[t, 19]  <- sigma
+  summary[t, 20]  <- delta
+  summary[t, 21]  <- radius
+  summary[t, 22]  <- lambda
+  summary[t, 23]  <- model
+#+end_src
+
+** Bayesian data assimilation
 Bayesian data assimilation was not fully implemented in the original code (the
 code before I joined the project).
 
@@ -506,125 +513,7 @@ code before I joined the project).
 
       ## DONT change this here, change it in spatialEpisim.foundation is needed,
       ## then copy over the function defintion here.
-      linearInterpolationOperator <- function(layers,
-                                              healthZoneCoordinates,
-                                              neighbourhood.order = 2,
-                                              compartmentsReported = 1) {
-        stopifnot(neighbourhood.order %in% c(0, 1, 2))
-        if (neighbourhood.order == 2)
-          stopifnot(terra::ncell(layers) >= 5 && terra::nrow(layers) >= 5) # required for 2nd order
-        stopifnot(compartmentsReported %in% 1:2)
-
-        queensNeighbours <- function(order, cell, ncols) {
-          stopifnot(order %in% 1:2)
-
-          if (order == 1) {
-            neighbouringCells <-
-              c((cell - ncols - 1) : (cell - ncols + 1),
-                cell - 1 , cell + 1,
-                (cell + ncols - 1) : (cell + ncols + 1))
-            stopifnot(length(neighbouringCells) == 8)
-          } else if (order == 2) {
-            neighbouringCells <-
-              c((cell - ncols * 2 - 2) : (cell - ncols * 2 + 2),
-                cell - ncols - 2 , cell - ncols + 2,
-                cell - 2 , cell + 2,
-                cell + ncols - 2 , cell + ncols + 2,
-                (cell + ncols * 2 - 2) : (cell + ncols * 2 + 2))
-            stopifnot(length(neighbouringCells) == 16)
-          }
-
-          neighbouringCells
-        }
-
-        extend.length <- 5
-        layers <- terra::extend(layers, extend.length)
-
-        ## NOTE: cells contains the index into the rasters in layers (when converted
-        ## to a matrix). Extract coordinates as cbind(lon, lat); it's stored as
-        ## cbind(lat, lon).
-        cells <- terra::cellFromXY(layers, terra::as.matrix(healthZoneCoordinates[, 3:2]))
-
-        if (any(duplicated(cells))) {
-          overaggregatedHealthZones <- tibble::tibble("Health Zone" = healthZoneCoordinates[, 1], Cell = cells) %>%
-            dplyr::group_by(Cell) %>%
-            dplyr::filter(dplyr::n() != 1)
-
-          warning(sprintf("[Linear interpolation operator] Raster aggregation factor is too high to differentiate between two (or more) health zones (they correspond to the same grid cell).\n%s",
-                          ## Based on the helpful answer by Richie Cotton on SO:
-                          ## https://stackoverflow.com/a/26083626/14211497, which the following is
-                          ## based on.
-                          paste(capture.output(print(overaggregatedHealthZones)), collapse = "\n")))
-        }
-        if (any(is.na(cells)))
-          warning("Ignoring NAs in [cells] object corresponding to coordinates out of bounds of [layers] SpatRaster.")
-
-        cells <- cells[!is.na(cells)]
-
-        ## NOTE: preallocate the linear forward interpolation matrix, with
-        ## dimensions q * p (health zones by cells in the SpatRaster).
-        H <- base::matrix(0, nrow(healthZoneCoordinates), terra::ncell(layers))
-
-        ## NOTE: these are the weightings used for the chess queen zeroth, first,
-        ## and second order neighbours. The zeroth order neighbor is the position of
-        ## the queen itself.
-        neighbour.weights <-
-          switch(neighbourhood.order + 1, # the first of ... applies to zero, etc.
-                 1,
-                 c(2, 1) * 0.1,
-                 c(3, 2, 1) * 35^-1)
-
-        for (index in seq_along(cells)) {
-          H[index, cells[index]] <- neighbour.weights[1]
-
-          if (neighbourhood.order != 0) {
-            neighbour.1st <- queensNeighbours(1, cells[index], terra::ncol(layers))
-            H[index, neighbour.1st] <- neighbour.weights[2]
-          }
-
-          if (neighbourhood.order == 2) {
-            neighbour.2nd <- queensNeighbours(2, cells[index], terra::ncol(layers))
-            if(anyDuplicated(c(neighbour.1st, neighbour.2nd)) > 0)
-              simpleError("Duplicate cell indices among neighbours of multiple localities.")
-            H[index, neighbour.2nd] <- neighbour.weights[3]
-          }
-        }
-
-        ## TODO: move the following NOTE to a better place than here; perhaps to the
-        ## function documentation details. This should be tested using automatic
-        ## testing with various input values. NOTE: this corresponds to the
-        ## hand-written note I made after discussionwith Ashok. He told me that the
-        ## sum of all cells needs to be equivalent to one; the sum of all cells is
-        ## per-health zone, ergo the first condition checks that the sum of the entire
-        ## matrix (with nrow := health zones) is the same as the number of health
-        ## zones (because each should sum to one). NOTE: each row corresponds to one
-        ## of the neighourhoods pictures in the plots "ashok.png" or "me.png".
-        stopifnot(dplyr::near(sum(H), nrow(healthZoneCoordinates)))
-        stopifnot(dplyr::near(sum(matrix(H[1, ],
-                                         ncol = ncol(layers),
-                                         byrow = TRUE)),
-                              1))
-
-        ## NOTE: the extended areas of the matrix are now dropped to return the matrix
-        ## to the expected size for the input.
-        H <-
-          apply(X = H,
-                MARGIN = 1, # apply the function to rows
-                FUN =
-                  function(row) {
-                    m <- matrix(row, byrow = TRUE, ncol = ncol(layers))
-                    m[(extend.length + 1):(base::nrow(m) - extend.length),
-                    (extend.length + 1):(base::ncol(m) - extend.length)] %>%
-                      Matrix::t() %>% # row-major order (byrow)
-                      as.vector()
-                  }) %>% Matrix::t() # rows should be health zones
-
-        if (compartmentsReported == 2) H <- as.matrix(Matrix::bdiag(H, H))
-
-        stopifnot(sum(.rowSums(H, m = nrow(H), n = ncol(H))) == (compartmentsReported * nrow(healthZoneCoordinates)))
-
-        return(H)
-      }
+      <<linear interpolation operator function backported from spatialEpisim.foundation>>
 
       states_observable <- 1
       healthZoneCoordinates <- openDataFile(sitRepData)
@@ -979,13 +868,137 @@ implementation of Bayesian data assimilation.
           } # If t is divisible by 7
         # elapsed week
       }
-      allRasters[[t]] <- stack
-    }   # time increments
-  # DA T/F
-     ########## DA Ends ##########
 #+end_src
 
-**** MP4-related code
+*** Linear interpolation
+The operator matrix for linear interpolation was incorrectly implemented in the
+original code. This correctly implemented function is backported from the
+/spatialEpisim.foundation/ package to provide the "stable" version of the Shiny
+application's simulation core a correction/bug-fix.
+
+#+name: linear interpolation operator function backported from spatialEpisim.foundation
+#+begin_src R
+  linearInterpolationOperator <- function(layers,
+                                          healthZoneCoordinates,
+                                          neighbourhood.order = 2,
+                                          compartmentsReported = 1) {
+    stopifnot(neighbourhood.order %in% c(0, 1, 2))
+    if (neighbourhood.order == 2)
+      stopifnot(terra::ncell(layers) >= 5 && terra::nrow(layers) >= 5) # required for 2nd order
+    stopifnot(compartmentsReported %in% 1:2)
+
+    queensNeighbours <- function(order, cell, ncols) {
+      stopifnot(order %in% 1:2)
+
+      if (order == 1) {
+        neighbouringCells <-
+          c((cell - ncols - 1) : (cell - ncols + 1),
+            cell - 1 , cell + 1,
+            (cell + ncols - 1) : (cell + ncols + 1))
+        stopifnot(length(neighbouringCells) == 8)
+      } else if (order == 2) {
+        neighbouringCells <-
+          c((cell - ncols * 2 - 2) : (cell - ncols * 2 + 2),
+            cell - ncols - 2 , cell - ncols + 2,
+            cell - 2 , cell + 2,
+            cell + ncols - 2 , cell + ncols + 2,
+            (cell + ncols * 2 - 2) : (cell + ncols * 2 + 2))
+        stopifnot(length(neighbouringCells) == 16)
+      }
+
+      neighbouringCells
+    }
+
+    extend.length <- 5
+    layers <- terra::extend(layers, extend.length)
+
+    ## NOTE: cells contains the index into the rasters in layers (when converted
+    ## to a matrix). Extract coordinates as cbind(lon, lat); it's stored as
+    ## cbind(lat, lon).
+    cells <- terra::cellFromXY(layers, terra::as.matrix(healthZoneCoordinates[, 3:2]))
+
+    if (any(duplicated(cells))) {
+      overaggregatedHealthZones <- tibble::tibble("Health Zone" = healthZoneCoordinates[, 1], Cell = cells) %>%
+        dplyr::group_by(Cell) %>%
+        dplyr::filter(dplyr::n() != 1)
+
+      warning(sprintf("[Linear interpolation operator] Raster aggregation factor is too high to differentiate between two (or more) health zones (they correspond to the same grid cell).\n%s",
+                      ## Based on the helpful answer by Richie Cotton on SO:
+                      ## https://stackoverflow.com/a/26083626/14211497, which the following is
+                      ## based on.
+                      paste(capture.output(print(overaggregatedHealthZones)), collapse = "\n")))
+    }
+    if (any(is.na(cells)))
+      warning("Ignoring NAs in [cells] object corresponding to coordinates out of bounds of [layers] SpatRaster.")
+
+    cells <- cells[!is.na(cells)]
+
+    ## NOTE: preallocate the linear forward interpolation matrix, with
+    ## dimensions q * p (health zones by cells in the SpatRaster).
+    H <- base::matrix(0, nrow(healthZoneCoordinates), terra::ncell(layers))
+
+    ## NOTE: these are the weightings used for the chess queen zeroth, first,
+    ## and second order neighbours. The zeroth order neighbor is the position of
+    ## the queen itself.
+    neighbour.weights <-
+      switch(neighbourhood.order + 1, # the first of ... applies to zero, etc.
+             1,
+             c(2, 1) * 0.1,
+             c(3, 2, 1) * 35^-1)
+
+    for (index in seq_along(cells)) {
+      H[index, cells[index]] <- neighbour.weights[1]
+
+      if (neighbourhood.order != 0) {
+        neighbour.1st <- queensNeighbours(1, cells[index], terra::ncol(layers))
+        H[index, neighbour.1st] <- neighbour.weights[2]
+      }
+
+      if (neighbourhood.order == 2) {
+        neighbour.2nd <- queensNeighbours(2, cells[index], terra::ncol(layers))
+        if(anyDuplicated(c(neighbour.1st, neighbour.2nd)) > 0)
+          simpleError("Duplicate cell indices among neighbours of multiple localities.")
+        H[index, neighbour.2nd] <- neighbour.weights[3]
+      }
+    }
+
+    ## TODO: move the following NOTE to a better place than here; perhaps to the
+    ## function documentation details. This should be tested using automatic
+    ## testing with various input values. NOTE: this corresponds to the
+    ## hand-written note I made after discussionwith Ashok. He told me that the
+    ## sum of all cells needs to be equivalent to one; the sum of all cells is
+    ## per-health zone, ergo the first condition checks that the sum of the entire
+    ## matrix (with nrow := health zones) is the same as the number of health
+    ## zones (because each should sum to one). NOTE: each row corresponds to one
+    ## of the neighourhoods pictures in the plots "ashok.png" or "me.png".
+    stopifnot(dplyr::near(sum(H), nrow(healthZoneCoordinates)))
+    stopifnot(dplyr::near(sum(matrix(H[1, ],
+                                     ncol = ncol(layers),
+                                     byrow = TRUE)),
+                          1))
+
+    ## NOTE: the extended areas of the matrix are now dropped to return the matrix
+    ## to the expected size for the input.
+    H <-
+      apply(X = H,
+            MARGIN = 1, # apply the function to rows
+            FUN =
+              function(row) {
+                m <- matrix(row, byrow = TRUE, ncol = ncol(layers))
+                m[(extend.length + 1):(base::nrow(m) - extend.length),
+                (extend.length + 1):(base::ncol(m) - extend.length)] %>%
+                  Matrix::t() %>% # row-major order (byrow)
+                  as.vector()
+              }) %>% Matrix::t() # rows should be health zones
+
+    if (compartmentsReported == 2) H <- as.matrix(Matrix::bdiag(H, H))
+
+    stopifnot(sum(.rowSums(H, m = nrow(H), n = ncol(H))) == (compartmentsReported * nrow(healthZoneCoordinates)))
+
+    return(H)
+  }
+#+end_src
+** MP4-related code
 #+name: unlink, delete, and recreate the MP4 output directory
 #+begin_src R
   unlink("www/MP4", recursive = TRUE, force = TRUE) # Delete the MP4
@@ -1035,6 +1048,97 @@ and then merged into an MP4 video file for viewing.
                         framerate = timestep/videoDuration,
                         output = paste0(rasterLayer, "_MP4.mp4"))
     setwd("./../..")
+#+end_src
+
+* Miscellany
+This section is a few gatherings of print statements which are distracting
+otherwise, and broken examples from the original code.
+
+** Print statements
+There are many paragraphs and sections of print statements, commented and not
+commented, throughout the olde code. They are gathered here so that focus on the
+actual simulation can be achieved when reading the code.
+
+#+name: print statements №1
+#+begin_src R
+  # print(Level1Identifier$NAME_1)  # List of states/provinces/regions
+
+  # plot(Level1Raster)
+  # plot(Level1Identifier, add = TRUE)
+  #
+  # print(Susceptible);  print(Vaccinated); print(Exposed); print(Infected); print(Recovered); print(Dead)
+  #
+  # dim(Susceptible); dim(Vaccinated); dim(Exposed); dim(Infected); dim(Recovered); dim(Dead); dim(Inhabitable); dim(Level1Raster)
+  #
+  # print(table(values(Inhabitable)))
+#+end_src
+
+#+name: print statements №2
+#+begin_src R
+  # print("new----------------")
+  # print(valVaccinated)
+  # print("-------------------")
+
+  #par(mfrow = c(1, 2))
+
+  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
+  #      main = "Location of Initial Infections",
+  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  #
+  # plot(Level1Identifier, add = TRUE)
+  #
+  # plot(Dead, col = pal(8)[-2], axes = T, cex.main = 1,
+  #      main = "Location of Initial Deaths",
+  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  #
+  # plot(Level1Identifier, add = TRUE)
+  #
+  # plot(log10(Susceptible), col = pal(8)[-2], axes = T, cex.main = 1, main = "Susceptible", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # plot(Level1Identifier, add = TRUE)
+  #
+  # plot(Inhabitable, col = pal(8)[-2], axes = T, cex.main = 1, main = "Inhabitable Cells", legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  # plot(Level1Identifier, add = TRUE)
+
+  # writeRaster(Infected, "seed.tif", overwrite = TRUE)
+#+end_src
+
+#+name: print statements №3
+#+begin_src R
+  # print(propVaccinated)
+  # print(propExposed)
+  # print(propInfected)
+  # print(propRecovered)
+  # print(propDead)
+
+  print(paste("Susceptible Count before removing initial seed values: ", sum(values(Susceptible))))
+  # print(values(Susceptible))
+#+end_src
+
+#+name: print statements №4
+#+begin_src R
+  # ramp <- c('#FFFFFF', '#D0D8FB', '#BAC5F7', '#8FA1F1', '#617AEC', '#0027E0', '#1965F0', '#0C81F8', '#18AFFF', '#31BEFF', '#43CAFF', '#60E1F0', '#69EBE1', '#7BEBC8', '#8AECAE', '#ACF5A8', '#CDFFA2', '#DFF58D', '#F0EC78', '#F7D767', '#FFBD56', '#FFA044', '#EE4F4D')
+  # pal <- colorRampPalette(ramp)
+  #
+  # plot(Infected, col = pal(8)[-2], axes = T, cex.main = 1,
+  #      main = "Location of Infections after iteration t",
+  #      xlab = expression(bold("Longitude")), ylab = expression(bold("Latitude")),
+  #      legend = TRUE, horizontal = TRUE, mar=c(8.5, 3.5, 2.5, 2.5))
+  #
+  # plot(Level1Identifier, add = TRUE)
+  # print(Infected)
+  #
+  # writeRaster(Infected, file = "infectedRaster.tif", overwrite = TRUE)
+#+end_src
+
+#+name: print statements №5
+#+begin_src R
+  # save(stack$rasterStack[["Infected"]], file = "infectedRaster.RData")
+
+  # plot(allRasters[[t]]$rasterStack[["Infected"]], col = pal(8)[-2], axes = T, cex.main = 1, main = "Location of Initial Infections", plg = list(title = expression(bold("Persons")), title.cex = 1, horiz=TRUE, x.intersp=0.6, inset=c(0, -0.2), cex=1.15), pax = list(cex.axis=1.15), legend=TRUE, mar=c(8.5, 3.5, 2.5, 2.5), add = F)
+  #
+  # plot(Level1Identifier, add = TRUE)
 #+end_src
 
 ** Broken examples
