@@ -20,7 +20,9 @@ what aspects of the implementations differ at a finer level than I may have been
 able to see otherwise.
 #+end_comment
 
-** Noisy or replicate
+** Should the old code be made noisy in the literate document?
+Or should it perfectly replicate what is committed (once tangled)?
+
 To ensure that I reproduce the old code exactly in this literate program I will
 tangle the program in two or three different ways.
 
@@ -33,21 +35,80 @@ I'm not sure how I will do this yet, but it will happen and be documented in one
 way or another. I might make use of the ~withAutoprint~ form of the ~source~
 function.
 
-*** TODO Uncomment diagnostic print statements which were written during the inital implementation (before I joined the project)
+*** DONE Uncomment diagnostic print statements which were written during the initial implementation (before I joined the project)
+CLOSED: [2024-10-02 Wed 14:03]
+I won't bother with this because the number of print statements is way too many
+and its too noisy to be really helpful for me. What I'll do is run the
+(slightly) modified verison of the original code interactively, referring to the
+old print statements and manually running which statemetns I feel will help me
+determine what the results should look like.
+
 *** DONE No change
 CLOSED: [2024-10-01 Tue 23:31]
 This is achieved, and I have diffs which prove that there are only insignificant
 whitespace changes between the old file and the tangled file produced from this
 literate source document.
 
-#+begin_src sh :exports both
-  if $(diff --ignore-all-space rasterSimulation_DA.R literateRasterSimulationWithDA.R); then echo "Equivalent"; fi
+#+begin_src sh :exports code :eval no :shebang #!/usr/bin/env bash
+  if diff --ignore-all-space rasterSimulation_DA.R literateRasterSimulationWithDA.R; then
+    echo "Equivalent";
+  fi
+#+end_src
+
+This shell script will no longer report "Equivalent" because there are now more
+changes than in just whitespace, but see [[Remove all dead code]] to view an updated
+diff command which accounts for that.
+
+*** DONE Remove all dead code
+CLOSED: [2024-10-02 Wed 14:03]
+The organization of the old code in a single file with poor commenting practices
+makes understanding the code difficult at times. To make the literate program
+more understandable, comments of various types have been removed, which makes
+the diff of the two files non-equivalent unless comments are ignored.
+
+#+begin_src bash :exports both :eval yes :shebang #!/usr/bin/env bash :results verbatim
+  removecomments() {
+    awk '!/^\s+?#/' "$1"
+  }
+
+  FILE_A=$(mktemp)
+  FILE_B=$(mktemp)
+  removecomments rasterSimulation_DA.R > "$FILE_A"
+  removecomments literateRasterSimulationWithDA.R > "$FILE_B"
+  if diff --ignore-all-space "$FILE_A" "$FILE_B"; then
+    echo "Equivalent";
+  fi
 #+end_src
 
 #+RESULTS:
-: Equivalent
+#+begin_example diff
+273d272
+< 
+276,277c275
+<   for (t in 1:timestep)
+<   {					# time increments
+---
+> for (t in 1:timestep) {
+288d285
+< 
+313d309
+< 
+322d317
+< 
+336d330
+< 
+342d335
+< 
+529a523
+> 
+531c525
+<   }   # time increments
+---
+> }
+572d565
+< 
+#+end_example
 
-*** TODO Remove all dead code
 * The Olde Code's Organization
 The old code can be thought of as being organized into three major sections:
 1. its dependenecies
@@ -65,6 +126,8 @@ Shiny application (as it was).
 
   <<examples>>
 #+end_src
+
+#+RESULTS:
 
 ** Dependencies (packages, source files, and package options)
 #+name: dependencies
@@ -92,6 +155,8 @@ Shiny application (as it was).
   # Compartmental model simulation with an option to include Bayesian Data Assimilation #
   #-------------------------------------------------------------------------------------#
 #+end_src
+
+#+RESULTS: dependencies
 
 The following additional source files were included.
 
@@ -128,27 +193,68 @@ named (in my opinion).
 The body of the function is documented at a higher-level of sectioning, given
 its length. See [[Simulation (optionally with data assimilation) cont.]].
 
+** Examples
+See the section [[Broken Examples]] in [[Miscellany]].
+
 * Simulation (optionally with data assimilation) cont.
-** The simulation meat and potatoes
+A modified SEI-type simulation is implemented in this section.
+
+** The main loop
+The whole SEI-type simulation is implemented with a single loop, which
+continually overwrites components of an object named ~stack$rasterStack~
+(falsely implying it is a RasterStack). The containing ~stack~ object has many
+redundancies which are neither required to exist for the simulation, and which
+are unused regardless.
+
+The setup before the main loop of the simulation is simple enough, the component
+SEI-type compartments of ~stack$rasterStack~ are "unpacked" and a summary data
+frame is created to store the results of each iteration. An important object
+named ~p~ is created, and the inital state of the simulation is "seeded".
+Further discussion of "seeding" is in the [[seed the simulation]] section.
+
 #+begin_src R :noweb no-export :noweb-ref function body
   <<setup before the main loop of the simulation>>
 
-  #-------------------------------#
-  # MAIN LOOP FOR TIME INCREMENTS #
-  #-------------------------------#
-
+  ###################################
+  ## MAIN LOOP FOR TIME INCREMENTS ##
+  ###################################
   allRasters <- vector(mode = "list", length = timestep)
 
-  for (t in 1:timestep)
-  {					# time increments
-    print(paste("time = ", t))
+  for (t in 1:timestep) {
+    <<write the current state of the simulation into the summary table>>
 
-    <<Write the current state of the simulation into the summary table>>
+    <<prepare some data before continuing with the actions of this iteration>>
 
-    <<Convert the components of the RasterStack to wide matrices>>
+    <<recalculate the values within every cell of the raster and store them>>
 
-    <<create empty values used hereafter in other calculations>>
+    <<write the daily incidences to the summary table and store the sum of compartments for writing at the beginning of the next iteration>>
 
+    <<Bayesian data assimilation part two>>
+
+    allRasters[[t]] <- stack
+  }
+
+  <<print allRasters and return the results>>
+#+end_src
+
+#+name: write the daily incidences to the summary table and store the sum of compartments for writing at the beginning of the next iteration
+#+begin_src R
+    summary[t, 9]   <- dailyVaccinated
+    summary[t, 10]  <- dailyExposed
+    summary[t, 11]  <- dailyInfected
+    summary[t, 12]  <- dailyRecovered
+    summary[t, 13]  <- dailyDead
+
+    sumS <- sum(values(Susceptible))
+    sumV <- sum(values(Vaccinated))
+    sumE <- sum(values(Exposed))
+    sumI <- sum(values(Infected))
+    sumR <- sum(values(Recovered))
+    sumD <- sum(values(Dead))
+#+end_src
+
+#+name: recalculate the values within every cell of the raster and store them
+#+begin_src R :noweb no-export
     <<Generating the I_tilda matrix>>
 
     nLiving <- valSusceptible + valVaccinated + valExposed + valInfected + valRecovered
@@ -159,28 +265,17 @@ its length. See [[Simulation (optionally with data assimilation) cont.]].
     <<Some infectious people are going to either recover or die>>
 
     <<Store the next state of each cell>>
+#+end_src
 
-    # print('check')
-    # print(testData)
-    summary[t, 9]   <- dailyVaccinated
-    summary[t, 10]  <- dailyExposed
-    summary[t, 11]  <- dailyInfected
-    summary[t, 12]  <- dailyRecovered
-    summary[t, 13]  <- dailyDead
+#+name: prepare some data before continuing with the actions of this iteration
+#+begin_src R :noweb no-export
+  <<Convert the components of the RasterStack to wide matrices>>
+  <<create empty values used hereafter in other calculations>>
+#+end_src
 
-    sumS <- sum(values(Susceptible)); sumV <- sum(values(Vaccinated));
-    sumE <- sum(values(Exposed)); sumI <- sum(values(Infected));
-    sumR <- sum(values(Recovered)); sumD <- sum(values(Dead))
-
-    #print(sumS)
-
-    <<Bayesian data assimilation part two>>
-      allRasters[[t]] <- stack
-    }   # time increments
-  # DA T/F
-     ########## DA Ends ##########
-
-    <<print statements №5>>
+#+name: print allRasters and return the results
+#+begin_src R :noweb no-export
+  <<print statements №5>>
 
   <<print the individual timesteps for the Infected layer before merging into MP4>>
 
@@ -188,202 +283,12 @@ its length. See [[Simulation (optionally with data assimilation) cont.]].
 
   write_xlsx(summary, path = paste0("www/MP4/", inputISO, "_summary.xlsx"), col_names = T)
 
-  #print(tail(summary))
-
   return(summary)
 #+end_src
 
-#+name: seed the initial states from the provided seed data
-#+begin_src R noweb no-export
-  #------------------------#
-  # Initial seed locations #
-  #------------------------#
-
-  if (missing(seedFile)){
-    seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
-    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
-    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header = T)
-  } else {
-    seedData <<- read.csv(seedFile)
-  }
-
-  numLocations <- dim(seedData)[1]
-  # print(numLocations)
-
-  # Seed the initial infections equitably in a Moore Neighborhood of cells
-  #seedRadius <- 0
-  numCellsPerRegion <- (2*seedRadius + 1)^2
-  for (ff in 1:numLocations)
-  {
-    # print(seedData)
-    # print(paste("Seed location = ", seedData[ff,1]))
-    row <- terra::rowFromY(stack$rasterStack, seedData[ff,2])
-    col <- terra::colFromX(stack$rasterStack, seedData[ff,3])
-    # print("row = ", row, "col = ", col)
-    # print(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)])
-    # print(sum(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)]))
-    newVaccinatedPerCell <- seedData[ff,4]#/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
-    newExpPerCell        <- seedData[ff,5]/numCellsPerRegion     #round(seedData[ff,5]/numCellsPerRegion)
-    newInfPerCell        <- seedData[ff,6]/numCellsPerRegion     #round(seedData[ff,4]/numCellsPerRegion)
-    newRecoveredPerCell  <- seedData[ff,7]#/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
-    newDeadPerCell       <- seedData[ff,8]#/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
-    # print(newVaccinatedPerCell)
-    # print(newExpPerCell)
-    # print(newInfPerCell)
-    # print(newRecoveredPerCell)
-    # print(newDeadPerCell)
-    #Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newVaccinatedPerCell
-    Vaccinated[row,col] <- Vaccinated[row,col] + newVaccinatedPerCell
-    Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newExpPerCell
-    Infected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Infected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newInfPerCell
-    #Recovered[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Recovered[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newRecoveredPerCell
-    Recovered[row, col] <- Recovered[row,col] + newRecoveredPerCell
-    #Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newDeadPerCell
-    Dead[row, col] <- Dead[row,col] + newDeadPerCell
-    #print(Exposed)
-    #print(paste("Susceptible = ", sum(values(Susceptible))))
-  }
-#+end_src
-
-#+name: Generating the I_tilda matrix
-#+begin_src R
-  #-------------------------------#
-  # Generating the I_tilda matrix #
-  #-------------------------------#
-  I_tilda <- wtd_nbrs_sum(input_matrix = valInfected, radius = radius, lambda = lambda)
-#+end_src
-
-#+name: Some susceptible people are going to be newly vaccinated
-#+begin_src R
-  #--------------------------------------------------------------------#
-  # Some susceptible people are going to be newly vaccinated           #
-  #--------------------------------------------------------------------#
-  newVaccinated <- alpha*valSusceptible
-  newVaccinated[valSusceptible < 1] <- 0
-
-  dailyVaccinated <- sum(newVaccinated)
-#+end_src
-
-#+name: Some susceptible people who come in contact with nearby infected are going to be newly exposed
-#+begin_src R
-  #--------------------------------------------------------------------#
-  # Some susceptible people who come in contact with nearby infected   #
-  # are going to be newly exposed                                      #
-  #--------------------------------------------------------------------#
-  pSusceptible <- valSusceptible/nLiving
-  pSusceptible[is.nan(pSusceptible)] <- 0
-
-  if(deterministic) {
-    newExposed <- beta*pSusceptible*I_tilda
-  } else {
-    rpois(1, beta*pSusceptible*I_tilda)
-  }
-  newExposed[valSusceptible < 1] <- 0
-  newExposed[I_tilda < 1] <- 0
-
-  dailyExposed <- sum(newExposed)
-  cumExposed <- cumExposed + sum(newExposed)
-#+end_src
-
-#+name: Some exposed people are going to become newly infectious
-#+begin_src R
-  #----------------------------------------------------------#
-  # Some exposed people are going to become newly infectious #
-  #----------------------------------------------------------#
-  newInfected <- gamma*valExposed
-  newInfected[valExposed < 1] <- 0
-
-  dailyInfected <- sum(newInfected)
-  cumInfected   <- cumInfected + sum(newInfected)
-#+end_src
-
-#+name: Some infectious people are going to either recover or die
-#+begin_src R
-  #-----------------------------------------------------------#
-  # Some infectious people are going to either recover or die #
-  #-----------------------------------------------------------#
-  newRecovered <- sigma*valInfected
-  newRecovered[valInfected < 1] <- 0
-
-  dailyRecovered <- sum(newRecovered)
-  cumRecovered <- cumRecovered + sum(newRecovered)
-
-  newDead <- delta*valInfected
-  newDead[valInfected < 1] <- 0
-
-  dailyDead <- sum(newDead)
-  cumDead <- cumDead + sum(newDead)
-#+end_src
-
-#+name: create empty values used hereafter in other calculations
-#+begin_src R
-  nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
-  pSusceptible <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- matrix(0, nrows, ncols, byrow = T)
-
-  dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
-#+end_src
-
-#+name: Store the next state of each cell
-#+begin_src R
-  #-----------------------------------#
-  # Store the next state of each cell #
-  #-----------------------------------#
-  nextSusceptible <- valSusceptible - newExposed - newVaccinated
-  nextVaccinated <- valVaccinated + newVaccinated
-  nextExposed <- valExposed + newExposed - newInfected
-  nextInfected <- valInfected + newInfected - newDead - newRecovered
-  nextRecovered <- valRecovered + newRecovered
-  nextDead <- valDead + newDead
-
-
-  nextSusceptible[nLiving <= 0] <- 0
-  nextVaccinated[nLiving <= 0] <- 0
-  nextExposed[nLiving <= 0] <- 0
-  nextInfected[nLiving <= 0] <- 0
-  nextRecovered[nLiving <= 0] <- 0
-  nextDead[nLiving <= 0] <- 0
-
-
-  Susceptible <- nextSusceptible
-  Vaccinated <- nextVaccinated
-  Exposed <- nextExposed
-  Infected <- nextInfected
-  Recovered <- nextRecovered
-  Dead <- nextDead
-
-  Susceptible <- rast(Susceptible)
-  Vaccinated <- rast(Vaccinated)
-  Exposed <- rast(Exposed)
-  Infected <- rast(Infected)
-  Recovered <- rast(Recovered)
-  Dead <- rast(Dead)
-
-  ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(stack$rasterStack)
-  crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(stack$rasterStack)
-
-  <<print statements №4>>
-
-  stack$rasterStack$Susceptible <- Susceptible
-  stack$rasterStack$Vaccinated <- Vaccinated
-  stack$rasterStack$Exposed <- Exposed
-  stack$rasterStack$Infected <- Infected
-  stack$rasterStack$Recovered <- Recovered
-  stack$rasterStack$Dead <- Dead
-#+end_src
-
-#+name: Convert the components of the RasterStack to wide matrices
-#+begin_src R
-  valInhabitable <- terra::as.matrix(Inhabitable, wide = TRUE)
-  valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
-  valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
-  valExposed <- terra::as.matrix(Exposed, wide = TRUE)
-  valInfected <- terra::as.matrix(Infected, wide = TRUE)
-  valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
-  valDead <- terra::as.matrix(Dead, wide = TRUE)
-#+end_src
-
+*** setup before the main loop of the simulation
 #+name: setup before the main loop of the simulation
-#+begin_src R
+#+begin_src R :noweb no-export
   <<unlink, delete, and recreate the MP4 output directory>>
 
   inputISO <- countrycode(selectedCountry, origin = 'country.name', destination = 'iso3c') #Converts country name to ISO Alpha
@@ -461,9 +366,274 @@ its length. See [[Simulation (optionally with data assimilation) cont.]].
   <<Bayesian data assimilation>>
 #+end_src
 
-*** Write values into the summary table
+*** seed the simulation
+#+name: seed the initial states from the provided seed data
+#+begin_src R :noweb no-export
+  #------------------------#
+  # Initial seed locations #
+  #------------------------#
 
-#+begin_src R :noweb-ref Write the current state of the simulation into the summary table
+  if (missing(seedFile)){
+    seedFolder <- "seeddata/"         # .csv or .xlsx files may be stored in local seeddata/ folder
+    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.csv"), header = T)
+    seedData <<- read_excel(paste0(seedFolder, inputISO, "_InitialSeedData.xlsx"), 1, header = T)
+  } else {
+    seedData <<- read.csv(seedFile)
+  }
+
+  numLocations <- dim(seedData)[1]
+  # print(numLocations)
+
+  # Seed the initial infections equitably in a Moore Neighborhood of cells
+  #seedRadius <- 0
+  numCellsPerRegion <- (2*seedRadius + 1)^2
+  for (ff in 1:numLocations)
+  {
+    # print(seedData)
+    # print(paste("Seed location = ", seedData[ff,1]))
+    row <- terra::rowFromY(stack$rasterStack, seedData[ff,2])
+    col <- terra::colFromX(stack$rasterStack, seedData[ff,3])
+    # print("row = ", row, "col = ", col)
+    # print(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)])
+    # print(sum(Inhabitable[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)]))
+    newVaccinatedPerCell <- seedData[ff,4]#/numCellsPerRegion    #round(seedData[ff,8]/numCellsPerRegion)
+    newExpPerCell        <- seedData[ff,5]/numCellsPerRegion     #round(seedData[ff,5]/numCellsPerRegion)
+    newInfPerCell        <- seedData[ff,6]/numCellsPerRegion     #round(seedData[ff,4]/numCellsPerRegion)
+    newRecoveredPerCell  <- seedData[ff,7]#/numCellsPerRegion    #round(seedData[ff,6]/numCellsPerRegion)
+    newDeadPerCell       <- seedData[ff,8]#/numCellsPerRegion    #round(seedData[ff,7]/numCellsPerRegion)
+    # print(newVaccinatedPerCell)
+    # print(newExpPerCell)
+    # print(newInfPerCell)
+    # print(newRecoveredPerCell)
+    # print(newDeadPerCell)
+    #Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Vaccinated[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newVaccinatedPerCell
+    Vaccinated[row,col] <- Vaccinated[row,col] + newVaccinatedPerCell
+    Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Exposed[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newExpPerCell
+    Infected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Infected[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newInfPerCell
+    #Recovered[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Recovered[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newRecoveredPerCell
+    Recovered[row, col] <- Recovered[row,col] + newRecoveredPerCell
+    #Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] <- Dead[(row-seedRadius):(row+seedRadius),(col-seedRadius):(col+seedRadius)] + newDeadPerCell
+    Dead[row, col] <- Dead[row,col] + newDeadPerCell
+    #print(Exposed)
+    #print(paste("Susceptible = ", sum(values(Susceptible))))
+  }
+#+end_src
+
+** Recalculating the partial differential equations
+Each iteration has a time-variant matrix of the probabilty of transmission.
+
+*** Generating the ~I_tilda~ matrix
+\(\tilde{I}\) is referred to with a misspelled identifier (~I_tilda~) in the
+original code, but we can do our best to ignore that.
+
+The formula to calculate the matrix at each time is \(\tilde{I}_t =
+\int\int_{\Omega_n} w(x,y,u,v) I(u,v,t) u^\prime v^\prime \).
+
+#+name: Generating the I_tilda matrix
+#+begin_src R
+  #-------------------------------#
+  # Generating the I_tilda matrix #
+  #-------------------------------#
+  I_tilda <- wtd_nbrs_sum(input_matrix = valInfected, radius = radius, lambda = lambda)
+#+end_src
+
+The new code for this is documented here, because it so so small. The
+old code is documented separately in [[=distwtRaster.R= The Euclidian
+distance weight matrix function]] because it is implemented in a
+different file. It felt right to use a totally different heading to
+document that file rather than document it herein.
+
+#+begin_src R
+  transmissionLikelihoods <-
+    terra::focal(x = layers$Infected,
+                 w = averageEuclideanDistance(lambda, if (aggregationFactor > 1) aggregationFactor),
+                 na.policy = "omit",
+                 fillvalue = 0,
+                 fun = "sum",
+                 na.rm = TRUE)
+
+  uniqueInfectionLikelihoods <- length(unique(as.vector(transmissionLikelihoods)))
+  if (is.nan(sums[, "Infected"]))
+    warning("The result of (global) sum total of the Infected compartment is \
+  NaN according to terra, so the check that the number of unique infection \
+  likelihoods is greater than one is being skipped this iteration. See issue #13.")
+  if (all(!is.nan(sums[, "Infected"]),
+          as.numeric(sums[, "Infected"]) >= 0,
+          !(uniqueInfectionLikelihoods > 1)))
+    stop("The number of unique likelihoods of transmission is not more than \
+  one, indicating an issue generating the transmissionLikelihoods matrix.")
+#+end_src
+
+Checks were written to ensure that a further check was only run under certain
+conditions (). The pre-flight (pre-check) check I wrote was the solution to
+[[https://github.com/KrishnamurthyLab/spatialEpisim.foundation/issues/13][issue №13. More information is available within that issue]] and in the issue
+storyline.
+
+[[https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-focal-statistics-works.htm][ArcGIS
+has a /perfect/ article examining focal statistics (including /literal edge
+cases/) in their online tool reference.]] /terra/ performs calculations using
+user-defined or built-in functions similarly, and this reference should be
+consulted.
+
+It's unlikely that the original code handled the edge cases /properly/, so the
+use of ~terra::focal~ is a boon in more than one way:
+
+1. it's much more readable,
+2. it's one less function to worry about, and
+3. it handles edge cases!
+
+The method to compare these will not be very complex, just a simple test raster
+and comparing the outputs visually and numerically. The old code cannot handle
+non-matrix classed objects as ~input_matrix~, so this is manually dealt with in
+the comparison code.
+
+I learned of a bug in the new code! When calling a function, if you have a NULL
+expression like this ~averageEuclideanDistance(lambda, if (aggregationFactor
+> 1) aggregationFactor)~ then the function recieves that invisible NULL that is
+returned when an if statement does not proceed (i.e., ~is.null(if(FALSE) FALSE)~
+returns TRUE. While it's aesthetically pleasing to pass arguments this way, it
+does not result in the function call using the default argument for
+~aggregationFactor~. A fix is applied in
+[[https://github.com/KrishnamurthyLab/spatialEpisim.foundation/commit/6a5305c659b033abdd4c7ccbbbd11543f095d8f2][6a5305c]].
+
+#+begin_src R :noweb no-export :session *foundation* :export both :results file link
+  v <- vect(system.file("ex/lux.shp", package="terra"))
+  r <- rast(system.file("ex/elev.tif", package="terra"))
+  r[45:50, 45:50] <- NA
+
+  valInfected <- as.matrix(r, wide = TRUE)
+  lambda <- 15 # km/day, on average
+  radius <- 3 # cells? kilometers? The old code doesn't say anything!
+  aggregationFactor <- 0 # Luxembourg is tiny, so we don't aggregate!
+
+  ## Old code, generating "I_tilde"
+  <<source dependencies>>
+  <<Generating the I_tilda matrix>>
+
+  ## New code
+  I_tilde <- terra::focal(x = r,
+                          w = averageEuclideanDistance(radius),
+                          na.policy = "omit",
+                          fillvalue = 0,
+                          fun = "sum",
+                          na.rm = TRUE)
+
+  I_tilda <- rast(I_tilda)
+  ext(I_tilda) <- ext(I_tilde)
+  crs(I_tilda) <- crs(I_tilde)
+
+  plotLayers <- I_tilde
+  add(plotLayers) <- I_tilda
+  add(plotLayers) <- r
+  panel(plotLayers)
+  filepath <- "R/infectionLikelihoodsComparisonTwo.png"
+  savePlot(filepath)
+  basename(filepath)
+#+end_src
+
+#+RESULTS:
+[[file:infectionLikelihoodsComparisonTwo.png]]
+
+#+DOWNLOADED: file:///home/bryce/Documents/src/r/spatialEpisim.stable/R/infectionLikelihoodsComparisonTwo.png @ 2024-10-02 21:59:06
+[[file:Simulation_(optionally_with_data_assimilation)_cont./2024-10-02_21-59-06_infectionLikelihoodsComparisonTwo.png]]
+
+In the top-right of this plot the old code's plot is shown. This panel plot
+should only be viewed for the shape of the data, not the value. The shape of the
+data in the top-right is shrunken, where the infection likelihoods near edges of
+the map are reeled back, and a purposefully created hole in the map is enlarged
+similarly.
+
+The values in the map produced using a focal sum are a good bit lower than the
+values produced using the old code, after changing the
+~averageEuclideanDistance(lambda = lambda)~ to ~averageEuclideanDistance(lambda
+= radius)~, which results in a weights matrix used by the calling function the
+same dimension as the ~weight_matrix~ used by the old code. Using ~lambda =
+lambda~ results in a weight matrix used by ~terra::focal~ which has much greater
+dimensions.
+
+The ~weight_matrix~ produced within the ~wtd_nbrs_sum(radius = 3, lambda = 15)~
+and the ~averageEuclideanDistance(lambda = 3)~ (I'm aware of the difference in
+argument names, I need to adjust the documentation and formal argument/parameter
+names) are similar, but the new is much smoother and more accurate, in my
+opinion. The old ~weight-matrix~ is on the left, and the new matrix
+(~averageEuclideanDistance(3)~) is on the right.
+
+#+DOWNLOADED: file:///home/bryce/Documents/src/r/spatialEpisim.stable/R/comparisonOfEuclideanDistanceWeightings.png @ 2024-10-02 21:43:16
+[[file:Simulation_(optionally_with_data_assimilation)_cont./2024-10-02_21-43-16_comparisonOfEuclideanDistanceWeightings.png]]
+
+
+The focal sum function in terra is indispensible, and the average Euclidean
+distance function that I wrote is much smoother, producing values which don't
+change as abruptly in value. Both functions could be offered in Shiny, with the
+user offered a preview of each function's results. The old code should not be
+used otherwise, however.
+
+*** others
+#+name: Some susceptible people are going to be newly vaccinated
+#+begin_src R
+  #--------------------------------------------------------------------#
+  # Some susceptible people are going to be newly vaccinated           #
+  #--------------------------------------------------------------------#
+  newVaccinated <- alpha*valSusceptible
+  newVaccinated[valSusceptible < 1] <- 0
+
+  dailyVaccinated <- sum(newVaccinated)
+#+end_src
+
+#+name: Some susceptible people who come in contact with nearby infected are going to be newly exposed
+#+begin_src R
+  #--------------------------------------------------------------------#
+  # Some susceptible people who come in contact with nearby infected   #
+  # are going to be newly exposed                                      #
+  #--------------------------------------------------------------------#
+  pSusceptible <- valSusceptible/nLiving
+  pSusceptible[is.nan(pSusceptible)] <- 0
+
+  if(deterministic) {
+    newExposed <- beta*pSusceptible*I_tilda
+  } else {
+    rpois(1, beta*pSusceptible*I_tilda)
+  }
+  newExposed[valSusceptible < 1] <- 0
+  newExposed[I_tilda < 1] <- 0
+
+  dailyExposed <- sum(newExposed)
+  cumExposed <- cumExposed + sum(newExposed)
+#+end_src
+
+#+name: Some exposed people are going to become newly infectious
+#+begin_src R
+  #----------------------------------------------------------#
+  # Some exposed people are going to become newly infectious #
+  #----------------------------------------------------------#
+  newInfected <- gamma*valExposed
+  newInfected[valExposed < 1] <- 0
+
+  dailyInfected <- sum(newInfected)
+  cumInfected   <- cumInfected + sum(newInfected)
+#+end_src
+
+#+name: Some infectious people are going to either recover or die
+#+begin_src R
+  #-----------------------------------------------------------#
+  # Some infectious people are going to either recover or die #
+  #-----------------------------------------------------------#
+  newRecovered <- sigma*valInfected
+  newRecovered[valInfected < 1] <- 0
+
+  dailyRecovered <- sum(newRecovered)
+  cumRecovered <- cumRecovered + sum(newRecovered)
+
+  newDead <- delta*valInfected
+  newDead[valInfected < 1] <- 0
+
+  dailyDead <- sum(newDead)
+  cumDead <- cumDead + sum(newDead)
+#+end_src
+
+** write values into the summary table
+
+#+begin_src R :noweb-ref write the current state of the simulation into the summary table
   summary[t, 1]  <- toString(as.Date(startDate) + days(t - 1)) # Print the date at each time step
   summary[t, 2]  <- round(sumS + sumV + sumE + sumI + sumR + sumD)
   summary[t, 3]  <- round(sumS)
@@ -477,7 +647,7 @@ its length. See [[Simulation (optionally with data assimilation) cont.]].
 The ninth through thirteenth values are not available yet, supposedly, and are
 written into this table at the very end of the timestep.
 
-#+begin_src R :noweb-ref Write the current state of the simulation into the summary table
+#+begin_src R :noweb-ref write the current state of the simulation into the summary table
   summary[t, 14]  <- round(cumExposed)
   summary[t, 15]  <- round(cumInfected)
   summary[t, 16]  <- alpha
@@ -490,12 +660,80 @@ written into this table at the very end of the timestep.
   summary[t, 23]  <- model
 #+end_src
 
+** Teardown before the next iteration of the simulation loop
+#+name: create empty values used hereafter in other calculations
+#+begin_src R
+  nextSusceptible <- nextVaccinated <- nextExposed <- nextInfected <- nextRecovered <- nextDead <- matrix(0, nrows, ncols, byrow = T)
+  pSusceptible <- newVaccinated <- nearbyInfected <- newExposed <- newInfected <- newRecovered <- newDead <- matrix(0, nrows, ncols, byrow = T)
+
+  dailyVaccinated <- dailyExposed <- dailyInfected <- dailyRecovered <- dailyDead <- 0
+#+end_src
+
+#+name: Store the next state of each cell
+#+begin_src R :noweb no-export
+  #-----------------------------------#
+  # Store the next state of each cell #
+  #-----------------------------------#
+  nextSusceptible <- valSusceptible - newExposed - newVaccinated
+  nextVaccinated <- valVaccinated + newVaccinated
+  nextExposed <- valExposed + newExposed - newInfected
+  nextInfected <- valInfected + newInfected - newDead - newRecovered
+  nextRecovered <- valRecovered + newRecovered
+  nextDead <- valDead + newDead
+
+
+  nextSusceptible[nLiving <= 0] <- 0
+  nextVaccinated[nLiving <= 0] <- 0
+  nextExposed[nLiving <= 0] <- 0
+  nextInfected[nLiving <= 0] <- 0
+  nextRecovered[nLiving <= 0] <- 0
+  nextDead[nLiving <= 0] <- 0
+
+
+  Susceptible <- nextSusceptible
+  Vaccinated <- nextVaccinated
+  Exposed <- nextExposed
+  Infected <- nextInfected
+  Recovered <- nextRecovered
+  Dead <- nextDead
+
+  Susceptible <- rast(Susceptible)
+  Vaccinated <- rast(Vaccinated)
+  Exposed <- rast(Exposed)
+  Infected <- rast(Infected)
+  Recovered <- rast(Recovered)
+  Dead <- rast(Dead)
+
+  ext(Susceptible) <- ext(Vaccinated) <- ext(Exposed) <- ext(Infected) <- ext(Recovered) <- ext(Dead) <- ext(stack$rasterStack)
+  crs(Susceptible) <- crs(Vaccinated) <- crs(Exposed) <- crs(Infected) <- crs(Recovered) <- crs(Dead) <- crs(stack$rasterStack)
+
+  <<print statements №4>>
+
+  stack$rasterStack$Susceptible <- Susceptible
+  stack$rasterStack$Vaccinated <- Vaccinated
+  stack$rasterStack$Exposed <- Exposed
+  stack$rasterStack$Infected <- Infected
+  stack$rasterStack$Recovered <- Recovered
+  stack$rasterStack$Dead <- Dead
+#+end_src
+
+#+name: Convert the components of the RasterStack to wide matrices
+#+begin_src R
+  valInhabitable <- terra::as.matrix(Inhabitable, wide = TRUE)
+  valSusceptible <- terra::as.matrix(Susceptible, wide = TRUE)
+  valVaccinated <- terra::as.matrix(Vaccinated, wide = TRUE)
+  valExposed <- terra::as.matrix(Exposed, wide = TRUE)
+  valInfected <- terra::as.matrix(Infected, wide = TRUE)
+  valRecovered <- terra::as.matrix(Recovered, wide = TRUE)
+  valDead <- terra::as.matrix(Dead, wide = TRUE)
+#+end_src
+
 ** Bayesian data assimilation
 Bayesian data assimilation was not fully implemented in the original code (the
 code before I joined the project).
 
 #+name: Bayesian data assimilation
-#+begin_src R
+#+begin_src R :noweb no-export
     ################# DA Begins ##################
 
     if (DA == T)
@@ -577,7 +815,7 @@ Within the main loop of the function body there is a second part of the
 implementation of Bayesian data assimilation.
 
 #+name: Bayesian data assimilation part two
-#+begin_src R
+#+begin_src R :noweb no-export
   ########## DA Begins ##########
 
       #setwd(outputDir) # Change working directory to output folder
@@ -877,7 +1115,7 @@ original code. This correctly implemented function is backported from the
 application's simulation core a correction/bug-fix.
 
 #+name: linear interpolation operator function backported from spatialEpisim.foundation
-#+begin_src R
+#+begin_src R :noweb no-export
   linearInterpolationOperator <- function(layers,
                                           healthZoneCoordinates,
                                           neighbourhood.order = 2,
@@ -1010,7 +1248,7 @@ After the actual simulation runs some of the results are printed to raster files
 and then merged into an MP4 video file for viewing.
 
 #+name: print the individual timesteps for the Infected layer before merging into MP4
-#+begin_src R
+#+begin_src R :noweb no-export
     # Print a PNG for the infected variable
     rasterLayer <- "Infected"
     #print(allRasters[[1]]$rasterStack[[rasterLayer]])
@@ -1211,3 +1449,368 @@ The examples didn't work. The documentation was outdated.
   #SpatialCompartmentalModelWithDA(model, startDate, selectedCountry = "Czech Republic", directOutput, rasterAgg, alpha = 0.0015, beta = 0.05, gamma = 0.16, sigma = 0.065, delta = 0.002, radius, lambda, timestep = 120, seedFile = "seeddata/CZE_InitialSeedDataSep 1, 2020.csv", seedRadius, deterministic, isCropped = F, level1Names = NULL, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
   #SpatialCompartmentalModelWithDA(model, startDate, selectedCountry, directOutput, rasterAgg, alpha, beta, gamma = gamma/10, sigma, delta, radius, lambda, timestep = 200, seedFile = "seeddata/COD_InitialSeedData.csv", seedRadius, deterministic, isCropped, level1Names, DA = F, "observeddata/Ebola_Health_Zones_LatLon.csv", "observeddata/Ebola_Incidence_Data.xlsx", "observeddata/Ebola_Death_Data.xlsx", varCovarFunc = "DBD", QVar, QCorrLength, nbhd, psiDiag)
 #+end_src
+
+* TODO =distwtRaster.R= The Euclidian distance weight matrix function
+#+begin_comment
+Veryify the next paragraph is accurate in its claims.
+#+end_comment
+
+The file =distwtRaster.R= defines a function ~wtd_nbrs_sum~, which calculates a
+matrix of values which are weighted sums of values at every cell.
+
+#+begin_quote
+This code sets the Euclidean distance and the weight matrix
+#+end_quote
+
+The above quote is the comment on the file when in in [[source dependencies]]. It
+doesn't make much sense to me, the comment, because it does not "set" a
+Euclidian distance nor does it "set" a weighted sum in any one variable. It
+returns a matrix of values which are weighted sums of values of functions of the
+Euclidean distance from a given cell to another cell.
+
+#+begin_comment
+Again, verify the above paragraph is accurate in its claims.
+#+end_comment
+
+The full source of that file is reproduced here for discussion and analysis.
+
+#+begin_src R
+  avg_euclidean_distance <- function(p, q, lambda)
+  {
+    exp(-sqrt(sum((p - q)^2))/lambda)
+  }
+
+  wtd_nbrs_sum <- function(input_matrix, radius, lambda)
+  {
+    temp_1 <- matrix(data = 0, nrow = nrow(x = input_matrix), ncol = radius)
+
+    temp_2 <- matrix(data = 0, nrow = radius, ncol = ((2 * radius) + ncol(x = input_matrix)))
+
+    input_matrix_modified <- rbind(temp_2, cbind(temp_1, input_matrix, temp_1), temp_2)
+
+    ## print(input_matrix_modified)
+    ## print(dim(input_matrix_modified))
+
+    output_matrix <- matrix(nrow = nrow(x = input_matrix), ncol = ncol(x = input_matrix))
+
+    ## Generating the weight matrix
+    weight_matrix <- matrix(0, nrow = 1 + 2*radius, ncol = 1 + 2*radius)
+    for(i in seq_len(1 + 2*radius))
+    {
+      for(j in seq_len(1 + 2*radius))
+      {
+        weight_matrix[i,j] <- avg_euclidean_distance(c(i,j), c(radius+1, radius+1), lambda)
+      }
+    }
+
+    ## print(weight_matrix)
+
+    for(i in seq_len(length.out = nrow(x = input_matrix)))
+    {
+      for(j in seq_len(length.out = ncol(x = input_matrix)))
+      {
+        row_min <- (radius + (i - radius))
+        row_max <- (radius + (i + radius))
+        column_min <- (radius + (j - radius))
+        column_max <- (radius + (j + radius))
+        neighbours <- input_matrix_modified[(row_min:row_max), (column_min:column_max)]
+        weighted_sum <- sum(neighbours * weight_matrix) # casewise multiplication
+        output_matrix[i, j] <- weighted_sum
+      }
+    }
+    return(output_matrix)
+  }
+#+end_src
+
+#+RESULTS:
+
+* TODO =rasterPlot.R= Visualization of rasters
+The following chunk organizes its children into what constitutes =rasterPlot.R=.
+The file is used to plot static plots, which are gathered together into an MP4.
+
+#+begin_src R :noweb no-export
+  <<raster-plot-dependencies>>
+
+  #------------------------------------------------------------------------------#
+  # R Script Variables                                                           #
+  #------------------------------------------------------------------------------#
+  # modelSelect <- "SVEIRD"                         # select model from SEIR, SEIRD, SVEIRD
+  isoCode <- "COD"                                  # user should pass ISO code as parameter
+  year <- 2020                                      # default year (2020)
+  resKm <- 1                                        # default resolution (1Km)
+  # rasterAgg <- 10                                 # default aggregation factor (10x10)
+  PNGFileName <- "susceptible.png"                  # default output file name
+  MP4FileName <- "susceptible_MP4.mp4"              # default MP4 file name
+  stackLayerFileName <- "susceptible.png"           # default name for arbitrary raster stack PNG TODO: change format to ISO3_Susceptible_0001.png
+  # palettePng <- "misc/seminf_haxby.png"             # default colour palette found in misc folder
+  colPalette <- c('#FFFFFF', 
+                  '#D0D8FB', 
+                  '#BAC5F7', 
+                  '#8FA1F1', 
+                  '#617AEC', 
+                  '#0027E0', 
+                  '#1965F0', 
+                  '#0C81F8', 
+                  '#18AFFF', 
+                  '#31BEFF', 
+                  '#43CAFF', 
+                  '#60E1F0', 
+                  '#69EBE1', 
+                  '#7BEBC8', 
+                  '#8AECAE', 
+                  '#ACF5A8', 
+                  '#CDFFA2', 
+                  '#DFF58D', 
+                  '#F0EC78', 
+                  '#F7D767', 
+                  '#FFBD56', 
+                  '#FFA044', 
+                  '#EE4F4D')
+  layerName <- "Susceptible"                        # used to title raster layer plot
+  basePopBreaks <- c(0, 10, 25, 50, 100, 250, 1000, 100000) # TODO: dynamically set for each individual country
+  aggrPopBreaks <- c(0, 5000, 10000, 25000, 50000, 75000, 100000, 250000, 500000) # TODO: dynamically set for each individual country and aggr level
+
+  #------------------------------------------------------------------------------#
+  # R Script Functions (for External Use)                                        #
+  #------------------------------------------------------------------------------#
+
+  printStackLayer <- function(rasterStack, rasterLayer, directOutput, Level1Identifier, 
+                              selectedCountry, rasterAgg, fname, maxVal, includeLabels, isCropped) {
+    # if(missing(fname)) {fname = stackLayerFileName} 
+    setUp(isoCode, year, resKm, rasterAgg, fname)               # called to set www/ folder, stack should already be aggregated
+    isoCode <<- countrycode(selectedCountry, origin = "country.name", destination = "iso3c")
+    rasterAgg <<- rasterAgg
+    layerName <<- toString(rasterLayer)                          # alters the plot title
+    createPlotPNG(rasterStack[[layerName]], selectedCountry, Level1Identifier, directOutput, maxVal, includeLabels, isCropped)
+  }
+
+  <<raster-plot-dead-code-one>>
+
+  setUp <- function(isoCode, year, resKm, rasterAgg, fname) {
+    isoCode <<- isoCode
+    year <<- year
+    resKm <<- resKm
+    rasterAgg <<- rasterAgg
+    PNGFileName <<- paste0("www/", fname)
+    #print(PNGFileName)
+    
+    #setDirectory()
+    #importGeoTiff()
+  }
+
+  #------------------------------------------------------------------------------#
+  # R Script Functions (for Internal Use)                                        #
+  #------------------------------------------------------------------------------#
+
+  #------------------------------------------------------#
+  # Creates the base plot .png and outputs to www folder #
+  #------------------------------------------------------#
+  createPlotPNG <- function(rasterToPrint, selectedCountry, Level1Identifier, directOutput, maxVal, includeLabels, isCropped) {
+    is.na(rasterToPrint) <- !rasterToPrint  # used to clear raster values of 0
+
+    x <- classify(rasterToPrint, c(0, 5, 10, 20, 35, 50, 100, 250, 1000, 100000))
+    levs <- levels(x)[[1]]
+    levels(x) <- levs
+    
+    pal <- colorRampPalette(colPalette)
+
+    if (!directOutput){
+      png(PNGFileName, height = 768, width = 768) # output the plot to the www/ image folder
+    }
+    
+      
+    aggrPlotTitle <- paste0("Aggregated ", layerName, " Count \n in ", 
+                              selectedCountry, " (", rasterAgg^2 * resKm, 
+                              " sq. km resolution)")
+      
+    terra::plot(x, 
+                col=pal(10)[-1], 
+                axes = TRUE,
+                buffer = TRUE,
+                box = TRUE,
+                cex.main = 1.5,
+                line.main = 1.25,
+                main = aggrPlotTitle, 
+                xlab = expression(bold(Longitude)),
+                ylab = expression(bold(Latitude)),
+                line.lab = 2.25,
+                cex.lab = 1.5,
+                # extra arguments
+                all_levels = TRUE,
+                zlim=c(0,maxVal),
+                plg = list(title = expression(bold("Persons")),
+                            title.cex = 1.25,
+                            horiz = TRUE, 
+                            loc = "bottom",
+                            yjust = 3.5,
+                            x.intersp = 0.6,
+                            inset = c(0, -0.2),
+                            cex = 1.25),
+                pax = list(cex.axis = 1.7),
+                mar = c(12.5, 3.5, 4, 2.5))
+    
+    terra::plot(Level1Identifier, 
+                add = TRUE)
+    terra::north(type = 2, xy = "bottomleft", cex = 1)
+    
+    if (!directOutput){
+      dev.off()     # closes the file opened with png(PNGFileName)
+      if (!includeLabels){
+        img <- image_read(PNGFileName)
+        # img <- image_trim(img)
+        image_write(img, path=PNGFileName)
+      } 
+    }
+  }
+
+  #---------------------------------------#
+  # Sets the working directory for R file #
+  #---------------------------------------#
+  # setDirectory <- function() {
+  #   setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # RStudio IDE required
+  #   getwd() # Path to the working directory
+  # }
+
+  #-----------------------------------------------#
+  # Extracts a palette from a formatted .png file #
+  #-----------------------------------------------#
+  # getPalette <- function(png) {
+  #   raster <- terra::rast(png)
+  #   u <- unique(values(raster))
+  #   hex <- rgb(u[,1], u[,2], u[,3], maxColorValue = 255)
+  #   colorRampPalette(hex)
+  # }
+
+  #----------------------------------------------------#
+  # Imports the GeoTIFF file into tif folder using FTP #
+  #----------------------------------------------------#
+  importGeoTiff <- function() {
+    url <- paste0("https://data.worldpop.org/GIS/Population/Global_2000_2020_", resKm, "km_UNadj/", 
+                 year, "/", toupper(isoCode), "/", tolower(isoCode), "_ppp_", year, "_", resKm,
+                 "km_Aggregated_UNadj.tif")
+    
+    tifFileName <- basename(url)  # name of the .tif file
+    foldName <- "tif/"            # .tif files should be stored in local tif/ folder
+    
+    if (!file.exists(paste0(foldName, tifFileName))){
+      download.file(url, paste0(foldName, tifFileName), mode = "wb")
+    } 
+     WorldPop <<- rast(paste0(foldName, tifFileName))
+  }
+
+  #---------------------------------------------------#
+  # Sets custom population breaks for a given country #
+  #---------------------------------------------------#
+  setPopulationBreaks <- function() {
+    if (rasterAgg == 0 || rasterAgg == 1){
+      toPlot <<- classify(as(WorldPop, "SpatRaster"), basePopBreaks) #raster must be cast to terra spatRaster
+      levs <- levels(toPlot)[[1]]
+      levs[7] <- "> 1000"
+    } else {
+      toPlot <<- classify(as(WorldPop_aggr_count, "SpatRaster"), aggrPopBreaks) #raster must be cast to terra spatRaster
+      levs <- levels(toPlot)[[1]]
+      levs[8] <- "> 250000"
+    }
+    levels(toPlot) <- levs
+  }
+
+  # #---------------------------------------------------------------#
+  # # Aggregate the WorldPop raster by specified aggregation factor #
+  # #---------------------------------------------------------------#
+  # aggregateWorldPop <- function() {
+  #   WorldPop_aggr_count <<- terra::aggregate(WorldPop, fact = c(rasterAgg, rasterAgg), fun = sum, na.rm = TRUE)
+  #   is.na(WorldPop_aggr_count) <<- !WorldPop_aggr_count # sets cells which are 0 as NA, allows for 0 lower bound in plot
+  # }
+
+  # END OF CODE #
+
+  # createMP4(isoCode = "ISR", year = 2020, resKm = 1, rasterAgg = 1, fname = "susceptible_MP4.mp4", iterations = 30)    # example function calls, comment out before calling script
+  # createPNG(isoCode = "ISR", year = 2020, resKm = 1, rasterAgg = 1, fname = "susceptible.png") # example function call
+  # printStackLayer(rasterStack = ?, rasterLayer = "Susceptible", fname = "susceptible.png", includeLabels = T)
+#+end_src
+
+#+name: raster-plot-dependencies
+#+begin_src R
+  options(conflicts.policy = list(warn = FALSE))
+  shhh <- suppressPackageStartupMessages # It's a library, so shhh!
+  shhh(library(av))
+  shhh(library(countrycode))
+  shhh(library(cptcity))
+  shhh(library(fasterize))
+  shhh(library(lattice))
+  shhh(library(magick))
+  shhh(library(rasterVis))
+  shhh(library(rstudioapi))
+  shhh(library(sp))
+  shhh(library(sf))     # classes and functions for vector data
+  shhh(library(terra, warn.conflicts=FALSE))
+#+end_src
+
+#+name: raster-plot-dead-code-one
+#+begin_src R
+  # createMP4 <- function(isoCode, year, resKm, rasterAgg, fname, iterations) {
+  #   n <- 1
+  #   while (n <= iterations) { # create the .png files
+  #     setUp(isoCode, year, resKm, rasterAgg, paste0("MP4/", isoCode, "_", layerName, "_", sprintf("%04d", n), ".png"))
+  #     WorldPop <<- WorldPop*(n/iterations)
+  #     setPopulationBreaks()
+  #     createPlotPNG(toPlot) 
+  #     n <- n + 1 
+  #   } 
+  #   
+  #    setwd("www/MP4")         # create the .mp4 file
+  #    av::av_encode_video(list.files(), framerate = 8, output = paste0("../", fname))
+  #    setwd("./../..")
+  # }
+
+  # createPNG <- function(isoCode, year, resKm, rasterAgg, fname) {
+  #   setUp(isoCode, year, resKm, rasterAgg, fname)
+  #   if (rasterAgg != 0){
+  #     aggregateWorldPop()
+  #   }
+  #   setPopulationBreaks()
+  #   createPlotPNG(toPlot)
+  # }
+#+end_src
+
+* An R session loading the new code package for use with comparisons
+
+#+begin_src R :session *foundation*
+  library(tidyverse)
+  library(terra)
+  library(spatialEpisim.foundation)
+#+end_src
+
+#+RESULTS:
+| sf                       |
+| sp                       |
+| rstudioapi               |
+| rasterVis                |
+| magick                   |
+| lattice                  |
+| fasterize                |
+| cptcity                  |
+| countrycode              |
+| av                       |
+| spatialEpisim.foundation |
+| terra                    |
+| lubridate                |
+| forcats                  |
+| stringr                  |
+| dplyr                    |
+| purrr                    |
+| readr                    |
+| tidyr                    |
+| tibble                   |
+| ggplot2                  |
+| tidyverse                |
+| stats                    |
+| graphics                 |
+| grDevices                |
+| datasets                 |
+| drat                     |
+| devtools                 |
+| usethis                  |
+| utils                    |
+| methods                  |
+| base                     |
